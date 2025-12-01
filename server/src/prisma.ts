@@ -1,9 +1,13 @@
-// Using require here to avoid strict typing on PrismaClient while schema is evolving.
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-explicit-any
-const { PrismaClient } = require('@prisma/client') as any;
+import { PrismaClient } from '@prisma/client';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const globalForPrisma = global as any;
+// Define the type for the global object to include the 'prisma' property
+// This avoids using 'any' on the global object itself.
+interface CustomGlobal extends NodeJS.Global {
+  prisma?: PrismaClient;
+}
+
+// Cast global to our custom interface
+const globalForPrisma = global as unknown as CustomGlobal;
 
 export const prisma =
   globalForPrisma.prisma ??
