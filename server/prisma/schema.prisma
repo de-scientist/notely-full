@@ -27,7 +27,7 @@ model Entry {
   id          String   @id @default(uuid()) @map("EntryId")
   title       String   @map("Title")
   synopsis    String   @map("Synopsis")
-  content     String
+  content     String   @map("Content")
   isDeleted   Boolean  @default(false)
   dateCreated DateTime @default(now())
   lastUpdated DateTime @updatedAt
