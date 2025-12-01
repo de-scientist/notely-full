@@ -16,7 +16,7 @@ model User {
   avatarUrl            String?  @default("") @map("Avatar_Url")
   dateJoined        DateTime @default(now()) @map("Date_Joined")
   lastProfileUpdate DateTime @updatedAt  @map("Last_Profile_Update")
-  isDeleted         Boolean  @default(false)
+  isDeleted         Boolean  @default(false) @map("Is_Deleted")
 
 }
 
