@@ -25,7 +25,7 @@ model User {
 
 model Entry {
   id          String   @id @default(uuid()) @map("EntryId")
-  title       String
+  title       String   @map("Title")
   synopsis    String
   content     String
   isDeleted   Boolean  @default(false)
