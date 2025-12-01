@@ -1,16 +1,62 @@
 {
+  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "strict": true,
+    // File Layout
+    //"rootDir": "./src",
+    //"outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+
+    // Changed: module switched to ESNext for better ESM handling with TSX
+    "module": "NodeNext",
+
+    // Changed: kept NodeNext resolution (best for Node 22)
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "types": ["node"],
+    "lib": ["ESNext"], //  Added for better modern API support
+
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    // Added for Express and CommonJS compatibility
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true, // Added to allow importing .json files
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": true, // Ensures no JS files are emitted since TSX runs files directly
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+
+    // Adjusted for smoother ESM/CommonJS interop
+    "verbatimModuleSyntax": false,
+
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "src",
-    "outDir": "dist",
-    "resolveJsonModule": true,
-    "types": ["node", "express"]
-  },
-  "include": ["src", "types"]
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true
+  }
 }
