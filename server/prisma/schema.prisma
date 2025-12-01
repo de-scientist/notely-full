@@ -30,7 +30,7 @@ model Entry {
   content     String   @map("Content")
   isDeleted   Boolean  @default(false) @map("Is_Deleted")
   dateCreated DateTime @default(now())  @map("Date_Created")
-  lastUpdated DateTime @updatedAt
+  lastUpdated DateTime @updatedAt @map("Last_Updated")
 
   user   User   @relation(fields: [userId], references: [id])
   userId String
