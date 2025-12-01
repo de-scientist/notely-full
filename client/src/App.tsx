@@ -13,52 +13,90 @@ import { EditEntryPage } from './pages/EditEntryPage';
 import { TrashPage } from './pages/TrashPage';
 import { ProfilePage } from './pages/ProfilePage';
 
+// 👇 NEW AVATAR IMPORTS (Assuming path is correct)
+import { Avatar, AvatarImage, AvatarFallback } from "./components/ui/avatar"; 
+
+// Helper function to generate initials for the AvatarFallback
+const getInitials = (firstName: string | undefined, lastName: string | undefined): string => {
+  if (!firstName || !lastName) return 'NN';
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+};
+
 function AppHeader() {
   const { user } = useAuthStore();
 
   const isLoggedIn = !!user;
 
   return (
-    <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-      <div className="flex items-center gap-4">
-        <Link to="/" className="text-lg font-semibold text-gray-900">
+    // Improved Header Styling: better color contrast, shadows, and spacing
+    <header className="flex items-center justify-between border-b dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 shadow-sm">
+      <div className="flex items-center gap-6">
+        <Link 
+          to="/" 
+          className="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors hover:text-primary"
+        >
           Notely
         </Link>
         {isLoggedIn && (
-          <nav className="flex items-center gap-3 text-sm text-gray-700">
-            <Link to="/app/notes" className="hover:text-blue-600">
+          // Navigation Links: Improved styling
+          <nav className="flex items-center gap-4 text-sm font-medium">
+            <Link to="/app/notes" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
               My notes
             </Link>
-            <Link to="/app/notes/new" className="hover:text-blue-600">
+            <Link to="/app/notes/new" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
               New entry
             </Link>
-            <Link to="/app/profile" className="hover:text-blue-600">
+            {/* Kept Profile and Trash in nav as per original logic */}
+            <Link to="/app/profile" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
               Profile
             </Link>
-            <Link to="/app/trash" className="hover:text-blue-600">
+            <Link to="/app/trash" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
               Trash
             </Link>
           </nav>
         )}
       </div>
-      <div className="flex items-center gap-3">
+      
+      <div className="flex items-center gap-4">
         {!isLoggedIn && (
+          // Guest Links: Using ghost button for less visual weight on Login
           <>
-            <Link to="/login" className="text-sm text-gray-700 hover:text-blue-600">
-              Login
+            <Link to="/login">
+              <Button variant="ghost" className="text-sm dark:text-gray-300 hover:bg-accent">
+                Login
+              </Button>
             </Link>
             <Link to="/register">
               <Button className="text-sm">Sign up</Button>
             </Link>
           </>
         )}
+        
         {isLoggedIn && user && (
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-gray-700 sm:inline">
-              Welcome back, <span className="font-semibold">{user.firstName}</span>
+          // Logged-in Profile Area: Wrapped in Link for better UX
+          <Link to="/app/profile" className="flex items-center gap-3 text-sm group">
+            
+            {/* Welcome Message: Enhanced visual hierarchy */}
+            <span className="hidden text-right lg:inline">
+              <span className="block text-xs text-muted-foreground">Welcome back,</span>
+              <span className="block font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary">
+                {user.firstName}
+              </span>
             </span>
-            <Avatar name={`${user.firstName} ${user.lastName}`} src={user.avatar} />
-          </div>
+            
+            {/* 👇 SHADCN AVATAR IMPLEMENTATION */}
+            <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-primary transition-colors">
+              {/* Assuming the user object property is named 'avatarUrl' or similar for image source */}
+              <AvatarImage 
+                src={user.avatarUrl || user.avatar} // Use avatarUrl if available, fall back to avatar
+                alt={`${user.firstName} ${user.lastName} Avatar`}
+              />
+              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
+                {getInitials(user.firstName, user.lastName)}
+              </AvatarFallback>
+            </Avatar>
+            
+          </Link>
         )}
       </div>
     </header>
@@ -67,7 +105,8 @@ function AppHeader() {
 
 function AppLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    // Added dark mode support to AppLayout background
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
       <AppHeader />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
         <Routes>
