@@ -135,6 +135,17 @@ exports.Prisma.UserScalarFieldEnum = {
   isDeleted: 'isDeleted'
 };
 
+exports.Prisma.EntryScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  synopsis: 'synopsis',
+  content: 'content',
+  isDeleted: 'isDeleted',
+  dateCreated: 'dateCreated',
+  lastUpdated: 'lastUpdated',
+  userId: 'userId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -147,7 +158,8 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Entry: 'Entry'
 };
 
 /**
