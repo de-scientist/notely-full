@@ -11,7 +11,7 @@ model User {
   firstName         String   @map("First_Name")
   lastName          String   @map("Last_Name")
   email             String   @unique @map("Email_Address")
-  username          String   @unique
+  username          String   @unique @map("User_Name")
   password          String
   avatar            String?  @default("")
   dateJoined        DateTime @default(now())
