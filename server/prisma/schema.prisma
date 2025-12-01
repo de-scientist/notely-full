@@ -29,7 +29,7 @@ model Entry {
   synopsis    String   @map("Synopsis")
   content     String   @map("Content")
   isDeleted   Boolean  @default(false) @map("Is_Deleted")
-  dateCreated DateTime @default(now())
+  dateCreated DateTime @default(now())  @map("Date_Created")
   lastUpdated DateTime @updatedAt
 
   user   User   @relation(fields: [userId], references: [id])
