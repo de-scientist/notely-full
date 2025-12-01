@@ -13,9 +13,9 @@ model User {
   email             String   @unique @map("Email_Address")
   username          String   @unique @map("User_Name")
   password          String  @unique   @map("Password")
-  avatar            String?  @default("") @map("Avatar")
+  avatarUrl            String?  @default("") @map("Avatar_Url")
   dateJoined        DateTime @default(now()) @map("Date_Joined")
-  lastProfileUpdate DateTime @updatedAt
+  lastProfileUpdate DateTime @updatedAt  @map("Last_Profile_Update")
   isDeleted         Boolean  @default(false)
 
 }
