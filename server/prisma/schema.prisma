@@ -14,7 +14,7 @@ model User {
   username          String   @unique @map("User_Name")
   password          String  @unique   @map("Password")
   avatar            String?  @default("") @map("Avatar")
-  dateJoined        DateTime @default(now())
+  dateJoined        DateTime @default(now()) @map("Date_Joined")
   lastProfileUpdate DateTime @updatedAt
   isDeleted         Boolean  @default(false)
 
