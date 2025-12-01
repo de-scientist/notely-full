@@ -19,7 +19,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^7.0.1",
+    "prisma": "^6.19.0",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
