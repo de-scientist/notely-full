@@ -1,13 +1,14 @@
 import { PrismaClient } from '@prisma/client';
 
-// Define the type for the global object to include the 'prisma' property
-// This avoids using 'any' on the global object itself.
-interface CustomGlobal extends NodeJS.Global {
+// Define the interface that adds the 'prisma' property to the standard global object.
+// This is the cleanest way to extend the global object's type.
+interface GlobalForPrisma extends NodeJS.Global {
   prisma?: PrismaClient;
 }
 
-// Cast global to our custom interface
-const globalForPrisma = global as unknown as CustomGlobal;
+// Cast the global object to the new, extended interface type.
+// You no longer need `unknown as` because you are casting to a type that extends global.
+const globalForPrisma: GlobalForPrisma = global as GlobalForPrisma;
 
 export const prisma =
   globalForPrisma.prisma ??
