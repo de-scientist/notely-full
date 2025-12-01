@@ -18,5 +18,6 @@ model User {
   lastProfileUpdate DateTime @updatedAt  @map("Last_Profile_Update")
   isDeleted         Boolean  @default(false) @map("Is_Deleted")
 
+@@map("Users")
 }
 
