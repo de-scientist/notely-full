@@ -1,0 +1,32 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[Entries] (
+    [EntryId] NVARCHAR(1000) NOT NULL,
+    [Title] NVARCHAR(1000) NOT NULL,
+    [Synopsis] NVARCHAR(1000) NOT NULL,
+    [Content] NVARCHAR(1000) NOT NULL,
+    [Is_Deleted] BIT NOT NULL CONSTRAINT [Entries_Is_Deleted_df] DEFAULT 0,
+    [Date_Created] DATETIME2 NOT NULL CONSTRAINT [Entries_Date_Created_df] DEFAULT CURRENT_TIMESTAMP,
+    [Last_Updated] DATETIME2 NOT NULL,
+    [userId] NVARCHAR(1000) NOT NULL,
+    CONSTRAINT [Entries_pkey] PRIMARY KEY CLUSTERED ([EntryId])
+);
+
+-- AddForeignKey
+ALTER TABLE [dbo].[Entries] ADD CONSTRAINT [Entries_userId_fkey] FOREIGN KEY ([userId]) REFERENCES [dbo].[Users]([UserId]) ON DELETE NO ACTION ON UPDATE CASCADE;
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH

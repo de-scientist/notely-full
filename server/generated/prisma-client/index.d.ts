@@ -18,6 +18,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  * 
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
+/**
+ * Model Entry
+ * 
+ */
+export type Entry = $Result.DefaultSelection<Prisma.$EntryPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -146,6 +151,16 @@ export class PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.entry`: Exposes CRUD operations for the **Entry** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Entries
+    * const entries = await prisma.entry.findMany()
+    * ```
+    */
+  get entry(): Prisma.EntryDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -587,7 +602,8 @@ export namespace Prisma {
 
 
   export const ModelName: {
-    User: 'User'
+    User: 'User',
+    Entry: 'Entry'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -606,7 +622,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user"
+      modelProps: "user" | "entry"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -673,6 +689,72 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      Entry: {
+        payload: Prisma.$EntryPayload<ExtArgs>
+        fields: Prisma.EntryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EntryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EntryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>
+          }
+          findFirst: {
+            args: Prisma.EntryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EntryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>
+          }
+          findMany: {
+            args: Prisma.EntryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>[]
+          }
+          create: {
+            args: Prisma.EntryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>
+          }
+          createMany: {
+            args: Prisma.EntryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.EntryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>
+          }
+          update: {
+            args: Prisma.EntryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>
+          }
+          deleteMany: {
+            args: Prisma.EntryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EntryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.EntryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EntryPayload>
+          }
+          aggregate: {
+            args: Prisma.EntryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEntry>
+          }
+          groupBy: {
+            args: Prisma.EntryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EntryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EntryCountArgs<ExtArgs>
+            result: $Utils.Optional<EntryCountAggregateOutputType> | number
           }
         }
       }
@@ -773,6 +855,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit
+    entry?: EntryOmit
   }
 
   /* Types for Logging */
@@ -847,6 +930,36 @@ export namespace Prisma {
    * Count Types
    */
 
+
+  /**
+   * Count Type UserCountOutputType
+   */
+
+  export type UserCountOutputType = {
+    entries: number
+  }
+
+  export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    entries?: boolean | UserCountOutputTypeCountEntriesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserCountOutputType
+     */
+    select?: UserCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EntryWhereInput
+  }
 
 
   /**
@@ -1057,6 +1170,8 @@ export namespace Prisma {
     dateJoined?: boolean
     lastProfileUpdate?: boolean
     isDeleted?: boolean
+    entries?: boolean | User$entriesArgs<ExtArgs>
+    _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
 
@@ -1075,10 +1190,16 @@ export namespace Prisma {
   }
 
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "username" | "password" | "avatarUrl" | "dateJoined" | "lastProfileUpdate" | "isDeleted", ExtArgs["result"]["user"]>
+  export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    entries?: boolean | User$entriesArgs<ExtArgs>
+    _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
+  }
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
-    objects: {}
+    objects: {
+      entries: Prisma.$EntryPayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       firstName: string
@@ -1430,6 +1551,7 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    entries<T extends User$entriesArgs<ExtArgs> = {}>(args?: Subset<T, User$entriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1486,6 +1608,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which User to fetch.
      */
     where: UserWhereUniqueInput
@@ -1504,6 +1630,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which User to fetch.
      */
     where: UserWhereUniqueInput
@@ -1521,6 +1651,10 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
     /**
      * Filter, which User to fetch.
      */
@@ -1570,6 +1704,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which User to fetch.
      */
     where?: UserWhereInput
@@ -1618,6 +1756,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter, which Users to fetch.
      */
     where?: UserWhereInput
@@ -1661,6 +1803,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * The data needed to create a User.
      */
     data: XOR<UserCreateInput, UserUncheckedCreateInput>
@@ -1688,6 +1834,10 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
     /**
      * The data needed to update a User.
      */
@@ -1729,6 +1879,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * The filter to search for the User to update in case it exists.
      */
     where: UserWhereUniqueInput
@@ -1755,6 +1909,10 @@ export namespace Prisma {
      */
     omit?: UserOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    /**
      * Filter which User to delete.
      */
     where: UserWhereUniqueInput
@@ -1775,6 +1933,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.entries
+   */
+  export type User$entriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    where?: EntryWhereInput
+    orderBy?: EntryOrderByWithRelationInput | EntryOrderByWithRelationInput[]
+    cursor?: EntryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EntryScalarFieldEnum | EntryScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1786,6 +1968,971 @@ export namespace Prisma {
      * Omit specific fields from the User
      */
     omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Entry
+   */
+
+  export type AggregateEntry = {
+    _count: EntryCountAggregateOutputType | null
+    _min: EntryMinAggregateOutputType | null
+    _max: EntryMaxAggregateOutputType | null
+  }
+
+  export type EntryMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    synopsis: string | null
+    content: string | null
+    isDeleted: boolean | null
+    dateCreated: Date | null
+    lastUpdated: Date | null
+    userId: string | null
+  }
+
+  export type EntryMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    synopsis: string | null
+    content: string | null
+    isDeleted: boolean | null
+    dateCreated: Date | null
+    lastUpdated: Date | null
+    userId: string | null
+  }
+
+  export type EntryCountAggregateOutputType = {
+    id: number
+    title: number
+    synopsis: number
+    content: number
+    isDeleted: number
+    dateCreated: number
+    lastUpdated: number
+    userId: number
+    _all: number
+  }
+
+
+  export type EntryMinAggregateInputType = {
+    id?: true
+    title?: true
+    synopsis?: true
+    content?: true
+    isDeleted?: true
+    dateCreated?: true
+    lastUpdated?: true
+    userId?: true
+  }
+
+  export type EntryMaxAggregateInputType = {
+    id?: true
+    title?: true
+    synopsis?: true
+    content?: true
+    isDeleted?: true
+    dateCreated?: true
+    lastUpdated?: true
+    userId?: true
+  }
+
+  export type EntryCountAggregateInputType = {
+    id?: true
+    title?: true
+    synopsis?: true
+    content?: true
+    isDeleted?: true
+    dateCreated?: true
+    lastUpdated?: true
+    userId?: true
+    _all?: true
+  }
+
+  export type EntryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Entry to aggregate.
+     */
+    where?: EntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Entries to fetch.
+     */
+    orderBy?: EntryOrderByWithRelationInput | EntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Entries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Entries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Entries
+    **/
+    _count?: true | EntryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EntryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EntryMaxAggregateInputType
+  }
+
+  export type GetEntryAggregateType<T extends EntryAggregateArgs> = {
+        [P in keyof T & keyof AggregateEntry]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEntry[P]>
+      : GetScalarType<T[P], AggregateEntry[P]>
+  }
+
+
+
+
+  export type EntryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EntryWhereInput
+    orderBy?: EntryOrderByWithAggregationInput | EntryOrderByWithAggregationInput[]
+    by: EntryScalarFieldEnum[] | EntryScalarFieldEnum
+    having?: EntryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EntryCountAggregateInputType | true
+    _min?: EntryMinAggregateInputType
+    _max?: EntryMaxAggregateInputType
+  }
+
+  export type EntryGroupByOutputType = {
+    id: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted: boolean
+    dateCreated: Date
+    lastUpdated: Date
+    userId: string
+    _count: EntryCountAggregateOutputType | null
+    _min: EntryMinAggregateOutputType | null
+    _max: EntryMaxAggregateOutputType | null
+  }
+
+  type GetEntryGroupByPayload<T extends EntryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EntryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EntryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EntryGroupByOutputType[P]>
+            : GetScalarType<T[P], EntryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EntrySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    synopsis?: boolean
+    content?: boolean
+    isDeleted?: boolean
+    dateCreated?: boolean
+    lastUpdated?: boolean
+    userId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["entry"]>
+
+
+
+  export type EntrySelectScalar = {
+    id?: boolean
+    title?: boolean
+    synopsis?: boolean
+    content?: boolean
+    isDeleted?: boolean
+    dateCreated?: boolean
+    lastUpdated?: boolean
+    userId?: boolean
+  }
+
+  export type EntryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "synopsis" | "content" | "isDeleted" | "dateCreated" | "lastUpdated" | "userId", ExtArgs["result"]["entry"]>
+  export type EntryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $EntryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Entry"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      synopsis: string
+      content: string
+      isDeleted: boolean
+      dateCreated: Date
+      lastUpdated: Date
+      userId: string
+    }, ExtArgs["result"]["entry"]>
+    composites: {}
+  }
+
+  type EntryGetPayload<S extends boolean | null | undefined | EntryDefaultArgs> = $Result.GetResult<Prisma.$EntryPayload, S>
+
+  type EntryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<EntryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: EntryCountAggregateInputType | true
+    }
+
+  export interface EntryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Entry'], meta: { name: 'Entry' } }
+    /**
+     * Find zero or one Entry that matches the filter.
+     * @param {EntryFindUniqueArgs} args - Arguments to find a Entry
+     * @example
+     * // Get one Entry
+     * const entry = await prisma.entry.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EntryFindUniqueArgs>(args: SelectSubset<T, EntryFindUniqueArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Entry that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {EntryFindUniqueOrThrowArgs} args - Arguments to find a Entry
+     * @example
+     * // Get one Entry
+     * const entry = await prisma.entry.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EntryFindUniqueOrThrowArgs>(args: SelectSubset<T, EntryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Entry that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryFindFirstArgs} args - Arguments to find a Entry
+     * @example
+     * // Get one Entry
+     * const entry = await prisma.entry.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EntryFindFirstArgs>(args?: SelectSubset<T, EntryFindFirstArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Entry that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryFindFirstOrThrowArgs} args - Arguments to find a Entry
+     * @example
+     * // Get one Entry
+     * const entry = await prisma.entry.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EntryFindFirstOrThrowArgs>(args?: SelectSubset<T, EntryFindFirstOrThrowArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Entries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Entries
+     * const entries = await prisma.entry.findMany()
+     * 
+     * // Get first 10 Entries
+     * const entries = await prisma.entry.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const entryWithIdOnly = await prisma.entry.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EntryFindManyArgs>(args?: SelectSubset<T, EntryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Entry.
+     * @param {EntryCreateArgs} args - Arguments to create a Entry.
+     * @example
+     * // Create one Entry
+     * const Entry = await prisma.entry.create({
+     *   data: {
+     *     // ... data to create a Entry
+     *   }
+     * })
+     * 
+     */
+    create<T extends EntryCreateArgs>(args: SelectSubset<T, EntryCreateArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Entries.
+     * @param {EntryCreateManyArgs} args - Arguments to create many Entries.
+     * @example
+     * // Create many Entries
+     * const entry = await prisma.entry.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EntryCreateManyArgs>(args?: SelectSubset<T, EntryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Entry.
+     * @param {EntryDeleteArgs} args - Arguments to delete one Entry.
+     * @example
+     * // Delete one Entry
+     * const Entry = await prisma.entry.delete({
+     *   where: {
+     *     // ... filter to delete one Entry
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EntryDeleteArgs>(args: SelectSubset<T, EntryDeleteArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Entry.
+     * @param {EntryUpdateArgs} args - Arguments to update one Entry.
+     * @example
+     * // Update one Entry
+     * const entry = await prisma.entry.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EntryUpdateArgs>(args: SelectSubset<T, EntryUpdateArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Entries.
+     * @param {EntryDeleteManyArgs} args - Arguments to filter Entries to delete.
+     * @example
+     * // Delete a few Entries
+     * const { count } = await prisma.entry.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EntryDeleteManyArgs>(args?: SelectSubset<T, EntryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Entries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Entries
+     * const entry = await prisma.entry.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EntryUpdateManyArgs>(args: SelectSubset<T, EntryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Entry.
+     * @param {EntryUpsertArgs} args - Arguments to update or create a Entry.
+     * @example
+     * // Update or create a Entry
+     * const entry = await prisma.entry.upsert({
+     *   create: {
+     *     // ... data to create a Entry
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Entry we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EntryUpsertArgs>(args: SelectSubset<T, EntryUpsertArgs<ExtArgs>>): Prisma__EntryClient<$Result.GetResult<Prisma.$EntryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Entries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryCountArgs} args - Arguments to filter Entries to count.
+     * @example
+     * // Count the number of Entries
+     * const count = await prisma.entry.count({
+     *   where: {
+     *     // ... the filter for the Entries we want to count
+     *   }
+     * })
+    **/
+    count<T extends EntryCountArgs>(
+      args?: Subset<T, EntryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EntryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Entry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EntryAggregateArgs>(args: Subset<T, EntryAggregateArgs>): Prisma.PrismaPromise<GetEntryAggregateType<T>>
+
+    /**
+     * Group by Entry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EntryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EntryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EntryGroupByArgs['orderBy'] }
+        : { orderBy?: EntryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EntryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEntryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Entry model
+   */
+  readonly fields: EntryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Entry.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EntryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Entry model
+   */
+  interface EntryFieldRefs {
+    readonly id: FieldRef<"Entry", 'String'>
+    readonly title: FieldRef<"Entry", 'String'>
+    readonly synopsis: FieldRef<"Entry", 'String'>
+    readonly content: FieldRef<"Entry", 'String'>
+    readonly isDeleted: FieldRef<"Entry", 'Boolean'>
+    readonly dateCreated: FieldRef<"Entry", 'DateTime'>
+    readonly lastUpdated: FieldRef<"Entry", 'DateTime'>
+    readonly userId: FieldRef<"Entry", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Entry findUnique
+   */
+  export type EntryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * Filter, which Entry to fetch.
+     */
+    where: EntryWhereUniqueInput
+  }
+
+  /**
+   * Entry findUniqueOrThrow
+   */
+  export type EntryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * Filter, which Entry to fetch.
+     */
+    where: EntryWhereUniqueInput
+  }
+
+  /**
+   * Entry findFirst
+   */
+  export type EntryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * Filter, which Entry to fetch.
+     */
+    where?: EntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Entries to fetch.
+     */
+    orderBy?: EntryOrderByWithRelationInput | EntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Entries.
+     */
+    cursor?: EntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Entries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Entries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Entries.
+     */
+    distinct?: EntryScalarFieldEnum | EntryScalarFieldEnum[]
+  }
+
+  /**
+   * Entry findFirstOrThrow
+   */
+  export type EntryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * Filter, which Entry to fetch.
+     */
+    where?: EntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Entries to fetch.
+     */
+    orderBy?: EntryOrderByWithRelationInput | EntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Entries.
+     */
+    cursor?: EntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Entries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Entries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Entries.
+     */
+    distinct?: EntryScalarFieldEnum | EntryScalarFieldEnum[]
+  }
+
+  /**
+   * Entry findMany
+   */
+  export type EntryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * Filter, which Entries to fetch.
+     */
+    where?: EntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Entries to fetch.
+     */
+    orderBy?: EntryOrderByWithRelationInput | EntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Entries.
+     */
+    cursor?: EntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Entries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Entries.
+     */
+    skip?: number
+    distinct?: EntryScalarFieldEnum | EntryScalarFieldEnum[]
+  }
+
+  /**
+   * Entry create
+   */
+  export type EntryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Entry.
+     */
+    data: XOR<EntryCreateInput, EntryUncheckedCreateInput>
+  }
+
+  /**
+   * Entry createMany
+   */
+  export type EntryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Entries.
+     */
+    data: EntryCreateManyInput | EntryCreateManyInput[]
+  }
+
+  /**
+   * Entry update
+   */
+  export type EntryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Entry.
+     */
+    data: XOR<EntryUpdateInput, EntryUncheckedUpdateInput>
+    /**
+     * Choose, which Entry to update.
+     */
+    where: EntryWhereUniqueInput
+  }
+
+  /**
+   * Entry updateMany
+   */
+  export type EntryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Entries.
+     */
+    data: XOR<EntryUpdateManyMutationInput, EntryUncheckedUpdateManyInput>
+    /**
+     * Filter which Entries to update
+     */
+    where?: EntryWhereInput
+    /**
+     * Limit how many Entries to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Entry upsert
+   */
+  export type EntryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Entry to update in case it exists.
+     */
+    where: EntryWhereUniqueInput
+    /**
+     * In case the Entry found by the `where` argument doesn't exist, create a new Entry with this data.
+     */
+    create: XOR<EntryCreateInput, EntryUncheckedCreateInput>
+    /**
+     * In case the Entry was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EntryUpdateInput, EntryUncheckedUpdateInput>
+  }
+
+  /**
+   * Entry delete
+   */
+  export type EntryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
+    /**
+     * Filter which Entry to delete.
+     */
+    where: EntryWhereUniqueInput
+  }
+
+  /**
+   * Entry deleteMany
+   */
+  export type EntryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Entries to delete
+     */
+    where?: EntryWhereInput
+    /**
+     * Limit how many Entries to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Entry without action
+   */
+  export type EntryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Entry
+     */
+    select?: EntrySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Entry
+     */
+    omit?: EntryOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EntryInclude<ExtArgs> | null
   }
 
 
@@ -1818,6 +2965,20 @@ export namespace Prisma {
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+  export const EntryScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    synopsis: 'synopsis',
+    content: 'content',
+    isDeleted: 'isDeleted',
+    dateCreated: 'dateCreated',
+    lastUpdated: 'lastUpdated',
+    userId: 'userId'
+  };
+
+  export type EntryScalarFieldEnum = (typeof EntryScalarFieldEnum)[keyof typeof EntryScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -1886,6 +3047,7 @@ export namespace Prisma {
     dateJoined?: DateTimeFilter<"User"> | Date | string
     lastProfileUpdate?: DateTimeFilter<"User"> | Date | string
     isDeleted?: BoolFilter<"User"> | boolean
+    entries?: EntryListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -1899,6 +3061,7 @@ export namespace Prisma {
     dateJoined?: SortOrder
     lastProfileUpdate?: SortOrder
     isDeleted?: SortOrder
+    entries?: EntryOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -1915,6 +3078,7 @@ export namespace Prisma {
     dateJoined?: DateTimeFilter<"User"> | Date | string
     lastProfileUpdate?: DateTimeFilter<"User"> | Date | string
     isDeleted?: BoolFilter<"User"> | boolean
+    entries?: EntryListRelationFilter
   }, "id" | "email" | "username" | "password">
 
   export type UserOrderByWithAggregationInput = {
@@ -1949,6 +3113,76 @@ export namespace Prisma {
     isDeleted?: BoolWithAggregatesFilter<"User"> | boolean
   }
 
+  export type EntryWhereInput = {
+    AND?: EntryWhereInput | EntryWhereInput[]
+    OR?: EntryWhereInput[]
+    NOT?: EntryWhereInput | EntryWhereInput[]
+    id?: StringFilter<"Entry"> | string
+    title?: StringFilter<"Entry"> | string
+    synopsis?: StringFilter<"Entry"> | string
+    content?: StringFilter<"Entry"> | string
+    isDeleted?: BoolFilter<"Entry"> | boolean
+    dateCreated?: DateTimeFilter<"Entry"> | Date | string
+    lastUpdated?: DateTimeFilter<"Entry"> | Date | string
+    userId?: StringFilter<"Entry"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type EntryOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    synopsis?: SortOrder
+    content?: SortOrder
+    isDeleted?: SortOrder
+    dateCreated?: SortOrder
+    lastUpdated?: SortOrder
+    userId?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type EntryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: EntryWhereInput | EntryWhereInput[]
+    OR?: EntryWhereInput[]
+    NOT?: EntryWhereInput | EntryWhereInput[]
+    title?: StringFilter<"Entry"> | string
+    synopsis?: StringFilter<"Entry"> | string
+    content?: StringFilter<"Entry"> | string
+    isDeleted?: BoolFilter<"Entry"> | boolean
+    dateCreated?: DateTimeFilter<"Entry"> | Date | string
+    lastUpdated?: DateTimeFilter<"Entry"> | Date | string
+    userId?: StringFilter<"Entry"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type EntryOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    synopsis?: SortOrder
+    content?: SortOrder
+    isDeleted?: SortOrder
+    dateCreated?: SortOrder
+    lastUpdated?: SortOrder
+    userId?: SortOrder
+    _count?: EntryCountOrderByAggregateInput
+    _max?: EntryMaxOrderByAggregateInput
+    _min?: EntryMinOrderByAggregateInput
+  }
+
+  export type EntryScalarWhereWithAggregatesInput = {
+    AND?: EntryScalarWhereWithAggregatesInput | EntryScalarWhereWithAggregatesInput[]
+    OR?: EntryScalarWhereWithAggregatesInput[]
+    NOT?: EntryScalarWhereWithAggregatesInput | EntryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Entry"> | string
+    title?: StringWithAggregatesFilter<"Entry"> | string
+    synopsis?: StringWithAggregatesFilter<"Entry"> | string
+    content?: StringWithAggregatesFilter<"Entry"> | string
+    isDeleted?: BoolWithAggregatesFilter<"Entry"> | boolean
+    dateCreated?: DateTimeWithAggregatesFilter<"Entry"> | Date | string
+    lastUpdated?: DateTimeWithAggregatesFilter<"Entry"> | Date | string
+    userId?: StringWithAggregatesFilter<"Entry"> | string
+  }
+
   export type UserCreateInput = {
     id?: string
     firstName: string
@@ -1960,6 +3194,7 @@ export namespace Prisma {
     dateJoined?: Date | string
     lastProfileUpdate?: Date | string
     isDeleted?: boolean
+    entries?: EntryCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -1973,6 +3208,7 @@ export namespace Prisma {
     dateJoined?: Date | string
     lastProfileUpdate?: Date | string
     isDeleted?: boolean
+    entries?: EntryUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -1986,6 +3222,7 @@ export namespace Prisma {
     dateJoined?: DateTimeFieldUpdateOperationsInput | Date | string
     lastProfileUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    entries?: EntryUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -1999,6 +3236,7 @@ export namespace Prisma {
     dateJoined?: DateTimeFieldUpdateOperationsInput | Date | string
     lastProfileUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    entries?: EntryUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -2038,6 +3276,82 @@ export namespace Prisma {
     dateJoined?: DateTimeFieldUpdateOperationsInput | Date | string
     lastProfileUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type EntryCreateInput = {
+    id?: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted?: boolean
+    dateCreated?: Date | string
+    lastUpdated?: Date | string
+    user: UserCreateNestedOneWithoutEntriesInput
+  }
+
+  export type EntryUncheckedCreateInput = {
+    id?: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted?: boolean
+    dateCreated?: Date | string
+    lastUpdated?: Date | string
+    userId: string
+  }
+
+  export type EntryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutEntriesNestedInput
+  }
+
+  export type EntryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type EntryCreateManyInput = {
+    id?: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted?: boolean
+    dateCreated?: Date | string
+    lastUpdated?: Date | string
+    userId: string
+  }
+
+  export type EntryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EntryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -2084,9 +3398,19 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type EntryListRelationFilter = {
+    every?: EntryWhereInput
+    some?: EntryWhereInput
+    none?: EntryWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
+  }
+
+  export type EntryOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type UserCountOrderByAggregateInput = {
@@ -2184,6 +3508,58 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput
+    isNot?: UserWhereInput
+  }
+
+  export type EntryCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    synopsis?: SortOrder
+    content?: SortOrder
+    isDeleted?: SortOrder
+    dateCreated?: SortOrder
+    lastUpdated?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type EntryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    synopsis?: SortOrder
+    content?: SortOrder
+    isDeleted?: SortOrder
+    dateCreated?: SortOrder
+    lastUpdated?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type EntryMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    synopsis?: SortOrder
+    content?: SortOrder
+    isDeleted?: SortOrder
+    dateCreated?: SortOrder
+    lastUpdated?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type EntryCreateNestedManyWithoutUserInput = {
+    create?: XOR<EntryCreateWithoutUserInput, EntryUncheckedCreateWithoutUserInput> | EntryCreateWithoutUserInput[] | EntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: EntryCreateOrConnectWithoutUserInput | EntryCreateOrConnectWithoutUserInput[]
+    createMany?: EntryCreateManyUserInputEnvelope
+    connect?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+  }
+
+  export type EntryUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<EntryCreateWithoutUserInput, EntryUncheckedCreateWithoutUserInput> | EntryCreateWithoutUserInput[] | EntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: EntryCreateOrConnectWithoutUserInput | EntryCreateOrConnectWithoutUserInput[]
+    createMany?: EntryCreateManyUserInputEnvelope
+    connect?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -2198,6 +3574,48 @@ export namespace Prisma {
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
+  }
+
+  export type EntryUpdateManyWithoutUserNestedInput = {
+    create?: XOR<EntryCreateWithoutUserInput, EntryUncheckedCreateWithoutUserInput> | EntryCreateWithoutUserInput[] | EntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: EntryCreateOrConnectWithoutUserInput | EntryCreateOrConnectWithoutUserInput[]
+    upsert?: EntryUpsertWithWhereUniqueWithoutUserInput | EntryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: EntryCreateManyUserInputEnvelope
+    set?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    disconnect?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    delete?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    connect?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    update?: EntryUpdateWithWhereUniqueWithoutUserInput | EntryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: EntryUpdateManyWithWhereWithoutUserInput | EntryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: EntryScalarWhereInput | EntryScalarWhereInput[]
+  }
+
+  export type EntryUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<EntryCreateWithoutUserInput, EntryUncheckedCreateWithoutUserInput> | EntryCreateWithoutUserInput[] | EntryUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: EntryCreateOrConnectWithoutUserInput | EntryCreateOrConnectWithoutUserInput[]
+    upsert?: EntryUpsertWithWhereUniqueWithoutUserInput | EntryUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: EntryCreateManyUserInputEnvelope
+    set?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    disconnect?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    delete?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    connect?: EntryWhereUniqueInput | EntryWhereUniqueInput[]
+    update?: EntryUpdateWithWhereUniqueWithoutUserInput | EntryUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: EntryUpdateManyWithWhereWithoutUserInput | EntryUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: EntryScalarWhereInput | EntryScalarWhereInput[]
+  }
+
+  export type UserCreateNestedOneWithoutEntriesInput = {
+    create?: XOR<UserCreateWithoutEntriesInput, UserUncheckedCreateWithoutEntriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEntriesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutEntriesNestedInput = {
+    create?: XOR<UserCreateWithoutEntriesInput, UserUncheckedCreateWithoutEntriesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEntriesInput
+    upsert?: UserUpsertWithoutEntriesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEntriesInput, UserUpdateWithoutEntriesInput>, UserUncheckedUpdateWithoutEntriesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -2320,6 +3738,173 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type EntryCreateWithoutUserInput = {
+    id?: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted?: boolean
+    dateCreated?: Date | string
+    lastUpdated?: Date | string
+  }
+
+  export type EntryUncheckedCreateWithoutUserInput = {
+    id?: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted?: boolean
+    dateCreated?: Date | string
+    lastUpdated?: Date | string
+  }
+
+  export type EntryCreateOrConnectWithoutUserInput = {
+    where: EntryWhereUniqueInput
+    create: XOR<EntryCreateWithoutUserInput, EntryUncheckedCreateWithoutUserInput>
+  }
+
+  export type EntryCreateManyUserInputEnvelope = {
+    data: EntryCreateManyUserInput | EntryCreateManyUserInput[]
+  }
+
+  export type EntryUpsertWithWhereUniqueWithoutUserInput = {
+    where: EntryWhereUniqueInput
+    update: XOR<EntryUpdateWithoutUserInput, EntryUncheckedUpdateWithoutUserInput>
+    create: XOR<EntryCreateWithoutUserInput, EntryUncheckedCreateWithoutUserInput>
+  }
+
+  export type EntryUpdateWithWhereUniqueWithoutUserInput = {
+    where: EntryWhereUniqueInput
+    data: XOR<EntryUpdateWithoutUserInput, EntryUncheckedUpdateWithoutUserInput>
+  }
+
+  export type EntryUpdateManyWithWhereWithoutUserInput = {
+    where: EntryScalarWhereInput
+    data: XOR<EntryUpdateManyMutationInput, EntryUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type EntryScalarWhereInput = {
+    AND?: EntryScalarWhereInput | EntryScalarWhereInput[]
+    OR?: EntryScalarWhereInput[]
+    NOT?: EntryScalarWhereInput | EntryScalarWhereInput[]
+    id?: StringFilter<"Entry"> | string
+    title?: StringFilter<"Entry"> | string
+    synopsis?: StringFilter<"Entry"> | string
+    content?: StringFilter<"Entry"> | string
+    isDeleted?: BoolFilter<"Entry"> | boolean
+    dateCreated?: DateTimeFilter<"Entry"> | Date | string
+    lastUpdated?: DateTimeFilter<"Entry"> | Date | string
+    userId?: StringFilter<"Entry"> | string
+  }
+
+  export type UserCreateWithoutEntriesInput = {
+    id?: string
+    firstName: string
+    lastName: string
+    email: string
+    username: string
+    password: string
+    avatarUrl?: string | null
+    dateJoined?: Date | string
+    lastProfileUpdate?: Date | string
+    isDeleted?: boolean
+  }
+
+  export type UserUncheckedCreateWithoutEntriesInput = {
+    id?: string
+    firstName: string
+    lastName: string
+    email: string
+    username: string
+    password: string
+    avatarUrl?: string | null
+    dateJoined?: Date | string
+    lastProfileUpdate?: Date | string
+    isDeleted?: boolean
+  }
+
+  export type UserCreateOrConnectWithoutEntriesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutEntriesInput, UserUncheckedCreateWithoutEntriesInput>
+  }
+
+  export type UserUpsertWithoutEntriesInput = {
+    update: XOR<UserUpdateWithoutEntriesInput, UserUncheckedUpdateWithoutEntriesInput>
+    create: XOR<UserCreateWithoutEntriesInput, UserUncheckedCreateWithoutEntriesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutEntriesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutEntriesInput, UserUncheckedUpdateWithoutEntriesInput>
+  }
+
+  export type UserUpdateWithoutEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    dateJoined?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastProfileUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type UserUncheckedUpdateWithoutEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    dateJoined?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastProfileUpdate?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type EntryCreateManyUserInput = {
+    id?: string
+    title: string
+    synopsis: string
+    content: string
+    isDeleted?: boolean
+    dateCreated?: Date | string
+    lastUpdated?: Date | string
+  }
+
+  export type EntryUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EntryUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EntryUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    synopsis?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    dateCreated?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastUpdated?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

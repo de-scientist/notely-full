@@ -107,6 +107,17 @@ exports.Prisma.UserScalarFieldEnum = {
   isDeleted: 'isDeleted'
 };
 
+exports.Prisma.EntryScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  synopsis: 'synopsis',
+  content: 'content',
+  isDeleted: 'isDeleted',
+  dateCreated: 'dateCreated',
+  lastUpdated: 'lastUpdated',
+  userId: 'userId'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -119,7 +130,8 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Entry: 'Entry'
 };
 /**
  * Create the Client
@@ -150,7 +162,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../.env"
   },
   "relativePath": "../../prisma",
@@ -168,13 +180,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma-client\"\n}\n\ndatasource db {\n  provider = \"sqlserver\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                String   @id @default(uuid()) @map(\"UserId\")\n  firstName         String   @map(\"First_Name\")\n  lastName          String   @map(\"Last_Name\")\n  email             String   @unique @map(\"Email_Address\")\n  username          String   @unique @map(\"User_Name\")\n  password          String   @unique @map(\"Password\")\n  avatarUrl         String?  @default(\"\") @map(\"Avatar_Url\")\n  dateJoined        DateTime @default(now()) @map(\"Date_Joined\")\n  lastProfileUpdate DateTime @updatedAt @map(\"Last_Profile_Update\")\n  isDeleted         Boolean  @default(false) @map(\"Is_Deleted\")\n\n  @@map(\"Users\")\n}\n",
-  "inlineSchemaHash": "c3fdaeee1941e54fb31fad6b9efcf9ca1247604f5c34b41bcebc06dd6c66593e",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma-client\"\n}\n\ndatasource db {\n  provider = \"sqlserver\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                String   @id @default(uuid()) @map(\"UserId\")\n  firstName         String   @map(\"First_Name\")\n  lastName          String   @map(\"Last_Name\")\n  email             String   @unique @map(\"Email_Address\")\n  username          String   @unique @map(\"User_Name\")\n  password          String   @unique @map(\"Password\")\n  avatarUrl         String?  @default(\"\") @map(\"Avatar_Url\")\n  dateJoined        DateTime @default(now()) @map(\"Date_Joined\")\n  lastProfileUpdate DateTime @updatedAt @map(\"Last_Profile_Update\")\n  isDeleted         Boolean  @default(false) @map(\"Is_Deleted\")\n\n  entries Entry[]\n\n  @@map(\"Users\")\n}\n\nmodel Entry {\n  id          String   @id @default(uuid()) @map(\"EntryId\")\n  title       String   @map(\"Title\")\n  synopsis    String   @map(\"Synopsis\")\n  content     String   @map(\"Content\")\n  isDeleted   Boolean  @default(false) @map(\"Is_Deleted\")\n  dateCreated DateTime @default(now()) @map(\"Date_Created\")\n  lastUpdated DateTime @updatedAt @map(\"Last_Updated\")\n\n  user   User   @relation(fields: [userId], references: [id])\n  userId String\n\n  @@map(\"Entries\")\n}\n",
+  "inlineSchemaHash": "6e8b3a32590876de37f387f1918ebe2819ea6af944cce84f855c6a1b159edec8",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"UserId\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"First_Name\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Last_Name\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Email_Address\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"User_Name\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Password\"},{\"name\":\"avatarUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Avatar_Url\"},{\"name\":\"dateJoined\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"Date_Joined\"},{\"name\":\"lastProfileUpdate\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"Last_Profile_Update\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"Is_Deleted\"}],\"dbName\":\"Users\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"UserId\"},{\"name\":\"firstName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"First_Name\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Last_Name\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Email_Address\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"User_Name\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Password\"},{\"name\":\"avatarUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Avatar_Url\"},{\"name\":\"dateJoined\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"Date_Joined\"},{\"name\":\"lastProfileUpdate\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"Last_Profile_Update\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"Is_Deleted\"},{\"name\":\"entries\",\"kind\":\"object\",\"type\":\"Entry\",\"relationName\":\"EntryToUser\"}],\"dbName\":\"Users\"},\"Entry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"EntryId\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Title\"},{\"name\":\"synopsis\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Synopsis\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"Content\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\",\"dbName\":\"Is_Deleted\"},{\"name\":\"dateCreated\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"Date_Created\"},{\"name\":\"lastUpdated\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"Last_Updated\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"EntryToUser\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"Entries\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
