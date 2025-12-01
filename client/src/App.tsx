@@ -1,7 +1,7 @@
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import './App.css';
 import { useAuthStore } from './store/auth';
-import { Avatar, Button } from './components/ui';
+import { Button } from './components/ui/button';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
