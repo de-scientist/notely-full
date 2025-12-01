@@ -12,7 +12,7 @@ model User {
   lastName          String   @map("Last_Name")
   email             String   @unique @map("Email_Address")
   username          String   @unique @map("User_Name")
-  password          String
+  password          String  @unique
   avatar            String?  @default("")
   dateJoined        DateTime @default(now())
   lastProfileUpdate DateTime @updatedAt
