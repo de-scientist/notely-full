@@ -1,11 +1,11 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../generated/prisma-client"
+  output   = "../generated/prisma-client"
 }
 
 datasource db {
   provider = "sqlserver"
-  url     = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -14,15 +14,15 @@ model User {
   lastName          String   @map("Last_Name")
   email             String   @unique @map("Email_Address")
   username          String   @unique @map("User_Name")
-  password          String  @unique   @map("Password")
-  avatarUrl            String?  @default("") @map("Avatar_Url")
+  password          String   @unique @map("Password")
+  avatarUrl         String?  @default("") @map("Avatar_Url")
   dateJoined        DateTime @default(now()) @map("Date_Joined")
-  lastProfileUpdate DateTime @updatedAt  @map("Last_Profile_Update")
+  lastProfileUpdate DateTime @updatedAt @map("Last_Profile_Update")
   isDeleted         Boolean  @default(false) @map("Is_Deleted")
 
-entries Entry[]
+  entries Entry[]
 
-@@map("Users")
+  @@map("Users")
 }
 
 model Entry {
@@ -31,7 +31,7 @@ model Entry {
   synopsis    String   @map("Synopsis")
   content     String   @map("Content")
   isDeleted   Boolean  @default(false) @map("Is_Deleted")
-  dateCreated DateTime @default(now())  @map("Date_Created")
+  dateCreated DateTime @default(now()) @map("Date_Created")
   lastUpdated DateTime @updatedAt @map("Last_Updated")
 
   user   User   @relation(fields: [userId], references: [id])
