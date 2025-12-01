@@ -1,11 +1,11 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "description": "Server side for Notely application",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.ts"
   },
   "keywords": [],
   "author": "",
