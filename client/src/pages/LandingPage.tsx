@@ -5,6 +5,7 @@ import {
   CardContent,
   CardTitle,
   CardDescription,
+  CardFooter
 } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Check, Trash2, User, Users, Feather, Clock } from 'lucide-react';
