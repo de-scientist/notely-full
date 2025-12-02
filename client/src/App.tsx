@@ -13,133 +13,138 @@ import { EditEntryPage } from './pages/EditEntryPage';
 import { TrashPage } from './pages/TrashPage';
 import { ProfilePage } from './pages/ProfilePage';
 import AppFooter from './components/AppFooter';
-
-// 👇 NEW AVATAR IMPORTS (Assuming path is correct)
 import { Avatar, AvatarImage, AvatarFallback } from "./components/ui/avatar"; 
-// 👇 ADD SONNER IMPORTS
 import { Toaster } from "./components/ui/sonner"; 
 
-// Helper function to generate initials for the AvatarFallback
+// 💜 OneNote-inspired color classes
+const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
+const PRIMARY_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700";
+const PRIMARY_HOVER_CLASS = "hover:text-fuchsia-600 dark:hover:text-fuchsia-500";
+
+
 const getInitials = (firstName: string | undefined, lastName: string | undefined): string => {
-  if (!firstName || !lastName) return 'NN';
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  if (!firstName || !lastName) return 'NN';
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 };
 
 function AppHeader() {
-  const { user } = useAuthStore();
+  const { user } = useAuthStore();
+  const isLoggedIn = !!user;
+  const avatarSrc = user?.avatar ?? undefined; 
 
-  const isLoggedIn = !!user;
-
-  // 👇 FIX: Assigning user.avatar (string | null) to a variable that handles the type conversion
-  const avatarSrc = user?.avatar ?? undefined; 
-
-  return (
-    // Improved Header Styling: better color contrast, shadows, and spacing
-    <header className="flex items-center justify-between border-b dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 shadow-sm">
-      <div className="flex items-center gap-6">
-        <Link 
-          to="/" 
-          className="text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors hover:text-primary"
-        >
-          Notely
-        </Link>
-        {isLoggedIn && (
-          // Navigation Links: Improved styling
-          <nav className="flex items-center gap-4 text-sm font-medium">
-            <Link to="/app/notes" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
-              My notes
-            </Link>
-            <Link to="/app/notes/new" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
-              New entry
-            </Link>
-            {/* Kept Profile and Trash in nav as per original logic */}
-            <Link to="/app/profile" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
-              Profile
-            </Link>
-            <Link to="/app/trash" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
-              Trash
-            </Link>
-          </nav>
-        )}
-      </div>
-      
-      <div className="flex items-center gap-4">
-        {!isLoggedIn && (
-          // Guest Links: Using ghost button for less visual weight on Login
-          <>
-            <Link to="/login">
-              <Button variant="ghost" className="text-sm dark:text-gray-300 hover:bg-accent">
-                Login
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button className="text-sm">Sign up</Button>
-            </Link>
-          </>
-        )}
-        
-        {isLoggedIn && user && (
-          // Logged-in Profile Area: Wrapped in Link for better UX
-          <Link to="/app/profile" className="flex items-center gap-3 text-sm group">
-            
-            {/* Welcome Message: Enhanced visual hierarchy */}
-            <span className="hidden text-right lg:inline">
-              <span className="block text-xs text-muted-foreground">Welcome back,</span>
-              <span className="block font-semibold text-gray-800 dark:text-gray-100 group-hover:text-primary">
-                {user.firstName}
-              </span>
-            </span>
-            
-            {/* 👇 SHADCN AVATAR IMPLEMENTATION */}
-            <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-primary transition-colors">
-              {/* FIX: Use the 'avatarSrc' variable which converts null to undefined */}
-              <AvatarImage 
-                src={avatarSrc} 
-                alt={`${user.firstName} ${user.lastName} Avatar`}
-              />
-              <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
-                {getInitials(user.firstName, user.lastName)}
-              </AvatarFallback>
-            </Avatar>
-            
-          </Link>
-        )}
-      </div>
-    </header>
-  );
+  return (
+    <header className="flex items-center justify-between border-b dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 shadow-sm">
+      <div className="flex items-center gap-6">
+        <Link 
+          to="/" 
+          // 👇 Updated text color hover
+          className={`text-xl font-bold tracking-tight text-gray-900 dark:text-white transition-colors ${PRIMARY_HOVER_CLASS}`}
+        >
+          Notely
+        </Link>
+        {isLoggedIn && (
+          <nav className="flex items-center gap-4 text-sm font-medium">
+            {/* 👇 Updated navigation link hover color */}
+            <Link to="/app/notes" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS}`}>
+              My notes
+            </Link>
+            <Link to="/app/notes/new" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS}`}>
+              New entry
+            </Link>
+            <Link to="/app/profile" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS}`}>
+              Profile
+            </Link>
+            <Link to="/app/trash" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS}`}>
+              Trash
+            </Link>
+          </nav>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-4">
+        {!isLoggedIn && (
+          <>
+            <Link to="/login">
+              <Button 
+                variant="ghost" 
+                // 👇 Updated hover text color for consistency
+                className={`text-sm dark:text-gray-300 hover:bg-accent ${PRIMARY_HOVER_CLASS}`}
+              >
+                Login
+              </Button>
+            </Link>
+            <Link to="/register">
+              {/* NOTE: This button needs custom gradient/color in the button component itself for consistency */}
+              <Button 
+                className={`text-sm ${PRIMARY_BG_CLASS} text-white`}
+              >
+                Sign up
+              </Button>
+            </Link>
+          </>
+        )}
+        
+        {isLoggedIn && user && (
+          <Link to="/app/profile" className="flex items-center gap-3 text-sm group">
+            
+            <span className="hidden text-right lg:inline">
+              <span className="block text-xs text-muted-foreground">Welcome back,</span>
+              {/* 👇 Updated text color hover */}
+              <span className={`block font-semibold text-gray-800 dark:text-gray-100 group-hover:${PRIMARY_TEXT_CLASS}`}>
+                {user.firstName}
+              </span>
+            </span>
+            
+            <Avatar 
+              // 👇 Updated border hover color
+              className={`h-9 w-9 border-2 border-transparent group-hover:border-fuchsia-600 transition-colors`}
+            >
+              <AvatarImage 
+                src={avatarSrc} 
+                alt={`${user.firstName} ${user.lastName} Avatar`}
+              />
+              {/* 👇 Updated background color for fallback initials */}
+              <AvatarFallback className={`${PRIMARY_BG_CLASS} text-primary-foreground font-bold text-xs`}>
+                {getInitials(user.firstName, user.lastName)}
+              </AvatarFallback>
+            </Avatar>
+            
+          </Link>
+        )}
+      </div>
+    </header>
+  );
 }
 
 function AppLayout() {
-  return (
-    // Added dark mode support to AppLayout background
-    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
-      <AppHeader />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+  return (
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
+      <AppHeader />
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/app/notes" element={<NotesListPage />} />
-            <Route path="/app/notes/new" element={<NewEntryPage />} />
-            <Route path="/app/notes/:id" element={<NoteDetailPage />} />
-            <Route path="/app/notes/:id/edit" element={<EditEntryPage />} />
-            <Route path="/app/trash" element={<TrashPage />} />
-            <Route path="/app/profile" element={<ProfilePage />} />
-          </Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/app/notes" element={<NotesListPage />} />
+            <Route path="/app/notes/new" element={<NewEntryPage />} />
+            <Route path="/app/notes/:id" element={<NoteDetailPage />} />
+            <Route path="/app/notes/:id/edit" element={<EditEntryPage />} />
+            <Route path="/app/trash" element={<TrashPage />} />
+            <Route path="/app/profile" element={<ProfilePage />} />
+          </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
 
-      <AppFooter />
-      {/* 👇 ADD TOASTER HERE */}
-      <Toaster richColors position="bottom-right" />
-    </div>
-  );
+      <AppFooter />
+      <Toaster richColors position="bottom-right" />
+    </div>
+  );
 }
 
 export default function App() {
-  return <AppLayout />;
+  return <AppLayout />;
 }
