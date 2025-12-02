@@ -27,7 +27,7 @@ model User {
 
 
 model Category {
-  id      String @id @default(uuid()) @map("CategoryId")
+  id      String @id  @map("CategoryId")
   name    String @unique @map("Name")
   
    entries Entry[]
@@ -40,7 +40,7 @@ model Entry {
   id          String   @id @default(uuid()) @map("EntryId")
   title       String   @map("Title")
   synopsis    String   @map("Synopsis")
-  content     String   @map("Content")
+  content     String   @map("Content") @db.Text
   isDeleted   Boolean  @default(false) @map("Is_Deleted")
   dateCreated DateTime @default(now()) @map("Date_Created")
   lastUpdated DateTime @updatedAt @map("Last_Updated")
