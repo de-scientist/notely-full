@@ -1,3 +1,10 @@
+// 💜 Define OneNote-inspired color palette variables
+// We'll use Tailwind's `fuchsia` or `purple` and adjust the shades for the primary color.
+const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
+const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
+
+// 💡 GRADIENT CLASS: Updated to a professional purple/magenta gradient
+const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 // 👇 Updated Shadcn Imports
@@ -10,16 +17,16 @@ import { RotateCcw, Loader2, Tag } from 'lucide-react';
 // Updated Entry Type
 // ------------------------------------
 interface Entry {
-  id: string;
-  title: string;
-  synopsis: string;
-  content: string;
-  isDeleted: boolean;
-  dateCreated: string;
-  lastUpdated: string;
-  category: { // Category included via API include
-      name: string;
-  }
+    id: string;
+    title: string;
+    synopsis: string;
+    content: string;
+    isDeleted: boolean;
+    dateCreated: string;
+    lastUpdated: string;
+    category: { // Category included via API include
+        name: string;
+    }
 }
 // ------------------------------------
 
@@ -47,7 +54,7 @@ export function TrashPage() {
 
   const entries = data?.entries ?? [];
 
-  if (isLoading) return <div className="mt-16 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+  if (isLoading) return <div className="mt-16 flex justify-center">{/* 👇 UPDATED: text-primary replaced with fuchsia shade */}<Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} /></div>;
 
   return (
     <div className="space-y-6">
@@ -69,7 +76,8 @@ export function TrashPage() {
               <h2 className="text-base font-semibold dark:text-white">{entry.title}</h2>
               <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400 mt-1">
                 <span className="inline-flex items-center">
-                    <Tag className="h-3 w-3 mr-1" />
+                    {/* 👇 UPDATED: Removed text-primary, relying on parent text color or a new fuchsia class */}
+                    <Tag className={`h-3 w-3 mr-1 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} />
                     {entry.category.name}
                 </span>
                 <span>| Deleted on {new Date(entry.lastUpdated).toLocaleDateString()}</span>
@@ -81,6 +89,7 @@ export function TrashPage() {
               size="sm"
               onClick={() => restoreMutation.mutate(entry.id)}
               disabled={restoreMutation.isPending}
+              className={`border-fuchsia-600 hover:bg-fuchsia-50 dark:border-fuchsia-700 dark:hover:bg-fuchsia-900/50 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} // 👇 UPDATED: Apply fuchsia styles to outline button
             >
               <RotateCcw className="h-4 w-4 mr-2" />
               Restore
