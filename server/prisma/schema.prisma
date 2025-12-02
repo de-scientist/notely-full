@@ -37,6 +37,8 @@ model Category {
   
    entries Entry[]
 
+   @@unique([name, userId])
+
   @@map("Categories")
 }
 
