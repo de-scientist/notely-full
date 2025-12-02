@@ -14,7 +14,14 @@ ALTER TABLE [dbo].[Entries] DROP CONSTRAINT [Entries_CategoryId_fkey];
 
 -- AlterTable
 ALTER TABLE [dbo].[Categories] ADD [Date_Created] DATETIME2 NOT NULL CONSTRAINT [Categories_Date_Created_df] DEFAULT CURRENT_TIMESTAMP,
-[UserId] NVARCHAR(1000) NOT NULL;
+[UserId] NVARCHAR(1000)  NULL;
+
+
+-- UPDATE (Backfill data)
+UPDATE [dbo].[Categories] SET [UserId] = 'eaffba72-f551-4973-b54d-b74f03436ba6' WHERE [UserId] IS NULL; 
+
+-- ALTER COLUMN (Make it required)
+ALTER TABLE [dbo].[Categories] ALTER COLUMN [UserId] NVARCHAR(1000) NOT NULL;
 
 -- CreateIndex
 ALTER TABLE [dbo].[Categories] ADD CONSTRAINT [Categories_Name_UserId_key] UNIQUE NONCLUSTERED ([Name], [UserId]);
