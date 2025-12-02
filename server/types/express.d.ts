@@ -1,9 +1,19 @@
-import 'express';
+import * as express from "express";
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: {
-      id: string;
-    };
+//create interface user
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
+  emailAddress: string;
+}
+
+//declare type user
+declare global {
+  namespace Express {
+    interface Request {
+      user: User;
+    }
   }
 }
