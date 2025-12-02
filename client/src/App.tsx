@@ -20,6 +20,7 @@ import { Toaster } from "./components/ui/sonner";
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const PRIMARY_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700";
 const PRIMARY_HOVER_CLASS = "hover:text-fuchsia-600 dark:hover:text-fuchsia-500";
+const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 
 
 const getInitials = (firstName: string | undefined, lastName: string | undefined): string => {
@@ -68,7 +69,7 @@ function AppHeader() {
               <Button 
                 variant="ghost" 
                 // 👇 Updated hover text color for consistency
-                className={`text-sm dark:text-gray-300 hover:bg-accent ${PRIMARY_HOVER_CLASS}`}
+                className={`h-12 px-8 text-lg font-semibold ${GRADIENT_CLASS}`}
               >
                 Login
               </Button>
