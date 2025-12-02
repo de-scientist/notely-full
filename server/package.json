@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Server side for Notely application",
   "main": "index.ts",
+  "seed": "ts-node prisma/seed.ts",
   "scripts": {
     "build": "tsc",
     "dev": "nodemon --watch src --ext ts,json --exec \"tsx src/index.ts\""
