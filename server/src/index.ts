@@ -3,11 +3,11 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 
-import { attachUser } from './middleware/auth';
-import { errorHandler } from './middleware/errorHandler';
-import authRouter from './routes/auth';
-import entriesRouter from './routes/entries';
-import userRouter from './routes/user';
+import { attachUser } from './middleware/auth.ts';
+import { errorHandler } from './middleware/errorHandler.ts';
+import authRouter from './routes/auth.ts';
+import entriesRouter from './routes/entries.ts';
+import userRouter from './routes/user.ts';
 
 dotenv.config();
 
