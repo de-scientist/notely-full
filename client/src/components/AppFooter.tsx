@@ -1,3 +1,10 @@
+// 💜 Define OneNote-inspired color palette variables
+// We'll use Tailwind's `fuchsia` or `purple` and adjust the shades for the primary color.
+const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
+const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
+
+// 💡 GRADIENT CLASS: Updated to a professional purple/magenta gradient
+const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 import { Separator } from "@/components/ui/separator";
 import { Github, Mail, Globe, Heart, BookOpen, FilePlus, User, Trash2 } from "lucide-react"; 
 
@@ -15,7 +22,8 @@ export default function AppFooter() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
                     {/* 1. Brand & Mission (Notely Focused) */}
                     <div className="col-span-2 md:col-span-1">
-                        <h2 className="text-3xl font-extrabold tracking-tight text-primary dark:text-primary-foreground">
+                        {/* 👇 UPDATED: text-primary replaced with fuchsia shade (using text-fuchsia-700) */}
+                        <h2 className={`text-3xl font-extrabold tracking-tight ${PRIMARY_COLOR_CLASS}`}>
                             Notely
                         </h2>
                         <p className="text-sm text-gray-700 dark:text-gray-400 mt-3 leading-relaxed">
@@ -25,35 +33,40 @@ export default function AppFooter() {
 
                     {/* 2. Quick Links (Application Navigation) */}
                     <div className="md:col-span-1">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 border-primary pl-2">
+                        {/* 👇 UPDATED: border-primary replaced with fuchsia shade */}
+                        <h3 className={`text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 ${PRIMARY_COLOR_CLASS.replace('text', 'border')} pl-2`}>
                             App Navigation
                         </h3>
                         <ul className="space-y-3 text-gray-700 dark:text-gray-300 text-base">
                             <li>
-                                <a href="/app/notes" className="hover:text-primary dark:hover:text-primary-foreground transition-colors flex items-center gap-2">
+                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
+                                <a href="/app/notes" className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}>
                                     <BookOpen className="h-4 w-4" /> My Notes
                                 </a>
                             </li>
                             <li>
+                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
                                 <a
                                     href="/app/notes/new"
-                                    className="hover:text-primary dark:hover:text-primary-foreground transition-colors flex items-center gap-2"
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
                                 >
                                     <FilePlus className="h-4 w-4" /> New Entry
                                 </a>
                             </li>
                             <li>
+                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
                                 <a
                                     href="/app/profile"
-                                    className="hover:text-primary dark:hover:text-primary-foreground transition-colors flex items-center gap-2"
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
                                 >
                                     <User className="h-4 w-4" /> Profile
                                 </a>
                             </li>
                             <li>
+                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
                                 <a
                                     href="/app/trash"
-                                    className="hover:text-primary dark:hover:text-primary-foreground transition-colors flex items-center gap-2"
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
                                 >
                                     <Trash2 className="h-4 w-4" /> Trash
                                 </a>
@@ -63,36 +76,43 @@ export default function AppFooter() {
 
                     {/* 3. Connect/Socials (Retained Developer Links) */}
                     <div className="md:col-span-2">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 border-primary pl-2">
+                        {/* 👇 UPDATED: border-primary replaced with fuchsia shade */}
+                        <h3 className={`text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 ${PRIMARY_COLOR_CLASS.replace('text', 'border')} pl-2`}>
                             Built by Mark Gitau
                         </h3>
                         <ul className="space-y-3 text-base text-gray-700 dark:text-gray-300">
                             <li className="flex items-center gap-3">
-                                <Github className="h-5 w-5 text-primary dark:text-primary-foreground" />
+                                {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+                                <Github className={`h-5 w-5 ${PRIMARY_COLOR_CLASS}`} />
                                 <a
                                     href="https://github.com/de-scientist"
                                     target="_blank"
-                                    className="hover:text-primary dark:hover:text-primary-foreground transition-colors font-medium"
+                                    // 👇 UPDATED: hover:text-primary replaced with fuchsia shade
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors font-medium`}
                                     rel="noopener noreferrer"
                                 >
                                     GitHub / View Source Code
                                 </a>
                             </li>
                             <li className="flex items-center gap-3">
-                                <Mail className="h-5 w-5 text-primary dark:text-primary-foreground" />
+                                {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+                                <Mail className={`h-5 w-5 ${PRIMARY_COLOR_CLASS}`} />
                                 <a
                                     href="mailto:gitaumark502@gmail.com"
-                                    className="hover:text-primary dark:hover:text-primary-foreground transition-colors font-medium"
+                                    // 👇 UPDATED: hover:text-primary replaced with fuchsia shade
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors font-medium`}
                                 >
                                     Support Email
                                 </a>
                             </li>
                             <li className="flex items-center gap-3">
-                                <Globe className="h-5 w-5 text-primary dark:text-primary-foreground" />
+                                {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+                                <Globe className={`h-5 w-5 ${PRIMARY_COLOR_CLASS}`} />
                                 <a
                                     href="https://1descientist.vercel.app/"
                                     target="_blank"
-                                    className="hover:text-primary dark:hover:text-primary-foreground transition-colors font-medium"
+                                    // 👇 UPDATED: hover:text-primary replaced with fuchsia shade
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors font-medium`}
                                     rel="noopener noreferrer"
                                 >
                                     Developer Portfolio
