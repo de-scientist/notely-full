@@ -117,45 +117,48 @@ router.get('/:id', async (req, res, next) => {
 
 // PATCH /api/entry/:id - update entry
 router.patch('/:id', async (req, res, next) => {
-  try {
-    const userId = req.user!.id;
-    const { id } = req.params;
-    // 👇 Destructure categoryId for potential update
-    const { title, synopsis, content, categoryId } = req.body; 
+    try {
+        const userId = req.user!.id;
+        const { id } = req.params;
+        const { title, synopsis, content, categoryId } = req.body; // categoryId is now optional for update
 
-    const existing = await prisma.entry.findFirst({ where: { id, userId } });
-    if (!existing || existing.isDeleted) {
-      return res.status(404).json({ message: 'Entry not found.' });
-    }
-
-    // Construct the data payload, using the existing value as a fallback
-    const updateData: Record<string, any> = {
-      title: title ?? existing.title,
-      synopsis: synopsis ?? existing.synopsis,
-      content: content ?? existing.content,
-      // 👇 Update categoryId if provided
-      categoryId: categoryId ?? existing.categoryId, 
-    };
-    
-    // Optional: Validate that the new categoryId exists if one was provided
-    if (categoryId) {
-        const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-        if (!categoryExists) {
-          return res.status(404).json({ message: 'Invalid categoryId provided for update.' });
+        // 1. Check existence and ownership (unchanged)
+        const existing = await prisma.entry.findFirst({ where: { id, userId } });
+        if (!existing || existing.isDeleted) {
+            return res.status(404).json({ message: 'Entry not found.' });
         }
+
+        // 2. Construct the update payload only with provided fields
+        const updateData: { [key: string]: any } = {};
+        if (title !== undefined) updateData.title = title;
+        if (synopsis !== undefined) updateData.synopsis = synopsis;
+        if (content !== undefined) updateData.content = content;
+        
+        // 3. Handle categoryId update and validation
+        if (categoryId !== undefined) {
+            const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
+            if (!categoryExists) {
+                return res.status(404).json({ message: 'Invalid categoryId provided for update.' });
+            }
+            updateData.categoryId = categoryId;
+        }
+
+        // 4. Check if anything was actually provided to update (optional optimization)
+        if (Object.keys(updateData).length === 0) {
+             return res.status(200).json({ entry: existing }); // Return 200 with existing entry if no changes sent
+        }
+        
+        // 5. Perform the update (unchanged)
+        const entry = await prisma.entry.update({
+            where: { id },
+            data: updateData, // Only properties that were passed in the body
+            include: entryInclude, 
+        });
+
+        return res.json({ entry });
+    } catch (err) {
+        next(err);
     }
-
-
-    const entry = await prisma.entry.update({
-      where: { id },
-      data: updateData,
-      include: entryInclude, // 👇 Include category in the response
-    });
-
-    return res.json({ entry });
-  } catch (err) {
-    next(err);
-  }
 });
 
 // ----------------------------------------------------------------------
