@@ -58,5 +58,6 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true
-  }
+  },
+  "include": ["src/**/*", "prisma/seed.ts"]
 }
