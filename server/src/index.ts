@@ -7,6 +7,7 @@ import { attachUser } from './middleware/auth.ts';
 import { errorHandler } from './middleware/errorHandler.ts';
 import authRouter from './routes/auth.ts';
 import entriesRouter from './routes/entries.ts';
+import categoriesRouter from './routes/categories.ts';
 import userRouter from './routes/user.ts';
 
 dotenv.config();
