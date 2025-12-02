@@ -2,8 +2,23 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+// 👇 NEW: Import toast from sonner
+import { toast } from 'sonner'; 
 import { api } from '../lib/api';
-import { Button, Card, Input } from '../components/ui';
+// 👇 Updated Shadcn Imports
+import { Button } from "../components/ui/button";
+import { 
+    Card,
+    CardHeader,
+    CardContent,
+    CardFooter,
+    CardTitle,
+    CardDescription,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from '../components/ui/label';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { Loader2, UserPlus, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -27,15 +42,27 @@ export function RegisterPage() {
       });
       return res.data.user;
     },
-    onSuccess: () => {
-      setSuccess('Account created successfully. You can now log in.');
+    onSuccess: (user) => {
+      setSuccess('Account created successfully. Redirecting to login...');
       setError(null);
-      setTimeout(() => navigate('/login'), 1000);
+
+      // 👇 ADD SONNER TOAST HERE
+      toast.success(`Welcome, ${user.firstName}!`, {
+        description: 'Your account has been created. Please log in.',
+      });
+
+      // Wait a moment for the success message/toast to show before redirecting
+      setTimeout(() => navigate('/login'), 1500); 
     },
     onError: (err: any) => {
       const msg = err?.response?.data?.message ?? 'Unable to register.';
       setError(msg);
       setSuccess(null);
+      
+      // 👇 Optional: Add a toast for registration error
+      toast.error('Registration Failed', {
+        description: msg,
+      });
     },
   });
 
@@ -47,51 +74,103 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="mx-auto mt-16 max-w-md">
-      <Card>
-        <h1 className="text-xl font-semibold text-gray-900">Sign up</h1>
-        <p className="mt-1 text-sm text-gray-600">Create an account to start taking notes.</p>
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">First name</label>
-              <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">Last name</label>
-              <Input value={lastName} onChange={(e) => setLastName(e.target.value)} required />
-            </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Username</label>
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} required />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Password</label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {success && <p className="text-sm text-green-600">{success}</p>}
-          <Button type="submit" disabled={mutation.isPending} className="w-full">
-            {mutation.isPending ? 'Creating account...' : 'Sign up'}
-          </Button>
-        </form>
-        <p className="mt-4 text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700">
-            Log in
-          </Link>
-        </p>
+    <div className="mx-auto mt-16 max-w-sm">
+      <Card className="shadow-2xl dark:bg-gray-800">
+        
+        {/* Card Header for Title and Description */}
+        <CardHeader className="text-center space-y-2">
+            <UserPlus className="h-8 w-8 text-primary mx-auto" />
+            <CardTitle className="text-3xl font-bold dark:text-white">Create Account</CardTitle>
+            <CardDescription className="text-muted-foreground dark:text-gray-400">
+                Sign up to start capturing your notes.
+            </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+            <form onSubmit={onSubmit} className="space-y-5">
+                {/* Name Fields */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label htmlFor="firstName">First name</Label>
+                        <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="lastName">Last name</Label>
+                        <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                    </div>
+                </div>
+                
+                {/* Username */}
+                <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+                </div>
+                
+                {/* Email */}
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                
+                {/* Password */}
+                <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        autoComplete="new-password"
+                    />
+                </div>
+                
+                {/* Feedback Messages */}
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
+                {success && (
+                    <Alert className="border-green-500 text-green-700 bg-green-50/50">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <AlertTitle>Success</AlertTitle>
+                        <AlertDescription>{success}</AlertDescription>
+                    </Alert>
+                )}
+                
+                {/* Submit Button */}
+                <Button 
+                    type="submit" 
+                    disabled={mutation.isPending} 
+                    className="w-full text-lg font-semibold"
+                >
+                    {mutation.isPending ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating account...
+                        </>
+                    ) : (
+                        'Sign up'
+                    )}
+                </Button>
+            </form>
+        </CardContent>
+        
+        {/* Card Footer for Login Link */}
+        <CardFooter className="flex justify-center border-t pt-4 dark:border-gray-700">
+            <p className="text-sm text-muted-foreground dark:text-gray-400">
+                Already have an account?{' '}
+                <Link 
+                    to="/login" 
+                    className="font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                    Log in
+                </Link>
+            </p>
+        </CardFooter>
       </Card>
     </div>
   );
