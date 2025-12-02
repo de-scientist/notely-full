@@ -1,1 +1,183 @@
-🚀 Notely: Your Secure, Feature-Rich Note-Taking CompanionNotely is a modern, user-friendly application designed to streamline personal note management. Built with smooth interactions and a focus on essential features, it aims to provide a reliable, efficient digital space for capturing, organizing, and revisiting your ideas, thoughts, and information.Note: The terms 'Note' and 'Entry' are used interchangeably throughout the application and documentation; they refer to a single written record created by the user.✨ Key Features🔐 User & SecurityComplete Authentication Flow: Secure sign-up and login using either email or username along with a hashed password.Protected Routes: Essential pages (e.g., New Entry, Profile, Trash) are secured, redirecting unauthenticated users to the login page.Password Management: Dedicated form to securely update the password, requiring validation of the current password before updating and rehashing the new one.Logout Functionality: Secure session termination.📝 Notes Management SystemCore Data Fields: Notes include Title, Synopsis, and rich Markdown Content.Markdown Rendering: Full-bodied content is displayed as formatted HTML using Markdown-to-HTML tools.Soft Deletion: Entries are not permanently deleted upon request. They are marked with an isDeleted flag, removed from the main view, and moved to the Trash.Dedicated Trash View: A separate page to view, restore, or permanently delete soft-deleted entries. Includes an informational message about automatic cleanup (e.g., "Items in trash will be permanently deleted after 30 days.").Restoration: Easily restore deleted entries from the Trash page.🖼️ User Interface & ExperienceDashboard View: Displays all active notes in a clean, visually appealing card layout with quick access actions: Read More, Edit, and Delete.CRUD Interface: Dedicated pages for seamless creating (New Entry), editing (pre-populated forms), and viewing (full detail page) entries.Dynamic Header: The interface header adapts based on user status:Logged Out: Shows only Login and Sign Up.Logged In: Shows My notes, New entry, Profile, Trash, a friendly welcome message, and the user avatar.👤 Profile & CustomizationUser Details Update: Form pre-populated with user details (First Name, Last Name, Username, Email) for easy updates.Avatar Management (Required): Users can upload a profile picture. The image is uploaded to a cloud service (e.g., Cloudinary) and the generated URL is stored.Fallback Avatar: If no profile picture is uploaded, the user's initials are displayed as a fallback avatar in the header.🛠️ Technology StackAreaComponentNotesFrontendReact, TypeScript, React QueryComponent-based, state management.BackendNode.js, Express, TypeScriptRESTful API server.DatabaseSQL Server (via Prisma)Reliable, transactional data store.ORMPrismaType-safe database access and migration management.Securitybcrypt/argon2For password hashing.File StorageCloudinary (or similar)External service for profile picture storage.🏗️ Data ModelsThe application utilizes two primary data models with a one-to-many relationship (User has many Entry records).1. User ModelFieldTypeConstraint / DefaultPurposeidUUIDPrimary Key, uuid()Unique user identifier.usernameStringRequired, UniqueLogin identifier.emailStringRequired, UniqueLogin identifier.passwordStringRequiredHashed password.firstNameStringRequiredlastNameStringRequiredavatarStringOptional (URL)URL for the profile picture (e.g., from Cloudinary).dateJoinedDateTimenow()Date the account was created.lastProfileUpdateDateTime@updatedAtLast time user details were changed.isDeletedBooleanfalseSoft delete flag for the user record.2. Entry ModelFieldTypeConstraint / RelationshipPurposeidUUIDPrimary Key, uuid()Unique entry identifier.titleStringRequiredShort descriptive heading.synopsisStringRequiredBrief summary.contentStringRequired, MarkdownFull body of the note.isDeletedBooleanfalseSoft delete flag.dateCreatedDateTimenow()lastUpdatedDateTime@updatedAtuserIdUUIDForeign Key to User.idEstablishes the one-to-many relationship.categoryIdUUIDForeign Key to Category.idLinks entry to a specific category.🧭 API EndpointsThe following RESTful API endpoints are implemented to support all application features:MethodEndpointDescriptionPOST/api/auth/registerCreate a new user account.POST/api/auth/loginAuthenticate a user (via email or username).POST/api/auth/logoutLog out the current user and destroy the session.POST/api/auth/passwordUpdate the authenticated user's password.PATCH/api/user/Update user's primary information (name, email, username) and avatar URL.GET/api/entriesGet all active notes/entries for the user.POST/api/entriesCreate a new entry.GET/api/entries/trashGet all soft-deleted entries for the user.GET/api/entries/:idGet a specific active entry by ID.PATCH/api/entries/:idUpdate an existing entry (title, synopsis, content, categoryId).PATCH/api/entries/restore/:idRestore a soft-deleted entry (set isDeleted: false).DELETE/api/entries/:idSoft-delete an entry (set isDeleted: true).GET/api/categoriesGet all categories belonging to the user.💡 Bonus Features (Future Enhancements)The following features are planned to extend Notely's functionality:Private/Public Toggle: Introduce an isPublic flag to allow users to optionally share notes.Save/Bookmark Entries: Allow users to save or bookmark entries for quick access, potentially involving a new relationship model.Pinned Entries: Implement a pinning mechanism to keep the most important notes at the top of the main listing.
+# 🚀 Notely: Your Secure, Feature-Rich Note-Taking Companion
+
+Notely is a modern, user-friendly application designed to streamline personal note management.  
+Built with smooth interactions and a focus on essential features, it offers a reliable and efficient digital space for capturing, organizing, and revisiting your ideas, thoughts, and information.
+
+**Note:** The terms *"Note"* and *"Entry"* refer to the same written record throughout the application.
+
+---
+
+## ✨ Key Features
+
+---
+
+### 🔐 User & Security
+
+- **Complete Authentication Flow:**  
+  Secure sign-up and login using either email or username along with a hashed password.
+
+- **Protected Routes:**  
+  Essential pages (New Entry, Profile, Trash) redirect unauthenticated users to the login page.
+
+- **Password Management:**  
+  Update password securely with validation of the current password and hashing of the new one.
+
+- **Logout Functionality:**  
+  Proper session termination for secure logouts.
+
+---
+
+### 📝 Notes Management System
+
+- **Core Data Fields:**  
+  Each note includes a **Title**, **Synopsis**, and rich **Markdown Content**.
+
+- **Markdown Rendering:**  
+  Content is converted to formatted HTML using Markdown-to-HTML tools.
+
+- **Soft Deletion:**  
+  Instead of permanent removal, entries are marked with `isDeleted` and moved to Trash.
+
+- **Dedicated Trash View:**  
+  A page to:
+  - View soft-deleted entries  
+  - Restore them  
+  - Permanently delete them  
+  Includes an informational message such as:  
+  *“Items in trash will be permanently deleted after 30 days.”*
+
+- **Restoration:**  
+  Soft-deleted entries can be restored easily from the Trash.
+
+---
+
+### 🖼️ User Interface & Experience
+
+- **Dashboard View:**  
+  All active notes appear in clean, visually appealing cards with actions like:
+  - Read More  
+  - Edit  
+  - Delete  
+
+- **CRUD Interface:**  
+  Seamless pages for creating new entries, editing existing ones, and viewing full details.
+
+- **Dynamic Header:**  
+  Changes based on authentication state:
+
+  - **Logged Out:**  
+    Shows Login and Sign Up.
+
+  - **Logged In:**  
+    Shows My Notes, New Entry, Profile, Trash, a welcome message, and the user avatar.
+
+---
+
+### 👤 Profile & Customization
+
+- **User Details Update:**  
+  Edit First Name, Last Name, Username, and Email via pre-filled forms.
+
+- **Avatar Management (Required):**  
+  Upload profile pictures using a cloud service (e.g., Cloudinary).  
+  The uploaded image URL is saved for use across the app.
+
+- **Fallback Avatar:**  
+  If no custom image exists, the app displays initials as a fallback avatar.
+
+---
+
+## 🛠️ Technology Stack
+
+| Area        | Component                 | Notes                                       |
+|-------------|----------------------------|---------------------------------------------|
+| Frontend    | React, TypeScript, React Query | Component-based, smooth state management |
+| Backend     | Node.js, Express, TypeScript | RESTful API server                        |
+| Database    | SQL Server (via Prisma)   | Reliable, transactional store               |
+| ORM         | Prisma                    | Type-safe queries & migrations              |
+| Security    | bcrypt / argon2           | Secure password hashing                     |
+| File Storage| Cloudinary (or similar)   | For user profile image uploads              |
+
+---
+
+## 🏗️ Data Models
+
+The app uses two primary models: **User** and **Entry**, with a one-to-many relationship (a user can have multiple entries).
+
+---
+
+### **1. User Model**
+
+| Field                  | Type       | Constraint / Default   | Purpose                                   |
+|------------------------|-----------|-------------------------|-------------------------------------------|
+| id                     | UUID      | Primary Key, `uuid()`   | Unique user identifier                    |
+| username               | String    | Required, Unique        | Login identifier                          |
+| email                  | String    | Required, Unique        | Login identifier                          |
+| password               | String    | Required                | Hashed password                           |
+| firstName              | String    | Required                | User’s first name                         |
+| lastName               | String    | Required                | User’s last name                          |
+| avatar                 | String    | Optional (URL)          | Profile picture URL                       |
+| dateJoined             | DateTime  | `now()`                 | Account creation date                     |
+| lastProfileUpdate      | DateTime  | `@updatedAt`            | Auto-updated timestamp                    |
+| isDeleted              | Boolean   | `false`                 | Soft delete flag                          |
+
+---
+
+### **2. Entry Model**
+
+| Field         | Type      | Constraint / Relationship       | Purpose                                |
+|---------------|-----------|----------------------------------|----------------------------------------|
+| id            | UUID      | Primary Key, `uuid()`            | Unique entry identifier                |
+| title         | String    | Required                         | Short heading                          |
+| synopsis      | String    | Required                         | Brief summary                          |
+| content       | String    | Required (Markdown)              | Full body of note                      |
+| isDeleted     | Boolean   | `false`                          | Soft delete flag                       |
+| dateCreated   | DateTime  | `now()`                          | Creation timestamp                     |
+| lastUpdated   | DateTime  | `@updatedAt`                     | Auto-updated timestamp                 |
+| userId        | UUID      | Foreign Key → User.id            | Owner of the entry                     |
+| categoryId    | UUID      | Foreign Key → Category.id        | Category linkage                       |
+
+---
+
+## 🧭 API Endpoints
+
+### **Authentication**
+- `POST /api/auth/register` — Register a new user  
+- `POST /api/auth/login` — Authenticate via email or username  
+- `POST /api/auth/logout` — End user session  
+- `POST /api/auth/password` — Update password for authenticated user  
+
+---
+
+### **User**
+- `PATCH /api/user/` — Update user details and avatar URL  
+
+---
+
+### **Entries (Notes)**
+- `GET /api/entries` — Get all active entries  
+- `POST /api/entries` — Create a new entry  
+- `GET /api/entries/trash` — Get soft-deleted entries  
+- `GET /api/entries/:id` — Get specific entry  
+- `PATCH /api/entries/:id` — Update entry  
+- `PATCH /api/entries/restore/:id` — Restore a soft-deleted entry  
+- `DELETE /api/entries/:id` — Soft-delete an entry  
+
+---
+
+### **Categories**
+- `GET /api/categories` — Get all categories for the user  
+
+---
+
+## 💡 Bonus Features (Future Enhancements)
+
+- **Private/Public Toggle:**  
+  Add an `isPublic` flag for optional sharing.
+
+- **Saved/Bookmarked Entries:**  
+  New table for saving important notes for fast access.
+
+- **Pinned Entries:**  
+  Allow pinning notes so they stay at the top of the dashboard.
+
