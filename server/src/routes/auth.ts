@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { prisma } from '../prisma';
-import { hashPassword, verifyPassword, isPasswordStrong } from '../utils/password';
-import { signToken } from '../utils/jwt';
-import { requireAuth } from '../middleware/auth';
+import { Prisma } from '@prisma/client';
+import { hashPassword, verifyPassword, isPasswordStrong } from '../utils/password.ts';
+import { signToken } from '../utils/jwt.ts';
+import { requireAuth } from '../middleware/auth.ts';
 
 const router = Router();
 const TOKEN_COOKIE_NAME = 'token';
