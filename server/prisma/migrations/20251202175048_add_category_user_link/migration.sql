@@ -18,6 +18,8 @@ ALTER TABLE [dbo].[Categories] ADD [Date_Created] DATETIME2 NOT NULL CONSTRAINT 
 
 UPDATE [Categories] SET [userId] = 'eaffba72-f551-4973-b54d-b74f03436ba6' WHERE [userId] IS NULL;
 
+ALTER TABLE [Categories] ALTER COLUMN [userId] NVARCHAR(1000) NOT NULL;
+
 -- CreateIndex
 ALTER TABLE [dbo].[Categories] ADD CONSTRAINT [Categories_Name_userId_key] UNIQUE NONCLUSTERED ([Name], [userId]);
 
