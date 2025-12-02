@@ -15,6 +15,8 @@ import { ProfilePage } from './pages/ProfilePage';
 
 // 👇 NEW AVATAR IMPORTS (Assuming path is correct)
 import { Avatar, AvatarImage, AvatarFallback } from "./components/ui/avatar"; 
+// 👇 ADD SONNER IMPORTS
+import { Toaster } from "./components/ui/sonner"; 
 
 // Helper function to generate initials for the AvatarFallback
 const getInitials = (firstName: string | undefined, lastName: string | undefined): string => {
@@ -26,6 +28,9 @@ function AppHeader() {
   const { user } = useAuthStore();
 
   const isLoggedIn = !!user;
+
+  // 👇 FIX: Assigning user.avatar (string | null) to a variable that handles the type conversion
+  const avatarSrc = user?.avatar ?? undefined; 
 
   return (
     // Improved Header Styling: better color contrast, shadows, and spacing
@@ -86,9 +91,9 @@ function AppHeader() {
             
             {/* 👇 SHADCN AVATAR IMPLEMENTATION */}
             <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-primary transition-colors">
-              {/* Assuming the user object property is named 'avatarUrl' or similar for image source */}
+              {/* FIX: Use the 'avatarSrc' variable which converts null to undefined */}
               <AvatarImage 
-                src={user.avatar } // Use avatarUrl if available, fall back to avatar
+                src={avatarSrc} 
                 alt={`${user.firstName} ${user.lastName} Avatar`}
               />
               <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
@@ -126,6 +131,8 @@ function AppLayout() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      {/* 👇 ADD TOASTER HERE */}
+      <Toaster richColors position="bottom-right" />
     </div>
   );
 }
