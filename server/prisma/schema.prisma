@@ -57,8 +57,8 @@ model Entry {
   userId      String
 
 
-  category    Category @relation(fields: [categoryId], references: [id])
-  categoryId  String   @map("CategoryId") 
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: NoAction) 
+  categoryId  String    @map("CategoryId")
 
   @@map("Entries")
 }
