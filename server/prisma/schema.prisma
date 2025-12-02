@@ -5,40 +5,11 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "sqlserver"
   url      = env("DATABASE_URL")
-}
-
-model User {
-  id           String   @id @default(uuid()) @map("UserId")
-  firstName    String   @map("First_Name")
-  lastName     String   @map("Last_Name")
-  emailAddress String   @unique @map("Email_Address")
-  userName     String   @unique @map("User_Name")
-  password     String   @unique @map("Password")
-  isDeleted    Boolean  @default(false) @map("Is_Deleted")
-  dateJoined   DateTime @default(now()) @map("Date_Joined")
-  lastUpdated  DateTime @updatedAt @map("Last_Updated")
-  blogs        Blog[]
-
-  @@map("Users")
-}
-
-model Blog {
-  id               String   @id @default(uuid()) @map("BlogId")
-  title            String   @map("Blog_Title")
-  synopsis         String   @map("Blog_Synopsis")
-  featuredImageUrl String   @default("null") @map("Featured_Image_Url")
-  content          String   @map("Blog_Content") @db.Text
-  isDeleted        Boolean  @default(false) @map("Is_Deleted")
-  createdAt        DateTime @default(now()) @map("Created_At")
-  lastUpdated      DateTime @updatedAt @map("Last_Updated")
-  userId           String   @map("UserID")
-  user             User     @relation(fields: [userId], references: [id])
-
-  @@map("Blogs")
 }
