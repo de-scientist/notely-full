@@ -1,3 +1,10 @@
+// 💜 Define OneNote-inspired color palette variables
+// We'll use Tailwind's `fuchsia` or `purple` and adjust the shades for the primary color.
+const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
+const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
+
+// 💡 GRADIENT CLASS: Updated to a professional purple/magenta gradient
+const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -79,7 +86,8 @@ export function RegisterPage() {
         
         {/* Card Header for Title and Description */}
         <CardHeader className="text-center space-y-2">
-            <UserPlus className="h-8 w-8 text-primary mx-auto" />
+            {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+            <UserPlus className={`h-8 w-8 ${PRIMARY_COLOR_CLASS.replace('text', 'text')} mx-auto`} />
             <CardTitle className="text-3xl font-bold dark:text-white">Create Account</CardTitle>
             <CardDescription className="text-muted-foreground dark:text-gray-400">
                 Sign up to start capturing your notes.
@@ -145,7 +153,7 @@ export function RegisterPage() {
                 <Button 
                     type="submit" 
                     disabled={mutation.isPending} 
-                    className="w-full text-lg font-semibold"
+                    className={`w-full text-lg font-semibold ${GRADIENT_CLASS}`} 
                 >
                     {mutation.isPending ? (
                         <>
@@ -165,7 +173,8 @@ export function RegisterPage() {
                 Already have an account?{' '}
                 <Link 
                     to="/login" 
-                    className="font-semibold text-primary hover:text-primary/80 transition-colors"
+                    // 👇 UPDATED: text-primary replaced with fuchsia shade
+                    className={`font-semibold ${PRIMARY_COLOR_CLASS.replace('text-fuchsia-700', 'text-fuchsia-700').replace('dark:text-fuchsia-500', 'dark:text-fuchsia-500')} hover:text-primary/80 transition-colors`}
                 >
                     Log in
                 </Link>
