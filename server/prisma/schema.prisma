@@ -32,6 +32,8 @@ model Category {
   name    String @unique @map("Name")
   dateCreated DateTime @default(now()) @map("Date_Created")
   
+  userId     String
+  user       User    @relation(fields: [userId], references: [id])
   
    entries Entry[]
 
