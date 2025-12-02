@@ -16,6 +16,8 @@ ALTER TABLE [dbo].[Entries] DROP CONSTRAINT [Entries_CategoryId_fkey];
 ALTER TABLE [dbo].[Categories] ADD [Date_Created] DATETIME2 NOT NULL CONSTRAINT [Categories_Date_Created_df] DEFAULT CURRENT_TIMESTAMP,
 [userId] NVARCHAR(1000) NULL;
 
+UPDATE [Categories] SET [userId] = 'eaffba72-f551-4973-b54d-b74f03436ba6' WHERE [userId] IS NULL;
+
 -- CreateIndex
 ALTER TABLE [dbo].[Categories] ADD CONSTRAINT [Categories_Name_userId_key] UNIQUE NONCLUSTERED ([Name], [userId]);
 
