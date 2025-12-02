@@ -11,17 +11,20 @@ import { Button } from '../components/ui/button';
 import { Check, Trash2, User, Users, Feather, Clock, Search, Folder, Zap } from 'lucide-react';
 import { Separator } from '../components/ui/separator';
 
-// 💜 Define OneNote-inspired color palette variables
-// We'll use Tailwind's `fuchsia` or `purple` and adjust the shades for the primary color.
+// 💜 Define Primary Color (Fuchsia/OneNote)
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
 const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
-
-// 💡 GRADIENT CLASS: Updated to a professional purple/magenta gradient
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 
 
+// 🟢 Define Complementary Color (Lime/Emerald)
+// Using a slightly muted Emerald/Green for a more professional, less jarring complement.
+const COMPLEMENTARY_COLOR_CLASS = "text-emerald-500 dark:text-emerald-400";
+const COMPLEMENTARY_OUTLINE_CLASS = "border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-gray-700";
+
+
 // =========================================================================
-// 💡 CONCEPTUAL COMPONENT: StatCard
+// 💡 CONCEPTUAL COMPONENT: StatCard (No change needed, uses PRIMARY)
 // =========================================================================
 interface StatCardProps {
     value: string;
@@ -53,17 +56,17 @@ export function LandingPage() {
                         <Feather className={`inline-block h-12 w-12 ${PRIMARY_COLOR_CLASS} mr-4`} />
                         Your Memory, <span className={PRIMARY_COLOR_CLASS}>Perfectly Organized.</span>
                     </h1>
+                    {/* 👇 UPDATED: Secondary emphasis text now uses the complementary color */}
                     <p className="max-w-3xl mx-auto text-xl text-gray-600 dark:text-gray-400 font-medium">
-                        **Notely** is the professional workspace designed for effortless capture and immediate retrieval. Stop searching, start finding.
+                        **Notely** is the professional workspace designed for effortless capture and immediate retrieval. Stop <span className={COMPLEMENTARY_COLOR_CLASS.replace('text', 'font-bold text')}>searching</span>, start <span className={COMPLEMENTARY_COLOR_CLASS.replace('text', 'font-bold text')}>finding</span>.
                     </p>
                 </div>
 
-                {/* 2. CALL TO ACTION - OneNote Style Gradient Button */}
+                {/* 2. CALL TO ACTION - Complementary color applied to the secondary button */}
                 <div className="flex justify-center gap-6">
                     <Link to="/register">
                         <Button 
                             size="lg" 
-                            // Applied the new purple/magenta gradient
                             className={`h-12 px-8 text-lg font-semibold ${GRADIENT_CLASS}`}
                         >
                             Start Taking Notes (It's Free)
@@ -73,9 +76,10 @@ export function LandingPage() {
                         <Button 
                             variant="outline" 
                             size="lg" 
-                            className="h-12 px-8 text-lg font-medium border-gray-300 dark:border-gray-600 hover:bg-muted/50 dark:hover:bg-gray-700 transition-colors duration-200"
+                            // 👇 UPDATED: Outline button uses the complementary color
+                           className="border-2 border-fuchsia-600 bg-gradient-to-r from-emerald-500 to-emerald-700 text-white transition-all font-semibold rounded-full px-12 py-7 text-lg dark:border-fuchsia-400 dark:hover:bg-emerald-800"
                         >
-                            Log in
+                            Log in for full experience
                         </Button>
                     </Link>
                 </div>
@@ -83,14 +87,14 @@ export function LandingPage() {
                 <Separator className="mt-16 bg-gray-300 dark:bg-gray-700" />
 
 
-                {/* 3. DYNAMIC STATS SECTION - Icons updated to new color */}
+                {/* 3. DYNAMIC STATS SECTION - No change needed, PRIMARY is the core color */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-6">
                     <StatCard value="15,487" label="Active Users" icon={Users} />
                     <StatCard value="99.9%" label="Reliable Uptime" icon={Check} />
                     <StatCard value="< 2.0s" label="Avg. Load Time" icon={Clock} />
                 </div>
                 
-                {/* 4. KEY FEATURES - Card border and icons updated to new color */}
+                {/* 4. KEY FEATURES - Card border and icons use the PRIMARY color */}
                 <Card className={`mt-16 w-full text-left shadow-2xl shadow-gray-400/20 dark:shadow-gray-900/50 border-t-4 border-t-fuchsia-600 dark:border-t-fuchsia-500`}>
                     
                     <CardHeader className="pt-8 pb-4">
@@ -111,7 +115,8 @@ export function LandingPage() {
                         <div className={`flex flex-col p-6 rounded-xl border shadow-sm transition-shadow hover:shadow-lg dark:border-gray-700 bg-white dark:bg-gray-800 space-y-2`}>
                             <Search className={`h-8 w-8 ${PRIMARY_COLOR_CLASS}`} />
                             <p className="font-bold text-lg text-gray-900 dark:text-gray-50">Instant Search</p>
-                            <p className="text-sm text-muted-foreground">Find any note in seconds with fast, full-text indexing across all your content.</p>
+                            {/* 👇 UPDATED: Highlight using complementary color */}
+                            <p className="text-sm text-muted-foreground">Find any note in seconds with fast, full-text indexing across all your <span className={COMPLEMENTARY_COLOR_CLASS.replace('text', 'font-medium text')}>content</span>.</p>
                         </div>
                         
                         {/* Feature 3: Organization */}
@@ -139,7 +144,8 @@ export function LandingPage() {
                         <div className={`flex flex-col p-6 rounded-xl border shadow-sm transition-shadow hover:shadow-lg dark:border-gray-700 bg-white dark:bg-gray-800 space-y-2`}>
                             <Zap className={`h-8 w-8 ${PRIMARY_COLOR_CLASS}`} />
                             <p className="font-bold text-lg text-gray-900 dark:text-gray-50">Blazing Fast Sync</p>
-                            <p className="text-sm text-muted-foreground">Low latency ensures your notes are instantly available across all your devices.</p>
+                            {/* 👇 UPDATED: Highlight using complementary color */}
+                            <p className="text-sm text-muted-foreground">Low latency ensures your notes are instantly available across all your <span className={COMPLEMENTARY_COLOR_CLASS.replace('text', 'font-medium text')}>devices</span>.</p>
                         </div>
 
                     </CardContent>
