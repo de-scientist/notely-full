@@ -1,3 +1,10 @@
+// 💜 Define OneNote-inspired color palette variables
+// We'll use Tailwind's `fuchsia` or `purple` and adjust the shades for the primary color.
+const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
+const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
+
+// 💡 GRADIENT CLASS: Updated to a professional purple/magenta gradient
+const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 import type { FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -151,15 +158,17 @@ export function ProfilePage() {
   if (isLoadingUserData) {
     return (
         <div className="mt-16 flex justify-center">
-            <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+            <Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} />
         </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-        <h1 className="text-3xl font-bold dark:text-white flex items-center gap-2">
-            <User className="h-7 w-7 text-primary" /> Account Settings
+        <h1 className={`text-3xl font-bold dark:text-white flex items-center gap-2`}>
+            {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+            <User className={`h-7 w-7 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} /> Account Settings
         </h1>
         <div className="grid gap-6 lg:grid-cols-[2fr,1.5fr]">
             
@@ -232,7 +241,7 @@ export function ProfilePage() {
                         <Button
                             type="submit"
                             disabled={updateProfileMutation.isPending}
-                            className="w-full sm:w-auto"
+                            className={`w-full sm:w-auto ${GRADIENT_CLASS}`} 
                         >
                             {updateProfileMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -251,8 +260,9 @@ export function ProfilePage() {
                 {/* Change Password Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-xl dark:text-white flex items-center gap-2">
-                            <KeyRound className="h-5 w-5 text-primary" /> Change Password
+                        <CardTitle className={`text-xl dark:text-white flex items-center gap-2`}>
+                            {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
+                            <KeyRound className={`h-5 w-5 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} /> Change Password
                         </CardTitle>
                         <CardDescription className="dark:text-gray-400">
                             Enter your current and new password to update your security credentials.
@@ -313,7 +323,7 @@ export function ProfilePage() {
                             <Button
                                 type="submit"
                                 disabled={updatePasswordMutation.isPending}
-                                className="w-full"
+                                className={`w-full ${GRADIENT_CLASS}`} 
                             >
                                 {updatePasswordMutation.isPending ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
