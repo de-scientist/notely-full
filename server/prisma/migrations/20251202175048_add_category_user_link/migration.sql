@@ -14,7 +14,7 @@ ALTER TABLE [dbo].[Entries] DROP CONSTRAINT [Entries_CategoryId_fkey];
 
 -- AlterTable
 ALTER TABLE [dbo].[Categories] ADD [Date_Created] DATETIME2 NOT NULL CONSTRAINT [Categories_Date_Created_df] DEFAULT CURRENT_TIMESTAMP,
-[userId] NVARCHAR(1000) NOT NULL;
+[userId] NVARCHAR(1000) NULL;
 
 -- CreateIndex
 ALTER TABLE [dbo].[Categories] ADD CONSTRAINT [Categories_Name_userId_key] UNIQUE NONCLUSTERED ([Name], [userId]);
