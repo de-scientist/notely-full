@@ -1,15 +1,60 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  
 }
 
 datasource db {
   provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                String   @id @default(uuid()) @map("UserId")
+  firstName         String   @map("First_Name")
+  lastName          String   @map("Last_Name")
+  email             String   @unique @map("Email_Address")
+  username          String   @unique @map("User_Name")
+  password          String   @unique @map("Password")
+  avatar            String?   @default("") @map("Avatar")
+  dateJoined        DateTime @default(now()) @map("Date_Joined")
+  lastProfileUpdate DateTime @updatedAt @map("Last_Profile_Update")
+  isDeleted         Boolean  @default(false) @map("Is_Deleted")
+
+  entries Entry[]
+
+  @@map("Users")
+}
+
+
+model Category {
+  id      String @id @default(uuid()) @map("CategoryId")
+  name    String @unique @map("Name")
+  
+   entries Entry[]
+
+  @@map("Categories")
+}
+
+
+model Entry {
+  id          String   @id @default(uuid()) @map("EntryId")
+  title       String   @map("Title")
+  synopsis    String   @map("Synopsis")
+  content     String   @map("Content")
+  isDeleted   Boolean  @default(false) @map("Is_Deleted")
+  dateCreated DateTime @default(now()) @map("Date_Created")
+  lastUpdated DateTime @updatedAt @map("Last_Updated")
+
+
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+
+
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String   @map("CategoryId") 
+
+  @@map("Entries")
+}
+
+
+npx prisma migrate dev --name add_categories
