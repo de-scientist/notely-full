@@ -30,6 +30,7 @@ model Category {
   id      String @id  @map("CategoryId")
   name    String @unique @map("Name")
   
+  categories Category[]
    entries Entry[]
 
   @@map("Categories")
