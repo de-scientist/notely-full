@@ -15,8 +15,8 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Separator } from '../components/ui/separator'; // 🟢 NEW: Added Separator
-import { Loader2, NotebookText, BookOpen, PenTool, FolderOpen, FilePenLine } from 'lucide-react'; // 🟢 NEW: Added more icons
+import { Separator } from '../components/ui/separator'; 
+import { Loader2, NotebookText, BookOpen, PenTool, FolderOpen, FilePenLine } from 'lucide-react'; 
 
 // 💜 OneNote-inspired color palette
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
@@ -43,7 +43,9 @@ interface Entry {
 const useCategoriesQuery = () => useQuery<{ categories: Category[] }>({
     queryKey: ['categories'],
     queryFn: async () => {
-      const res = await api.get('/categories');
+      // ⚠️ NOTE: If your server is missing the '/categories' route, this will 404.
+      // The fix is likely on the backend, not the frontend path.
+      const res = await api.get('/categories'); 
       return res.data;
     },
 });
@@ -51,7 +53,8 @@ const useCategoriesQuery = () => useQuery<{ categories: Category[] }>({
 
 
 export function EditEntryPage() {
-    const { id } = useParams<{ id: string }>();
+    // 🟢 FIX: Ensure ID is treated as string or undefined
+    const { id } = useParams<{ id: string | undefined }>();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -65,10 +68,12 @@ export function EditEntryPage() {
     const { data: entryData, isLoading: isLoadingEntry } = useQuery<{ entry: Entry }>({
         queryKey: ['entry', id],
         queryFn: async () => {
+            // Check for id availability before API call (already covered by 'enabled')
+            if (!id) throw new Error("Entry ID is missing."); 
             const res = await api.get(`/entries/${id}`);
             return res.data;
         },
-        enabled: !!id,
+        enabled: !!id, // Only run the query if 'id' exists
     });
 
     const { data: categoriesData, isLoading: isLoadingCategories } = useCategoriesQuery();
@@ -87,6 +92,7 @@ export function EditEntryPage() {
     // --- Mutation ---
     const mutation = useMutation({
         mutationFn: async () => {
+            if (!id) throw new Error("Entry ID is missing for update.");
             const res = await api.patch(`/entries/${id}`, { title, synopsis, content, categoryId });
             return res.data.entry as Entry;
         },
@@ -101,9 +107,9 @@ export function EditEntryPage() {
         },
     });
 
-    // 🟢 FIX: Form submission handling
+    // 🟢 FIX: Form submission handling (Prevents page refresh)
     const onSubmit = (e: FormEvent) => {
-        e.preventDefault(); // <-- Prevents the page refresh!
+        e.preventDefault(); 
         setError(null);
         if (!categoryId) {
             setError('Please select a category.');
@@ -114,7 +120,10 @@ export function EditEntryPage() {
 
     const isLoading = isLoadingEntry || isLoadingCategories;
 
+    // 🟢 FIX: Handle initial loading state, including missing ID
     if (isLoading || !id) return <div className="mt-16 flex justify-center"><Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_TEXT_CLASS}`} /></div>;
+    
+    // Handle error/not found state after loading
     if (!entryData?.entry) return <p className="mt-8 text-center text-sm text-muted-foreground">Entry not found or unauthorized.</p>;
 
     const currentCategoryName = categories.find(c => c.id === categoryId)?.name ?? entryData.entry.category.name ?? 'N/A';
@@ -137,7 +146,6 @@ export function EditEntryPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {/* 🟢 FIX: Form submission logic moved entirely to the form tag */}
                         <form onSubmit={onSubmit} className="space-y-6"> 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Title */}
@@ -183,9 +191,9 @@ export function EditEntryPage() {
                             
                             {error && <p className="text-sm font-medium text-red-500">{error}</p>}
                             
-                            {/* Submit Button (Moved inside form) */}
+                            {/* Submit Button */}
                             <Button 
-                                type="submit" // 🟢 FIX: Type is submit to trigger form handler
+                                type="submit" 
                                 disabled={mutation.isPending || isLoadingCategories} 
                                 className={`w-full text-lg font-semibold ${GRADIENT_BUTTON_CLASS}`}
                             >
