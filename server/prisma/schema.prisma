@@ -57,4 +57,3 @@ model Entry {
 }
 
 
-npx prisma migrate dev --name add_categories
