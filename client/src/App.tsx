@@ -76,7 +76,7 @@ function AppHeader() {
             <Link to="/register">
               {/* NOTE: This button needs custom gradient/color in the button component itself for consistency */}
               <Button 
-                className={`text-sm ${PRIMARY_BG_CLASS} text-white`}
+                className="border-2 border-fuchsia-600 bg-gradient-to-r from-emerald-500 to-emerald-700 text-white transition-all font-semibold rounded-full px-12 py-7 text-lg dark:border-fuchsia-400 dark:hover:bg-emerald-800"
               >
                 Sign up
               </Button>
