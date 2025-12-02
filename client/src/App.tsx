@@ -12,6 +12,7 @@ import { NewEntryPage } from './pages/NewEntryPage';
 import { EditEntryPage } from './pages/EditEntryPage';
 import { TrashPage } from './pages/TrashPage';
 import { ProfilePage } from './pages/ProfilePage';
+import AppFooter from './components/AppFooter';
 
 // 👇 NEW AVATAR IMPORTS (Assuming path is correct)
 import { Avatar, AvatarImage, AvatarFallback } from "./components/ui/avatar"; 
@@ -131,6 +132,8 @@ function AppLayout() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      <AppFooter />
       {/* 👇 ADD TOASTER HERE */}
       <Toaster richColors position="bottom-right" />
     </div>
