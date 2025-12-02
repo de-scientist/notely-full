@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // 👈 Added useEffect and useCallback
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query'; 
 import { api } from '../lib/api';
@@ -15,15 +15,52 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Separator } from '../components/ui/separator'; // Added Separator for UX
-import { Loader2, FilePlus2, BookOpen, PenTool, FolderOpen } from 'lucide-react'; // Added new icons
+import { Separator } from '../components/ui/separator';
+import { Loader2, FilePlus2, BookOpen, PenTool, FolderOpen } from 'lucide-react';
 
 // 💜 OneNote-inspired color palette
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
 
 // ------------------------------------
-// 🟢 FIX & FEATURE: Static Categories List
+// 🟢 PERSISTENCE HELPER HOOK
+// ------------------------------------
+/**
+ * Custom hook to store state in localStorage.
+ * @param key The key to use in localStorage.
+ * @param initialState The initial value if nothing is found in storage.
+ */
+function usePersistentState<T>(key: string, initialState: T): [T, (value: T) => void, () => void] {
+    const [state, setState] = useState<T>(() => {
+        try {
+            const storedValue = localStorage.getItem(key);
+            return storedValue ? JSON.parse(storedValue) : initialState;
+        } catch (error) {
+            console.error("Error reading localStorage key “" + key + "”:", error);
+            return initialState;
+        }
+    });
+
+    // Update localStorage whenever the state changes
+    useEffect(() => {
+        try {
+            localStorage.setItem(key, JSON.stringify(state));
+        } catch (error) {
+            console.error("Error setting localStorage key “" + key + "”:", error);
+        }
+    }, [key, state]);
+
+    // Function to clear the saved state
+    const clearState = useCallback(() => {
+        setState(initialState);
+        localStorage.removeItem(key);
+    }, [key, initialState]);
+
+    return [state, setState, clearState];
+}
+
+// ------------------------------------
+// 🟢 Static Categories List
 // ------------------------------------
 interface Category {
     id: string;
@@ -40,7 +77,6 @@ const STATIC_CATEGORIES: Category[] = [
     { id: '7', name: 'Family Affair' },
     { id: '8', name: 'Spiritual' },
     { id: '9', name: 'Study' },
-    // Default/Fallback Category
     { id: '0', name: 'Uncategorized' }, 
 ];
 // ------------------------------------
@@ -50,19 +86,30 @@ export function NewEntryPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const [title, setTitle] = useState('');
-    const [synopsis, setSynopsis] = useState('');
-    const [content, setContent] = useState('');
-    const [categoryId, setCategoryId] = useState(STATIC_CATEGORIES[0].id); // Default to the first category
+    // 🟢 FIX: Use usePersistentState for form fields
+    const [title, setTitle, clearTitle] = usePersistentState<string>('newEntryTitle', '');
+    const [synopsis, setSynopsis, clearSynopsis] = usePersistentState<string>('newEntrySynopsis', '');
+    const [content, setContent, clearContent] = usePersistentState<string>('newEntryContent', '');
+    const [categoryId, setCategoryId, clearCategoryId] = usePersistentState<string>('newEntryCategory', STATIC_CATEGORIES[0].id);
+    
     const [error, setError] = useState<string | null>(null);
+
+    // Function to clear all local storage form data
+    const clearFormData = () => {
+        clearTitle();
+        clearSynopsis();
+        clearContent();
+        clearCategoryId();
+    };
     
     const mutation = useMutation({
         mutationFn: async () => {
-            // categoryId included in post request
             const res = await api.post('/entries', { title, synopsis, content, categoryId });
             return res.data.entry as { id: string };
         },
         onSuccess: (entry) => {
+            // 🟢 ACTION: Clear persistence after successful submission
+            clearFormData(); 
             queryClient.invalidateQueries({ queryKey: ['entries'] });
             navigate(`/app/notes/${entry.id}`);
         },
@@ -72,12 +119,10 @@ export function NewEntryPage() {
         },
     });
 
-    // 🟢 FIX: Handle form submission via the form element itself
     const onSubmit = (e: FormEvent) => {
-        e.preventDefault(); // <-- Prevents the page refresh!
+        e.preventDefault();
         setError(null);
 
-        // Basic validation check (though we defaulted categoryId)
         if (!categoryId) {
             setError('Please select a category.');
             return;
@@ -85,9 +130,6 @@ export function NewEntryPage() {
         mutation.mutate();
     };
     
-    // We remove the useCategoriesQuery and isLoadingCategories check now that the data is static.
-
-
     return (
         <div className="mx-auto max-w-6xl py-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -106,24 +148,24 @@ export function NewEntryPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {/* 🟢 FIX: Form submission logic moved entirely to the form tag */}
                         <form onSubmit={onSubmit} className="space-y-6"> 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Title */}
                                 <div className="space-y-2">
                                     <Label htmlFor="title" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Title</Label>
-                                    <Input id="title" placeholder="A catchy title for your note" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                                    {/* 🟢 Persistence: value and onChange now handle persistent state */}
+                                    <Input id="title" placeholder="A catchy title for your note" value={title} onChange={(e) => setTitle(e.target.value)} required /> 
                                 </div>
                                 
                                 {/* Category Selector */}
                                 <div className="space-y-2">
                                     <Label htmlFor="category" className="flex items-center gap-2"><FolderOpen className="h-4 w-4" />Category</Label>
-                                    <Select value={categoryId} onValueChange={setCategoryId} required>
+                                    {/* 🟢 Persistence: value and onValueChange now handle persistent state */}
+                                    <Select value={categoryId} onValueChange={setCategoryId} required> 
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select a category" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {/* 🟢 FEATURE: Map static categories */}
                                             {STATIC_CATEGORIES.map((cat: Category) => ( 
                                                 <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                                             ))}
@@ -135,12 +177,14 @@ export function NewEntryPage() {
                             {/* Synopsis */}
                             <div className="space-y-2">
                                 <Label htmlFor="synopsis" className="flex items-center gap-2"><PenTool className="h-4 w-4" />Synopsis (Short summary)</Label>
-                                <Input id="synopsis" placeholder="Briefly summarize your content" value={synopsis} onChange={(e) => setSynopsis(e.target.value)} required />
+                                {/* 🟢 Persistence: value and onChange now handle persistent state */}
+                                <Input id="synopsis" placeholder="Briefly summarize your content" value={synopsis} onChange={(e) => setSynopsis(e.target.value)} required /> 
                             </div>
 
                             {/* Content */}
                             <div className="space-y-2">
                                 <Label htmlFor="content" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Content (Supports Markdown)</Label>
+                                {/* 🟢 Persistence: value and onChange now handle persistent state */}
                                 <Textarea
                                     id="content"
                                     rows={15}
@@ -153,7 +197,7 @@ export function NewEntryPage() {
                             
                             {error && <p className="text-sm font-medium text-red-500">{error}</p>}
 
-                            {/* Submit Button (Moved inside form) */}
+                            {/* Submit Button */}
                             <Button 
                                 type="submit" 
                                 disabled={mutation.isPending} 
@@ -171,7 +215,7 @@ export function NewEntryPage() {
                 </Card>
 
                 {/* ======================================= */}
-                {/* RIGHT COLUMN: PREVIEW CARD (UX Improvement) */}
+                {/* RIGHT COLUMN: PREVIEW CARD */}
                 {/* ======================================= */}
                 <Card className="dark:bg-gray-800 lg:sticky lg:top-8 h-fit">
                     <CardHeader>
@@ -187,7 +231,6 @@ export function NewEntryPage() {
                         </p>
                         <Separator />
                         
-                        {/* 🟢 FEATURE: Markdown Renderer */}
                         <div className="prose dark:prose-invert max-w-none text-gray-900 dark:text-gray-50 p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 min-h-[300px]">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                 {content || "Write some content in the editor to see the live Markdown preview here."}
