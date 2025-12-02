@@ -3,7 +3,33 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { Button, Card, Input, Textarea } from '../components/ui';
+// 👇 Updated Shadcn Imports
+import { Button } from "../components/ui/button";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from '../components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Loader2, FilePlus2 } from 'lucide-react';
+
+
+// ------------------------------------
+// Mock Types & Query (Re-used from EditEntryPage)
+// ------------------------------------
+interface Category {
+  id: string;
+  name: string;
+}
+
+const useCategoriesQuery = () => useQuery<{ categories: Category[] }>({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await api.get('/categories');
+      return res.data;
+    },
+});
+// ------------------------------------
+
 
 export function NewEntryPage() {
   const navigate = useNavigate();
@@ -12,11 +38,17 @@ export function NewEntryPage() {
   const [title, setTitle] = useState('');
   const [synopsis, setSynopsis] = useState('');
   const [content, setContent] = useState('');
+  const [categoryId, setCategoryId] = useState(''); // New state for categoryId
   const [error, setError] = useState<string | null>(null);
+  
+  // Fetch Categories Data
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategoriesQuery();
+  const categories = categoriesData?.categories ?? [];
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await api.post('/entries', { title, synopsis, content });
+      // 👇 categoryId included in post request
+      const res = await api.post('/entries', { title, synopsis, content, categoryId });
       return res.data.entry as { id: string };
     },
     onSuccess: (entry) => {
@@ -32,36 +64,87 @@ export function NewEntryPage() {
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!categoryId) {
+        setError('Please select a category.');
+        return;
+    }
     mutation.mutate();
   };
+  
+  if (isLoadingCategories) return <div className="mt-16 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
+
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Card>
-        <h1 className="text-xl font-semibold text-gray-900">New entry</h1>
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Title</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Synopsis</label>
-            <Input value={synopsis} onChange={(e) => setSynopsis(e.target.value)} required />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Content (markdown)</label>
-            <Textarea
-              rows={10}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" disabled={mutation.isPending} className="w-full">
-            {mutation.isPending ? 'Saving...' : 'Create entry'}
-          </Button>
-        </form>
+    <div className="mx-auto max-w-3xl">
+      <Card className="dark:bg-gray-800">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold dark:text-white">
+            <FilePlus2 className="inline h-6 w-6 mr-2 text-primary" />
+            Create New Entry
+          </CardTitle>
+          <CardDescription className="dark:text-gray-400">Start capturing your new idea, plan, or thought.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={onSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Title */}
+                <div>
+                    <Label htmlFor="title">Title</Label>
+                    <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                </div>
+                
+                {/* Category Selector */}
+                <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={categoryId} onValueChange={setCategoryId} required>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categories.map(cat => (
+                                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {categories.length === 0 && (
+                        <p className="text-xs text-orange-500 mt-1">No categories found. Please create one.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Synopsis */}
+            <div>
+              <Label htmlFor="synopsis">Synopsis</Label>
+              <Input id="synopsis" value={synopsis} onChange={(e) => setSynopsis(e.target.value)} required />
+            </div>
+
+            {/* Content */}
+            <div>
+              <Label htmlFor="content">Content (Supports Markdown)</Label>
+              <Textarea
+                id="content"
+                rows={15}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                required
+              />
+            </div>
+            
+            {error && <p className="text-sm font-medium text-red-500">{error}</p>}
+          </form>
+        </CardContent>
+        <CardFooter>
+            <Button 
+                type="submit" 
+                onClick={onSubmit}
+                disabled={mutation.isPending || !categories.length} 
+                className="w-full text-lg font-semibold"
+            >
+                {mutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : 'Create Entry'}
+            </Button>
+        </CardFooter>
       </Card>
     </div>
   );
