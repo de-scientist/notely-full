@@ -1,7 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { Button, Card } from '../components/ui';
+// 👇 Updated Shadcn Imports
+import { Button } from "../components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/card";
+import { RotateCcw, Loader2, Tag } from 'lucide-react';
 
+
+// ------------------------------------
+// Updated Entry Type
+// ------------------------------------
 interface Entry {
   id: string;
   title: string;
@@ -10,7 +17,12 @@ interface Entry {
   isDeleted: boolean;
   dateCreated: string;
   lastUpdated: string;
+  category: { // Category included via API include
+      name: string;
+  }
 }
+// ------------------------------------
+
 
 export function TrashPage() {
   const queryClient = useQueryClient();
@@ -35,32 +47,42 @@ export function TrashPage() {
 
   const entries = data?.entries ?? [];
 
-  if (isLoading) return <div>Loading trash...</div>;
+  if (isLoading) return <div className="mt-16 flex justify-center"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-xl font-semibold text-gray-900">Trash</h1>
-        <p className="text-sm text-gray-600">
+        <h1 className="text-3xl font-bold dark:text-white">Trash</h1>
+        <p className="text-sm text-muted-foreground">
           Items in trash will be permanently deleted after 30 days.
         </p>
       </div>
 
       {!entries.length && (
-        <p className="mt-4 text-sm text-gray-600">nothing to show here</p>
+        <p className="mt-4 text-lg text-muted-foreground">The trash bin is empty.</p>
       )}
 
       <div className="space-y-3">
         {entries.map((entry) => (
-          <Card key={entry.id} className="flex items-center justify-between">
+          <Card key={entry.id} className="flex items-center justify-between p-4 dark:bg-gray-800">
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">{entry.title}</h2>
-              <p className="text-xs text-gray-600">{entry.synopsis}</p>
+              <h2 className="text-base font-semibold dark:text-white">{entry.title}</h2>
+              <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400 mt-1">
+                <span className="inline-flex items-center">
+                    <Tag className="h-3 w-3 mr-1" />
+                    {entry.category.name}
+                </span>
+                <span>| Deleted on {new Date(entry.lastUpdated).toLocaleDateString()}</span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{entry.synopsis}</p>
             </div>
             <Button
-              className="px-3 py-1 text-xs"
+              variant="outline"
+              size="sm"
               onClick={() => restoreMutation.mutate(entry.id)}
+              disabled={restoreMutation.isPending}
             >
+              <RotateCcw className="h-4 w-4 mr-2" />
               Restore
             </Button>
           </Card>
