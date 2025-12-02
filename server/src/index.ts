@@ -28,6 +28,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/entries', entriesRouter);
+app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
 
 app.use(errorHandler);
