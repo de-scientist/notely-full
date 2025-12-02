@@ -88,7 +88,7 @@ function AppHeader() {
             <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-primary transition-colors">
               {/* Assuming the user object property is named 'avatarUrl' or similar for image source */}
               <AvatarImage 
-                src={user.avatarUrl || user.avatar} // Use avatarUrl if available, fall back to avatar
+                src={user.avatar } // Use avatarUrl if available, fall back to avatar
                 alt={`${user.firstName} ${user.lastName} Avatar`}
               />
               <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
