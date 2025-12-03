@@ -12,8 +12,8 @@ import userRouter from './routes/user.ts';
 
 // Import new routes
 import publicEntriesRouter from './routes/public.ts';
-import smartCategoryRouter from './routes/smartCategory.ts';
-import permanentDeleteRouter from './routes/permanentDelete.ts';
+//import smartCategoryRouter from './routes/smartCategory.ts';
+//import permanentDeleteRouter from './routes/permanentDelete.ts';
 
 dotenv.config();
 
@@ -39,8 +39,8 @@ app.use('/api/user', userRouter);
 
 // New routes
 app.use('/api/entries/public', publicEntriesRouter);
-app.use('/api/categories/suggest', smartCategoryRouter);
-app.use('/api/entries/permanent', permanentDeleteRouter);
+//app.use('/api/categories/suggest', smartCategoryRouter);
+//app.use('/api/entries/permanent', permanentDeleteRouter);
 
 app.use(errorHandler);
 
