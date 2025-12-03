@@ -1,64 +1,42 @@
 import { PrismaClient } from '@prisma/client';
-
 const prisma = new PrismaClient();
 
-// Default global categories
 const globalCategories = [
-  { 
-    name: 'Ideas', 
-    description: 'Raw sparks of thought', 
-    isDefault: true,
-    suggestedKeywords: ['brainstorm', 'concept', 'note', 'thought'] 
-  },
-  { 
-    name: 'Work', 
-    description: 'Professional notes and tasks', 
-    isDefault: true,
-    suggestedKeywords: ['project', 'task', 'deadline', 'meeting'] 
-  },
-  { 
-    name: 'Personal', 
-    description: 'Life, heart, reflection', 
-    isDefault: true,
-    suggestedKeywords: ['journal', 'reflection', 'life', 'habit'] 
-  },
-  { 
-    name: 'Projects', 
-    description: 'Builds, drafts, blueprints', 
-    isDefault: true,
-    suggestedKeywords: ['build', 'prototype', 'draft', 'design'] 
-  },
+  { name: 'Ideas', description: 'Raw sparks of thought', isDefault: true, suggestedKeywords: ['brainstorm','concept','note','thought'] },
+  { name: 'Work', description: 'Professional notes and tasks', isDefault: true, suggestedKeywords: ['project','task','deadline','meeting'] },
+  { name: 'Personal', description: 'Life, heart, reflection', isDefault: true, suggestedKeywords: ['journal','reflection','life','habit'] },
+  { name: 'Projects', description: 'Builds, drafts, blueprints', isDefault: true, suggestedKeywords: ['build','prototype','draft','design'] },
 ];
 
 async function main() {
   console.log('Seeding global categories...');
 
   for (const cat of globalCategories) {
-    await prisma.category.upsert({
-      where: {
-        name_userId: { name: cat.name, userId: null as string | null  }, // empty string for global
-      },
-      update: {},
-      create: {
-        name: cat.name,
-        description: cat.description,
-        isDefault: cat.isDefault,
-        suggestedKeywords: JSON.stringify(cat.suggestedKeywords), // store as JSON string
-        userId: null as string | null,
-      },
+    // ⭐ FIX: match ONLY by name for global categories
+    const exists = await prisma.category.findFirst({
+      where: { name: cat.name, userId: null },
     });
+
+    if (!exists) {
+      await prisma.category.create({
+        data: {
+          name: cat.name,
+          description: cat.description,
+          isDefault: cat.isDefault,
+          suggestedKeywords: JSON.stringify(cat.suggestedKeywords),
+          userId: null,
+        },
+      });
+    }
   }
 
   console.log('Linking global categories to users...');
-
   const users = await prisma.user.findMany();
 
   for (const user of users) {
     for (const cat of globalCategories) {
       const exists = await prisma.category.findUnique({
-        where: {
-          name_userId: { name: cat.name, userId: user.id },
-        },
+        where: { name_userId: { name: cat.name, userId: user.id } },
       });
 
       if (!exists) {
@@ -79,10 +57,5 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(async () => { await prisma.$disconnect(); });
