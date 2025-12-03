@@ -1,3 +1,10 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { requireAuth } from './../middleware/auth.ts';
+
+const prisma = new PrismaClient();
+const router = Router();
+
 app.get("/api/explore", async (req, res) => {
   try {
     const notes = await prisma.entry.findMany({
