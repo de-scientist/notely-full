@@ -22,12 +22,8 @@ const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 
 // Persistent form state hook
 function usePersistentState<T>(key: string, initialState: T): [T, (value: T) => void, () => void] {
     const [state, setState] = useState<T>(() => {
-        try {
-            const stored = localStorage.getItem(key);
-            return stored ? JSON.parse(stored) : initialState;
-        } catch {
-            return initialState;
-        }
+        try { const stored = localStorage.getItem(key); return stored ? JSON.parse(stored) : initialState; } 
+        catch { return initialState; }
     });
     useEffect(() => { localStorage.setItem(key, JSON.stringify(state)); }, [key, state]);
     const clearState = useCallback(() => { setState(initialState); localStorage.removeItem(key); }, [initialState]);
@@ -40,7 +36,6 @@ export function NewEntryPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    // Fetch categories dynamically
     const { data, isLoading: isLoadingCategories } = useQuery<{ categories: Category[] }>(
         ['categories'], async () => (await api.get('/categories')).data
     );
@@ -74,34 +69,44 @@ export function NewEntryPage() {
         mutation.mutate();
     };
 
+    const isPreviewReady = !!title || !!synopsis || !!content;
+
     return (
-        <div className="mx-auto max-w-6xl py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="mx-auto max-w-6xl py-8 px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
                 {/* FORM */}
-                <Card className="dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all">
+                <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold dark:text-white flex items-center gap-2">
                             <FilePlus2 className={`${PRIMARY_TEXT_CLASS} h-6 w-6`} />
                             Create New Entry
                         </CardTitle>
-                        <CardDescription className="dark:text-gray-400">Start capturing your idea, plan, or thought.</CardDescription>
+                        <CardDescription className="dark:text-gray-400">
+                            Start capturing your idea, plan, or thought.
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={onSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                                 <div className="space-y-2">
                                     <Label htmlFor="title" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Title</Label>
                                     <Input id="title" placeholder="Catchy title" value={title} onChange={e => setTitle(e.target.value)} required />
                                 </div>
+
                                 <div className="space-y-2">
                                     <Label htmlFor="category" className="flex items-center gap-2"><FolderOpen className="h-4 w-4" />Category</Label>
                                     <Select value={categoryId} onValueChange={setCategoryId} disabled={isLoadingCategories}>
-                                        <SelectTrigger className="w-full"><SelectValue placeholder="Select category" /></SelectTrigger>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder={isLoadingCategories ? "Loading..." : "Select category"} />
+                                        </SelectTrigger>
                                         <SelectContent>
                                             {categories.map(cat => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                 </div>
+
                             </div>
 
                             <div className="space-y-2">
@@ -124,23 +129,36 @@ export function NewEntryPage() {
                 </Card>
 
                 {/* LIVE PREVIEW */}
-                <Card className="dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all lg:sticky lg:top-8">
+                <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all lg:sticky lg:top-8">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold dark:text-white">Live Preview</CardTitle>
                         <CardDescription className="dark:text-gray-400">Markdown rendering of your note.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <h2 className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS} break-words`}>{title || 'Untitled Entry'}</h2>
-                        <p className="text-sm text-muted-foreground italic">{synopsis || 'No synopsis provided.'}</p>
-                        <Separator />
-                        <div className="prose dark:prose-invert max-w-none p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 min-h-[300px]">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || 'Write content to preview here.'}</ReactMarkdown>
-                        </div>
+                        {isLoadingCategories ? (
+                            <div className="flex justify-center items-center h-64">
+                                <Loader2 className="h-8 w-8 animate-spin text-fuchsia-600 dark:text-fuchsia-500" />
+                            </div>
+                        ) : (
+                            <>
+                                <h2 className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS} break-words`}>
+                                    {title || 'Untitled Entry'}
+                                </h2>
+                                <p className="text-sm text-muted-foreground italic">{synopsis || 'No synopsis provided.'}</p>
+                                <Separator />
+                                <div className={`prose dark:prose-invert max-w-none p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 min-h-[300px] ${!isPreviewReady ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {content || 'Write content to preview here.'}
+                                    </ReactMarkdown>
+                                </div>
+                            </>
+                        )}
                     </CardContent>
                     <CardFooter className="text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4">
                         Category: {categories.find(c => c.id === categoryId)?.name ?? 'N/A'}
                     </CardFooter>
                 </Card>
+
             </div>
         </div>
     );
