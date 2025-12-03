@@ -1,3 +1,10 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { requireAuth } from '../../middleware/auth.ts';
+
+const prisma = new PrismaClient();
+const router = Router();
+
 // POST /api/categories/reset
 router.post('/reset', requireAuth, async (req, res) => {
   const userId = req.user!.id;
