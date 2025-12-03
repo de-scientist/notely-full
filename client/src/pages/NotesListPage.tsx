@@ -134,6 +134,7 @@ export function NotesListPage() {
           />
         </div>
         <select
+          aria-label="Filter by category"
           className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -141,6 +142,7 @@ export function NotesListPage() {
           {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
         </select>
         <select
+        aria-label="Sort notes"
           className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
