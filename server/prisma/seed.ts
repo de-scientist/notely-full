@@ -3,12 +3,32 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Default global categories
+// Default global categories with suggested keywords for AI suggestions
 const globalCategories = [
-  { name: 'Ideas', description: 'Raw sparks of thought', isDefault: true },
-  { name: 'Work', description: 'Professional notes and tasks', isDefault: true },
-  { name: 'Personal', description: 'Life, heart, reflection', isDefault: true },
-  { name: 'Projects', description: 'Builds, drafts, blueprints', isDefault: true },
+  { 
+    name: 'Ideas', 
+    description: 'Raw sparks of thought', 
+    isDefault: true,
+    suggestedKeywords: ['brainstorm', 'concept', 'note', 'thought'] 
+  },
+  { 
+    name: 'Work', 
+    description: 'Professional notes and tasks', 
+    isDefault: true,
+    suggestedKeywords: ['project', 'task', 'deadline', 'meeting'] 
+  },
+  { 
+    name: 'Personal', 
+    description: 'Life, heart, reflection', 
+    isDefault: true,
+    suggestedKeywords: ['journal', 'reflection', 'life', 'habit'] 
+  },
+  { 
+    name: 'Projects', 
+    description: 'Builds, drafts, blueprints', 
+    isDefault: true,
+    suggestedKeywords: ['build', 'prototype', 'draft', 'design'] 
+  },
 ];
 
 async function main() {
@@ -25,6 +45,7 @@ async function main() {
         name: cat.name,
         description: cat.description,
         isDefault: cat.isDefault,
+        suggestedKeywords: cat.suggestedKeywords,
         userId: null,
       },
     });
@@ -51,6 +72,7 @@ async function main() {
             name: cat.name,
             description: cat.description,
             isDefault: cat.isDefault,
+            suggestedKeywords: cat.suggestedKeywords,
             userId: user.id,
           },
         });
