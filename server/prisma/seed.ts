@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Default categories for every user
-const defaultCategories = [
+// Default global categories
+const globalCategories = [
   { name: 'Ideas', description: 'Raw sparks of thought', isDefault: true },
   { name: 'Work', description: 'Professional notes and tasks', isDefault: true },
   { name: 'Personal', description: 'Life, heart, reflection', isDefault: true },
@@ -12,26 +12,49 @@ const defaultCategories = [
 ];
 
 async function main() {
-  console.log('Start seeding categories...');
+  console.log('Seeding global categories...');
 
-  // Fetch all users
+  // 1️⃣ Upsert global categories (userId: null)
+  for (const cat of globalCategories) {
+    await prisma.category.upsert({
+      where: {
+        name_userId: { name: cat.name, userId: null },
+      },
+      update: {},
+      create: {
+        name: cat.name,
+        description: cat.description,
+        isDefault: cat.isDefault,
+        userId: null,
+      },
+    });
+  }
+
+  console.log('Linking global categories to users...');
+
+  // 2️⃣ Fetch all users
   const users = await prisma.user.findMany();
 
   for (const user of users) {
-    for (const cat of defaultCategories) {
-      await prisma.category.upsert({
+    for (const cat of globalCategories) {
+      // Check if user already has this category
+      const exists = await prisma.category.findUnique({
         where: {
-          name_userId: {
-            name: cat.name,
-            userId: user.id,
-          },
-        },
-        update: {},
-        create: {
-          ...cat,
-          userId: user.id,
+          name_userId: { name: cat.name, userId: user.id },
         },
       });
+
+      if (!exists) {
+        // Create a copy of global category for this user
+        await prisma.category.create({
+          data: {
+            name: cat.name,
+            description: cat.description,
+            isDefault: cat.isDefault,
+            userId: user.id,
+          },
+        });
+      }
     }
   }
 
