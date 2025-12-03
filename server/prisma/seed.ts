@@ -38,7 +38,7 @@ async function main() {
   for (const cat of globalCategories) {
     await prisma.category.upsert({
       where: {
-        name_userId: { name: cat.name, userId: null },
+        name_userId: { name: cat.name, userId: null as string | null },
       },
       update: {},
       create: {
