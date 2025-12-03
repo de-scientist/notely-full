@@ -81,11 +81,6 @@ export function NotesListPage() {
 
   const categories = ['All', ...Array.from(new Set(entries.map(e => e.category.name)))];
 
-  // Recent notes (3 latest)
-  const recentNotes = [...entries]
-    .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
-    .slice(0, 3);
-
   if (isLoading) return (
     <div className="mt-16 flex justify-center">
       <Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_TEXT_CLASS}`} />
@@ -120,7 +115,7 @@ export function NotesListPage() {
         </Button>
       </div>
 
-      {/* Stats & Controls */}
+      {/* Stats & Search */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex gap-4 items-center">
           <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
@@ -171,36 +166,7 @@ export function NotesListPage() {
         </div>
       </div>
 
-      {/* Recent Notes */}
-      <div>
-        <h2 className="text-xl font-semibold dark:text-white mb-2">Recent Notes</h2>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {recentNotes.map(note => (
-            <Card key={note.id} className="min-w-[220px] flex-shrink-0 shadow-md dark:bg-gray-800">
-              <CardHeader>
-                <CardTitle className="text-lg dark:text-white">{note.title}</CardTitle>
-                <Badge className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}>
-                  {note.category.name}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {note.synopsis || note.content.slice(0, 80) + (note.content.length > 80 ? '...' : '')}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Link to={`/app/notes/${note.id}`}>
-                  <Button size="sm" className={SOLID_BUTTON_CLASS}>
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Notes Grid */}
+      {/* Notes Grid with Quick Actions */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="notes-grid">
           {(provided) => (
@@ -216,7 +182,7 @@ export function NotesListPage() {
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      className={`flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all 
+                      className={`group flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all 
                         ${snapshot.isDragging ? 'scale-[1.02] shadow-lg z-10' : 'hover:scale-[1.01]'}
                         ${entry.pinned ? 'border-2 border-fuchsia-500' : ''}
                       `}
@@ -231,12 +197,31 @@ export function NotesListPage() {
                             <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
                           </Badge>
                         </div>
-                        <div className="cursor-pointer" onClick={() => togglePinMutation.mutate({ id: entry.id, pinned: !entry.pinned })}>
-                          {entry.pinned ? (
-                            <Star className="h-5 w-5 text-yellow-400" />
-                          ) : (
-                            <StarOff className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                          )}
+
+                        {/* Quick Actions Hover Menu */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="p-1"
+                            onClick={() => togglePinMutation.mutate({ id: entry.id, pinned: !entry.pinned })}
+                          >
+                            {entry.pinned ? <Star className="h-4 w-4 text-yellow-400" /> : <StarOff className="h-4 w-4 text-gray-400 dark:text-gray-500" />}
+                          </Button>
+                          <Link to={`/app/notes/${entry.id}/edit`}>
+                            <Button size="sm" variant="outline" className="p-1">
+                              <FilePenLine className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="p-1"
+                            onClick={() => deleteMutation.mutate(entry.id)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </CardHeader>
 
@@ -250,26 +235,11 @@ export function NotesListPage() {
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           Updated {new Date(entry.lastUpdated).toLocaleDateString()}
                         </span>
-                        <div className="flex gap-2">
-                          <Link to={`/app/notes/${entry.id}/edit`}>
-                            <Button variant="outline" size="sm" className="transition-transform hover:scale-105">
-                              <FilePenLine className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link to={`/app/notes/${entry.id}`}>
-                            <Button size="sm" className={SOLID_BUTTON_CLASS}>
-                              <ArrowRight className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteMutation.mutate(entry.id)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
+                        <Link to={`/app/notes/${entry.id}`}>
+                          <Button size="sm" className={SOLID_BUTTON_CLASS}>
+                            <ArrowRight className="h-4 w-4" />
                           </Button>
-                        </div>
+                        </Link>
                       </CardFooter>
                     </Card>
                   )}
