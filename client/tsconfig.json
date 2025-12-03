@@ -6,6 +6,7 @@
   ],
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "react-jsx", // or "react-jsxdev" if using dev
     "paths": {
       "@/*": ["./src/*"]
     },
