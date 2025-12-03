@@ -108,24 +108,38 @@ export function LandingPage() {
                     </p>
                 </div>
 
-                {/* CTA */}
-                <div className="flex justify-center gap-6 reveal hover-lift">
-                    <Link to="/register">
-                        <Button size="lg" className={`h-12 px-8 text-lg font-semibold ${GRADIENT_CLASS}`}>
-                            Start Taking Notes (It's Free)
-                        </Button>
-                    </Link>
+               {/* CTA */}
+<div className="flex justify-center gap-6 reveal hover-lift">
 
-                    <Link to="/login">
-                        <Button 
-                            variant="outline"
-                            size="lg"
-                            className="border-2 border-fuchsia-600 bg-gradient-to-r from-emerald-500 to-emerald-700 text-white transition-all font-semibold rounded-full px-12 py-7 text-lg dark:border-fuchsia-400 dark:hover:bg-emerald-800"
-                        >
-                            Log in for full experience
-                        </Button>
-                    </Link>
-                </div>
+    <Link to="/register">
+        <Button 
+            size="lg" 
+            className={`h-12 px-8 text-lg font-semibold flex items-center gap-3 ${GRADIENT_CLASS}`}
+        >
+            <PencilLine className="w-5 h-5" />
+            Start Taking Notes (It's Free)
+        </Button>
+    </Link>
+
+    <Link to="/login">
+        <Button
+            variant="outline"
+            size="lg"
+            className="
+                flex items-center gap-3
+                border-2 border-fuchsia-600 
+                bg-gradient-to-r from-emerald-500 to-emerald-700 
+                text-white transition-all font-semibold 
+                rounded-full px-12 py-7 text-lg 
+                dark:border-fuchsia-400 dark:hover:bg-emerald-800
+            "
+        >
+            <LogIn className="w-5 h-5" />
+            Log in for full experience
+        </Button>
+    </Link>
+
+</div>
 
                 <Separator className="mt-16 bg-gray-300 dark:bg-gray-700 reveal" />
 
