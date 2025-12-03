@@ -5,19 +5,19 @@ import { requireAuth } from './../middleware/auth.ts';
 const prisma = new PrismaClient();
 const router = Router();
 
-app.get("/api/explore", async (req, res) => {
+router.get('/explore', async (req, res, next) => {
   try {
     const notes = await prisma.entry.findMany({
       where: { isPublic: true },
       orderBy: [
-        { pinned: "desc" },   // pinned notes first
-        { createdAt: "desc" } // newest next
+        { pinned: 'desc' },    // pinned notes first
+        { createdAt: 'desc' }, // then newest
       ],
-      include: entryInclude,
+      include: { category: { select: { id: true, name: true } } },
     });
 
-    res.json(notes);
+    res.json({ notes });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch public notes" });
+    next(err);
   }
 });
