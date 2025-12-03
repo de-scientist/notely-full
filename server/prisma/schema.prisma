@@ -28,7 +28,7 @@ categories Category[]
 
 
 model Category {
-  id      String @id  @map("CategoryId")
+  id      String @default(uuid())  @map("CategoryId")
   name    String @unique @map("Name")
   dateCreated DateTime @default(now()) @map("Date_Created")
   
