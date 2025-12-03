@@ -36,7 +36,7 @@ async function main() {
   for (const cat of globalCategories) {
     await prisma.category.upsert({
       where: {
-        name_userId: { name: cat.name, userId: '' }, // empty string for global
+        name_userId: { name: cat.name, userId: null as string | null  }, // empty string for global
       },
       update: {},
       create: {
@@ -44,7 +44,7 @@ async function main() {
         description: cat.description,
         isDefault: cat.isDefault,
         suggestedKeywords: JSON.stringify(cat.suggestedKeywords), // store as JSON string
-        userId: null,
+        userId: null as string | null,
       },
     });
   }

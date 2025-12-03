@@ -46,7 +46,10 @@ model Category {
 
   entries          Entry[]
 
-  @@unique([name, userId])
+  // Add two separate constraints:
+  @@unique([name, userId])               // for user-specific categories
+  @@unique([name])                       // for global categories
+
   @@map("Categories")
 }
 
