@@ -10,6 +10,11 @@ import entriesRouter from './routes/entries.ts';
 import categoriesRouter from './routes/categories.ts';
 import userRouter from './routes/user.ts';
 
+// Import new routes
+import publicEntriesRouter from './routes/publicEntries.ts';
+import smartCategoryRouter from './routes/smartCategory.ts';
+import permanentDeleteRouter from './routes/permanentDelete.ts';
+
 dotenv.config();
 
 const app = express();
@@ -26,10 +31,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Existing routes
 app.use('/api/auth', authRouter);
 app.use('/api/entries', entriesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
+
+// New routes
+app.use('/api/entries/public', publicEntriesRouter);
+app.use('/api/categories/suggest', smartCategoryRouter);
+app.use('/api/entries/permanent', permanentDeleteRouter);
 
 app.use(errorHandler);
 
