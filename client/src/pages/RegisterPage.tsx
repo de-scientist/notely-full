@@ -153,42 +153,44 @@ export function RegisterPage() {
                             </div>
                         ))}
 
-                        {/* Password Fields */}
-                        {[
-                            { label: 'Password', value: password, setter: setPassword, show: showPassword, toggle: setShowPassword },
-                            { label: 'Confirm Password', value: confirmPassword, setter: setConfirmPassword, show: showConfirmPassword, toggle: setShowConfirmPassword }
-                        ].map(({ label, value, setter, show, toggle }, idx) => (
-                            <div key={idx} className="space-y-2">
-                                <Label className="flex items-center gap-2 hover:text-fuchsia-700 transition-colors cursor-text">
-                                    <Lock className="h-4 w-4" />
-                                    {label}
-                                </Label>
-                                <div className="relative">
-                                    <Input
-                                        type={show ? 'text' : 'password'}
-                                        value={value}
-                                        onChange={(e) => setter(e.target.value)}
-                                        required
-                                        placeholder={`Enter your ${label.toLowerCase()}`}
-                                        className="pr-12 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-600 dark:focus:ring-fuchsia-500/50 transition rounded-lg shadow-sm"
-                                    />
-                                    <button
-                                        type="button"
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-fuchsia-200 dark:hover:bg-fuchsia-700/30 transition"
-                                        onClick={() => toggle(!show)}
-                                        aria-label={show ? "Hide password" : "Show password"}
-                                    >
-                                        {show ? <EyeOff className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400" /> : <Eye className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400" />}
-                                    </button>
-                                </div>
-                                {passwordsMismatch && idx === 1 && (
-                                    <p className="text-sm text-red-500 flex items-center gap-1 animate-pulse">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        Passwords do not match.
-                                    </p>
-                                )}
-                            </div>
-                        ))}
+                       {/* Password Fields */}
+{[
+    { label: 'Password', value: password, setter: setPassword, show: showPassword, toggle: setShowPassword },
+    { label: 'Confirm Password', value: confirmPassword, setter: setConfirmPassword, show: showConfirmPassword, toggle: setShowConfirmPassword }
+].map(({ label, value, setter, show, toggle }, idx) => (
+    <div key={idx} className="space-y-2">
+        <Label className="flex items-center gap-2 hover:text-fuchsia-700 transition-colors cursor-text">
+            <Lock className="h-4 w-4" />
+            {label}
+        </Label>
+        <div className="relative">
+            <Input
+                type={show ? 'text' : 'password'}
+                value={value}
+                onChange={(e) => setter(e.target.value)}
+                required
+                placeholder={`Enter your ${label.toLowerCase()}`}
+                className="pr-10 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-600 dark:focus:ring-fuchsia-500/50 transition rounded-lg shadow-sm"
+            />
+            {/* 👁️ Only the eye icon, clickable */}
+            <div
+                onClick={() => toggle(!show)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer hover:text-fuchsia-700 dark:hover:text-fuchsia-400 transition-transform active:scale-95"
+                title={show ? 'Hide password' : 'Show password'}
+            >
+                {show ? <EyeOff className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400" /> 
+                     : <Eye className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400" />}
+            </div>
+        </div>
+        {passwordsMismatch && idx === 1 && (
+            <p className="text-sm text-red-500 flex items-center gap-1 animate-pulse">
+                <AlertTriangle className="h-4 w-4" />
+                Passwords do not match.
+            </p>
+        )}
+    </div>
+))}
+
 
                         {/* Alerts */}
                         {error && (
