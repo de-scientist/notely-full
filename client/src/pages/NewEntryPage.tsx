@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
@@ -7,7 +7,7 @@ import { api } from '../lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { motion, AnimatePresence } from 'framer-motion'; // <-- Animation
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -70,6 +70,20 @@ export function NewEntryPage() {
         mutation.mutate();
     };
 
+    const editorRef = useRef<HTMLTextAreaElement>(null);
+    const previewRef = useRef<HTMLDivElement>(null);
+
+    // Scroll-sync function
+    const handleScroll = () => {
+        if (!editorRef.current || !previewRef.current) return;
+
+        const editor = editorRef.current;
+        const preview = previewRef.current;
+
+        const scrollRatio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
+        preview.scrollTop = scrollRatio * (preview.scrollHeight - preview.clientHeight);
+    };
+
     const isPreviewReady = !!title || !!synopsis || !!content;
 
     return (
@@ -90,12 +104,10 @@ export function NewEntryPage() {
                     <CardContent>
                         <form onSubmit={onSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                                 <div className="space-y-2">
                                     <Label htmlFor="title" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Title</Label>
                                     <Input id="title" placeholder="Catchy title" value={title} onChange={e => setTitle(e.target.value)} required />
                                 </div>
-
                                 <div className="space-y-2">
                                     <Label htmlFor="category" className="flex items-center gap-2"><FolderOpen className="h-4 w-4" />Category</Label>
                                     <Select value={categoryId} onValueChange={setCategoryId} disabled={isLoadingCategories}>
@@ -107,7 +119,6 @@ export function NewEntryPage() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-
                             </div>
 
                             <div className="space-y-2">
@@ -117,7 +128,16 @@ export function NewEntryPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="content" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Content (Markdown)</Label>
-                                <Textarea id="content" rows={15} placeholder="Start writing..." value={content} onChange={e => setContent(e.target.value)} required />
+                                <Textarea 
+                                    id="content" 
+                                    rows={15} 
+                                    placeholder="Start writing..." 
+                                    value={content} 
+                                    onChange={e => setContent(e.target.value)} 
+                                    ref={editorRef} 
+                                    onScroll={handleScroll} 
+                                    required 
+                                />
                             </div>
 
                             {error && <p className="text-sm font-medium text-red-500">{error}</p>}
@@ -135,13 +155,16 @@ export function NewEntryPage() {
                         <CardTitle className="text-2xl font-bold dark:text-white">Live Preview</CardTitle>
                         <CardDescription className="dark:text-gray-400">Markdown rendering of your note.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 overflow-hidden">
                         {isLoadingCategories ? (
                             <div className="flex justify-center items-center h-64">
                                 <Loader2 className="h-8 w-8 animate-spin text-fuchsia-600 dark:text-fuchsia-500" />
                             </div>
                         ) : (
-                            <>
+                            <div 
+                                className={`overflow-y-auto max-h-[600px]`} 
+                                ref={previewRef}
+                            >
                                 <AnimatePresence mode="popLayout">
                                     <motion.div 
                                         key={title + synopsis + content} 
@@ -162,7 +185,7 @@ export function NewEntryPage() {
                                         </div>
                                     </motion.div>
                                 </AnimatePresence>
-                            </>
+                            </div>
                         )}
                     </CardContent>
                     <CardFooter className="text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4">
