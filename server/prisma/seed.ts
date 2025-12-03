@@ -44,7 +44,7 @@ async function main() {
         description: cat.description,
         isDefault: cat.isDefault,
         suggestedKeywords: JSON.stringify(cat.suggestedKeywords), // store as JSON string
-        userId: '',
+        userId: null,
       },
     });
   }
