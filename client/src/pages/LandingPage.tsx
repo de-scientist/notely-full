@@ -111,31 +111,47 @@ export function LandingPage() {
                {/* CTA */}
 <div className="flex justify-center gap-6 reveal hover-lift">
 
+    {/* Register Button */}
     <Link to="/register">
-        <Button 
-            size="lg" 
-            className={`h-12 px-8 text-lg font-semibold flex items-center gap-3 ${GRADIENT_CLASS}`}
+        <Button
+            size="lg"
+            className={`
+                h-12 px-8 text-lg font-semibold flex items-center gap-3 group
+                transition-all duration-200 active:scale-[0.97]
+                ${GRADIENT_CLASS}
+            `}
         >
-            <PencilLine className="w-5 h-5" />
-            Start Taking Notes (It's Free)
+            <PencilLine 
+                className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1" 
+            />
+            <span className="transition-opacity duration-300 group-hover:opacity-90">
+                Start Taking Notes (It's Free)
+            </span>
         </Button>
     </Link>
 
+    {/* Login Button */}
     <Link to="/login">
         <Button
             variant="outline"
             size="lg"
             className="
-                flex items-center gap-3
-                border-2 border-fuchsia-600 
-                bg-gradient-to-r from-emerald-500 to-emerald-700 
-                text-white transition-all font-semibold 
-                rounded-full px-12 py-7 text-lg 
+                flex items-center gap-3 group
+                border-2 border-fuchsia-600
+                bg-gradient-to-r from-emerald-500 to-emerald-700
+                text-white transition-all duration-200 font-semibold
+                rounded-full px-12 py-7 text-lg
                 dark:border-fuchsia-400 dark:hover:bg-emerald-800
+                active:scale-[0.97]
+                shadow-md hover:shadow-lg
             "
         >
-            <LogIn className="w-5 h-5" />
-            Log in for full experience
+            <LogIn 
+                className="w-5 h-5 transform transition-all duration-300 group-hover:-translate-x-1" 
+            />
+            <span className="transition-opacity duration-300 group-hover:opacity-90">
+                Log in for full experience
+            </span>
         </Button>
     </Link>
 
