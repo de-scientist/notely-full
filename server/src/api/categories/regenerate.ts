@@ -1,3 +1,7 @@
+import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { requireAuth } from '../middleware/auth.ts';
+
 // POST /api/categories/regenerate
 router.post('/regenerate', requireAuth, async (req, res, next) => {
   try {
