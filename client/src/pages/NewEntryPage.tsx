@@ -1,5 +1,5 @@
 import type { FormEvent } from 'react';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
@@ -32,6 +32,12 @@ function usePersistentState<T>(key: string, initialState: T): [T, (value: T) => 
 }
 
 interface Category { id: string; name: string; }
+
+interface TOCItem {
+    text: string;
+    level: number;
+    id: string;
+}
 
 export function NewEntryPage() {
     const navigate = useNavigate();
@@ -76,22 +82,47 @@ export function NewEntryPage() {
     // Scroll-sync function
     const handleScroll = () => {
         if (!editorRef.current || !previewRef.current) return;
-
         const editor = editorRef.current;
         const preview = previewRef.current;
-
         const scrollRatio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight);
         preview.scrollTop = scrollRatio * (preview.scrollHeight - preview.clientHeight);
     };
 
+    // Word, character count & reading time
+    const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+    const charCount = content.length;
+    const readingTime = Math.ceil(wordCount / 200); // 200 wpm average reading speed
+
     const isPreviewReady = !!title || !!synopsis || !!content;
+
+    // Generate Table of Contents from Markdown headers
+    const toc: TOCItem[] = useMemo(() => {
+        const lines = content.split('\n');
+        const headers: TOCItem[] = [];
+        lines.forEach(line => {
+            const match = line.match(/^(#{1,3})\s+(.*)/);
+            if (match) {
+                const level = match[1].length;
+                const text = match[2].trim();
+                const id = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+                headers.push({ text, level, id });
+            }
+        });
+        return headers;
+    }, [content]);
+
+    // Scroll to TOC section on click
+    const scrollToHeader = (id: string) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 
     return (
         <div className="mx-auto max-w-6xl py-8 px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* FORM */}
-                <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all">
+                <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all col-span-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold dark:text-white flex items-center gap-2">
                             <FilePlus2 className={`${PRIMARY_TEXT_CLASS} h-6 w-6`} />
@@ -138,6 +169,9 @@ export function NewEntryPage() {
                                     onScroll={handleScroll} 
                                     required 
                                 />
+                                <p className="text-sm text-muted-foreground">
+                                    {wordCount} words • {charCount} characters • {readingTime} min read
+                                </p>
                             </div>
 
                             {error && <p className="text-sm font-medium text-red-500">{error}</p>}
@@ -149,50 +183,46 @@ export function NewEntryPage() {
                     </CardContent>
                 </Card>
 
-                {/* LIVE PREVIEW */}
-                <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all lg:sticky lg:top-8">
-                    <CardHeader>
-                        <CardTitle className="text-2xl font-bold dark:text-white">Live Preview</CardTitle>
-                        <CardDescription className="dark:text-gray-400">Markdown rendering of your note.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4 overflow-hidden">
-                        {isLoadingCategories ? (
-                            <div className="flex justify-center items-center h-64">
-                                <Loader2 className="h-8 w-8 animate-spin text-fuchsia-600 dark:text-fuchsia-500" />
+                {/* LIVE PREVIEW + TOC */}
+                <div className="flex flex-col gap-4 sticky top-8">
+                    <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all">
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold dark:text-white">Live Preview</CardTitle>
+                            <CardDescription className="dark:text-gray-400">Markdown rendering of your note.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4 overflow-hidden max-h-[600px]">
+                            <div ref={previewRef} className="overflow-y-auto max-h-[550px] px-2">
+                                <ReactMarkdown 
+                                    remarkPlugins={[remarkGfm]} 
+                                    components={{
+                                        h1: ({node, ...props}) => <h1 id={props.children?.toString().toLowerCase().replace(/\s+/g, '-')} {...props} className="text-3xl font-bold mt-6 mb-2" />,
+                                        h2: ({node, ...props}) => <h2 id={props.children?.toString().toLowerCase().replace(/\s+/g, '-')} {...props} className="text-2xl font-bold mt-4 mb-2" />,
+                                        h3: ({node, ...props}) => <h3 id={props.children?.toString().toLowerCase().replace(/\s+/g, '-')} {...props} className="text-xl font-semibold mt-3 mb-2" />
+                                    }}
+                                >
+                                    {content || 'Write content to preview here.'}
+                                </ReactMarkdown>
                             </div>
-                        ) : (
-                            <div 
-                                className={`overflow-y-auto max-h-[600px]`} 
-                                ref={previewRef}
-                            >
-                                <AnimatePresence mode="popLayout">
-                                    <motion.div 
-                                        key={title + synopsis + content} 
-                                        initial={{ opacity: 0, y: 10 }} 
-                                        animate={{ opacity: 1, y: 0 }} 
-                                        exit={{ opacity: 0, y: -10 }} 
-                                        transition={{ duration: 0.25 }}
-                                    >
-                                        <h2 className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS} break-words`}>
-                                            {title || 'Untitled Entry'}
-                                        </h2>
-                                        <p className="text-sm text-muted-foreground italic">{synopsis || 'No synopsis provided.'}</p>
-                                        <Separator />
-                                        <div className={`prose dark:prose-invert max-w-none p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 min-h-[300px] ${!isPreviewReady ? 'opacity-50 pointer-events-none' : ''}`}>
-                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                                {content || 'Write content to preview here.'}
-                                            </ReactMarkdown>
-                                        </div>
-                                    </motion.div>
-                                </AnimatePresence>
-                            </div>
-                        )}
-                    </CardContent>
-                    <CardFooter className="text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-4">
-                        Category: {categories.find(c => c.id === categoryId)?.name ?? 'N/A'}
-                    </CardFooter>
-                </Card>
+                        </CardContent>
+                        <CardFooter className="text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-2">
+                            Category: {categories.find(c => c.id === categoryId)?.name ?? 'N/A'}
+                        </CardFooter>
+                    </Card>
 
+                    {toc.length > 0 && (
+                        <Card className="dark:bg-gray-800 shadow-md p-4 max-h-[300px] overflow-y-auto">
+                            <h3 className="text-lg font-bold dark:text-white mb-2">Table of Contents</h3>
+                            <ul className="space-y-1">
+                                {toc.map(item => (
+                                    <li key={item.id} className={`pl-${(item.level - 1) * 4} cursor-pointer text-sm text-fuchsia-600 hover:underline`}
+                                        onClick={() => scrollToHeader(item.id)}>
+                                        {item.text}
+                                    </li>
+                                ))}
+                            </ul>
+                        </Card>
+                    )}
+                </div>
             </div>
         </div>
     );
