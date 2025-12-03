@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
@@ -15,49 +14,54 @@ model User {
   email             String   @unique @map("Email_Address")
   username          String   @unique @map("User_Name")
   password          String   @unique @map("Password")
-  avatar            String?   @default("") @map("Avatar")
+  avatar            String?  @default("") @map("Avatar")
   dateJoined        DateTime @default(now()) @map("Date_Joined")
   lastProfileUpdate DateTime @updatedAt @map("Last_Profile_Update")
   isDeleted         Boolean  @default(false) @map("Is_Deleted")
 
-categories Category[]
-  entries Entry[]
+  categories Category[]
+  entries    Entry[]
 
   @@map("Users")
 }
 
-
 model Category {
-  id        String   @id @default(uuid())
-  name      String
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid()) @map("CategoryId")
+  name        String   @map("Name")
+  userId      String?  @map("UserId")
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now()) @map("Date_Created")
+  updatedAt   DateTime @updatedAt @map("Last_Updated")
 
-  // For public/global categories
-  isDefault Boolean @default(false)
+  // Public / default / global flags
+  isDefault   Boolean  @default(false) @map("Is_Default")
 
-  entries   Entry[]
+  // AI-related optional weight or score for suggestions
+  aiScore     Float?   @map("AI_Score")
+
+  entries     Entry[]
+
+  @@unique([name, userId])
+  @@map("Categories")
 }
 
 model Entry {
-  id          String   @id @default(uuid())
-  title       String
-  synopsis    String
-  content     String
-  isDeleted   Boolean  @default(false)
-  pinned      Boolean  @default(false)
-  isPublic    Boolean  @default(false)
-  userId      String
+  id          String   @id @default(uuid()) @map("EntryId")
+  title       String   @map("Title")
+  synopsis    String   @map("Synopsis")
+  content     String   @map("Content") @db.Text
+  isDeleted   Boolean  @default(false) @map("Is_Deleted")
+  pinned      Boolean  @default(false) @map("Pinned")
+  isPublic    Boolean  @default(false) @map("Is_Public")
+
+  userId      String   @map("UserId")
   user        User     @relation(fields: [userId], references: [id])
 
-  categoryId  String
+  categoryId  String   @map("CategoryId")
   category    Category @relation(fields: [categoryId], references: [id])
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @map("Date_Created")
+  updatedAt   DateTime @updatedAt @map("Last_Updated")
+
+  @@map("Entries")
 }
-
-
-
