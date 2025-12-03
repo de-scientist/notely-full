@@ -78,13 +78,8 @@ export function NotesListPage() {
     });
   };
 
-  const selectAll = () => {
-    setSelectedNotes(new Set(entries.map(e => e.id)));
-  };
-
-  const deselectAll = () => {
-    setSelectedNotes(new Set());
-  };
+  const selectAll = () => setSelectedNotes(new Set(entries.map(e => e.id)));
+  const deselectAll = () => setSelectedNotes(new Set());
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -106,6 +101,9 @@ export function NotesListPage() {
       if (sortOption === 'alphabetical') return a.title.localeCompare(b.title);
       return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
     });
+
+  const pinnedNotes = filteredEntries.filter(e => e.pinned);
+  const regularNotes = filteredEntries.filter(e => !e.pinned);
 
   const categories = ['All', ...Array.from(new Set(entries.map(e => e.category.name)))];
 
@@ -141,42 +139,16 @@ export function NotesListPage() {
         </Button>
       </div>
 
-      {/* Stats & Bulk Actions */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div className="flex gap-4 items-center">
-          <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
-            <p className="text-sm text-gray-600 dark:text-gray-300">Total Notes</p>
-            <p className="text-xl font-semibold dark:text-white">{entries.length}</p>
-          </div>
-          <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
-            <p className="text-sm text-gray-600 dark:text-gray-300">Pinned Notes</p>
-            <p className="text-xl font-semibold dark:text-white">{entries.filter(e => e.pinned).length}</p>
-          </div>
-          <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
-            <p className="text-sm text-gray-600 dark:text-gray-300">Categories</p>
-            <p className="text-xl font-semibold dark:text-white">{categories.length - 1}</p>
-          </div>
+      {/* Stats */}
+      <div className="flex gap-4">
+        <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
+          <p className="text-sm text-gray-600 dark:text-gray-300">Total Notes</p>
+          <p className="text-xl font-semibold dark:text-white">{entries.length}</p>
         </div>
-
-        {selectedNotes.size > 0 && (
-          <div className="flex gap-2 flex-wrap">
-            <Button className="bg-green-500 hover:bg-green-600 text-white" onClick={() => bulkPin(true)}>Pin Selected</Button>
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-white" onClick={() => bulkPin(false)}>Unpin Selected</Button>
-            <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={bulkDelete}>Delete Selected</Button>
-            <select
-              className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-              onChange={(e) => bulkMoveCategory(e.target.value)}
-              defaultValue=""
-            >
-              <option value="" disabled>Move to Category</option>
-              {categories.filter(c => c !== 'All').map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            <Button className="bg-fuchsia-400 hover:bg-fuchsia-500 text-white" onClick={selectAll}>Select All</Button>
-            <Button className="bg-gray-400 hover:bg-gray-500 text-white" onClick={deselectAll}>Deselect All</Button>
-          </div>
-        )}
+        <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
+          <p className="text-sm text-gray-600 dark:text-gray-300">Pinned Notes</p>
+          <p className="text-xl font-semibold dark:text-white">{entries.filter(e => e.pinned).length}</p>
+        </div>
       </div>
 
       {/* Search & Filters */}
@@ -211,7 +183,46 @@ export function NotesListPage() {
         </select>
       </div>
 
-      {/* Notes Grid */}
+      {/* Pinned Notes Section */}
+      {pinnedNotes.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold dark:text-white mb-2">📌 Pinned Notes</h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {pinnedNotes.map((entry, index) => (
+              <Card key={entry.id} className="flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all border-2 border-fuchsia-500">
+                <CardHeader className="pb-3 flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
+                    <Badge
+                      variant="secondary"
+                      className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}
+                    >
+                      <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 pb-3">
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {entry.synopsis || entry.content.slice(0, 120) + (entry.content.length > 120 ? '...' : '')}
+                  </p>
+                </CardContent>
+                <CardFooter className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Updated {new Date(entry.lastUpdated).toLocaleDateString()}
+                  </span>
+                  <Link to={`/app/notes/${entry.id}`}>
+                    <Button size="sm" className={SOLID_BUTTON_CLASS}>
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Regular Notes Grid */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="notes-grid">
           {(provided) => (
@@ -220,7 +231,7 @@ export function NotesListPage() {
               {...provided.droppableProps}
               ref={provided.innerRef}
             >
-              {filteredEntries.length ? filteredEntries.map((entry, index) => (
+              {regularNotes.length ? regularNotes.map((entry, index) => (
                 <Draggable key={entry.id} draggableId={entry.id} index={index}>
                   {(provided, snapshot) => (
                     <Card
@@ -229,60 +240,19 @@ export function NotesListPage() {
                       {...provided.dragHandleProps}
                       className={`group flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all 
                         ${snapshot.isDragging ? 'scale-[1.02] shadow-lg z-10' : 'hover:scale-[1.01]'}
-                        ${entry.pinned ? 'border-2 border-fuchsia-500' : ''}
                       `}
                     >
                       <CardHeader className="pb-3 flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedNotes.has(entry.id)}
-                            onChange={() => toggleSelectNote(entry.id)}
-                            className="accent-fuchsia-500"
-                          />
-                          <div>
-                            <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
-                            <Badge
-                              variant="secondary"
-                              className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}
-                            >
-                              <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="p-1"
-                            onClick={() => togglePinMutation.mutate({ id: entry.id, pinned: !entry.pinned })}
-                          >
-                            {entry.pinned ? <Star className="h-4 w-4 text-yellow-400" /> : <StarOff className="h-4 w-4 text-gray-400 dark:text-gray-500" />}
-                          </Button>
-                          <Link to={`/app/notes/${entry.id}/edit`}>
-                            <Button size="sm" variant="outline" className="p-1">
-                              <FilePenLine className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="p-1"
-                            onClick={() => deleteMutation.mutate(entry.id)}
-                            disabled={deleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
+                        <div className="cursor-pointer" onClick={() => togglePinMutation.mutate({ id: entry.id, pinned: !entry.pinned })}>
+                          {entry.pinned ? <Star className="h-5 w-5 text-yellow-400" /> : <StarOff className="h-5 w-5 text-gray-400 dark:text-gray-500" />}
                         </div>
                       </CardHeader>
-
                       <CardContent className="pt-0 pb-3">
                         <p className="text-sm text-muted-foreground line-clamp-3">
                           {entry.synopsis || entry.content.slice(0, 120) + (entry.content.length > 120 ? '...' : '')}
                         </p>
                       </CardContent>
-
                       <CardFooter className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           Updated {new Date(entry.lastUpdated).toLocaleDateString()}
