@@ -1,9 +1,8 @@
-// server/prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Default global categories with suggested keywords for AI suggestions
+// Default global categories
 const globalCategories = [
   { 
     name: 'Ideas', 
@@ -34,31 +33,28 @@ const globalCategories = [
 async function main() {
   console.log('Seeding global categories...');
 
-  // 1️⃣ Upsert global categories (userId: null)
   for (const cat of globalCategories) {
     await prisma.category.upsert({
       where: {
-        name_userId: { name: cat.name, userId: null as string | null },
+        name_userId: { name: cat.name, userId: '' }, // empty string for global
       },
       update: {},
       create: {
         name: cat.name,
         description: cat.description,
         isDefault: cat.isDefault,
-        suggestedKeywords: cat.suggestedKeywords,
-        userId: null,
+        suggestedKeywords: JSON.stringify(cat.suggestedKeywords), // store as JSON string
+        userId: '',
       },
     });
   }
 
   console.log('Linking global categories to users...');
 
-  // 2️⃣ Fetch all users
   const users = await prisma.user.findMany();
 
   for (const user of users) {
     for (const cat of globalCategories) {
-      // Check if user already has this category
       const exists = await prisma.category.findUnique({
         where: {
           name_userId: { name: cat.name, userId: user.id },
@@ -66,13 +62,12 @@ async function main() {
       });
 
       if (!exists) {
-        // Create a copy of global category for this user
         await prisma.category.create({
           data: {
             name: cat.name,
             description: cat.description,
             isDefault: cat.isDefault,
-            suggestedKeywords: cat.suggestedKeywords,
+            suggestedKeywords: JSON.stringify(cat.suggestedKeywords),
             userId: user.id,
           },
         });

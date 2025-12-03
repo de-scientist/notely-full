@@ -39,6 +39,8 @@ model Category {
   // AI-related optional weight or score for suggestions
   aiScore          Float?   @map("AI_Score")
 
+   description       String?  @map("Description")
+
   // AI keywords to help auto-suggest categories
   suggestedKeywords String?  @map("Suggested_Keywords")
 
