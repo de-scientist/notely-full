@@ -10,29 +10,23 @@ router.use(requireAuth);
 // --- Helper for Prisma includes (to avoid repetition) ---
 const entryInclude = {
   category: {
-    select: { id: true, name: true }, // Only return the category id and name
+    select: { id: true, name: true },
   },
 };
 
 // ----------------------------------------------------------------------
-
 // POST /api/entries - create a new entry
 router.post('/', async (req, res, next) => {
   try {
     const userId = req.user!.id;
-    // 👇 Destructure categoryId from the request body
-    const { title, synopsis, content, categoryId } = req.body;
+    const { title, synopsis, content, categoryId, pinned, isPublic } = req.body;
 
     if (!title || !synopsis || !content || !categoryId) {
-      // 👇 categoryId is now required for creation
       return res.status(400).json({ message: 'Title, synopsis, content, and categoryId are required.' });
     }
 
-    // Optional: Validate that the categoryId exists
     const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-    if (!categoryExists) {
-      return res.status(404).json({ message: 'Invalid categoryId provided.' });
-    }
+    if (!categoryExists) return res.status(404).json({ message: 'Invalid categoryId provided.' });
 
     const entry = await prisma.entry.create({
       data: {
@@ -40,10 +34,11 @@ router.post('/', async (req, res, next) => {
         synopsis,
         content,
         userId,
-        // 👇 Add categoryId to the create data
         categoryId,
+        pinned: pinned ?? false,
+        isPublic: isPublic ?? false,
       },
-      include: entryInclude, // 👇 Include category in the response
+      include: entryInclude,
     });
 
     return res.status(201).json({ entry });
@@ -53,7 +48,6 @@ router.post('/', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-
 // GET /api/entries - get all non-deleted entries for user
 router.get('/', async (req, res, next) => {
   try {
@@ -61,8 +55,11 @@ router.get('/', async (req, res, next) => {
 
     const entries = await prisma.entry.findMany({
       where: { userId, isDeleted: false },
-      orderBy: { dateCreated: 'desc' },
-      include: entryInclude, // 👇 Include category in the response
+      orderBy: [
+        { pinned: 'desc' }, // Pinned entries first
+        { createdAt: 'desc' },
+      ],
+      include: entryInclude,
     });
 
     return res.json({ entries });
@@ -72,16 +69,15 @@ router.get('/', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-
-// GET /api/entries/trash - get deleted entries
+// GET /api/entries/trash
 router.get('/trash', async (req, res, next) => {
   try {
     const userId = req.user!.id;
 
     const entries = await prisma.entry.findMany({
       where: { userId, isDeleted: true },
-      orderBy: { dateCreated: 'desc' },
-      include: entryInclude, // 👇 Include category in the response
+      orderBy: { createdAt: 'desc' },
+      include: entryInclude,
     });
 
     return res.json({ entries });
@@ -91,8 +87,7 @@ router.get('/trash', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-
-// GET /api/entry/:id - get a specific non-deleted entry
+// GET /api/entry/:id
 router.get('/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -100,12 +95,10 @@ router.get('/:id', async (req, res, next) => {
 
     const entry = await prisma.entry.findFirst({
       where: { id, userId, isDeleted: false },
-      include: entryInclude, // 👇 Include category in the response
+      include: entryInclude,
     });
 
-    if (!entry) {
-      return res.status(404).json({ message: 'Entry not found.' });
-    }
+    if (!entry) return res.status(404).json({ message: 'Entry not found.' });
 
     return res.json({ entry });
   } catch (err) {
@@ -114,73 +107,56 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-
-// PATCH /api/entry/:id - update entry
+// PATCH /api/entry/:id
 router.patch('/:id', async (req, res, next) => {
-    try {
-        const userId = req.user!.id;
-        const { id } = req.params;
-        const { title, synopsis, content, categoryId } = req.body; // categoryId is now optional for update
+  try {
+    const userId = req.user!.id;
+    const { id } = req.params;
+    const { title, synopsis, content, categoryId, pinned, isPublic } = req.body;
 
-        // 1. Check existence and ownership (unchanged)
-        const existing = await prisma.entry.findFirst({ where: { id, userId } });
-        if (!existing || existing.isDeleted) {
-            return res.status(404).json({ message: 'Entry not found.' });
-        }
+    const existing = await prisma.entry.findFirst({ where: { id, userId } });
+    if (!existing || existing.isDeleted) return res.status(404).json({ message: 'Entry not found.' });
 
-        // 2. Construct the update payload only with provided fields
-        const updateData: { [key: string]: any } = {};
-        if (title !== undefined) updateData.title = title;
-        if (synopsis !== undefined) updateData.synopsis = synopsis;
-        if (content !== undefined) updateData.content = content;
-        
-        // 3. Handle categoryId update and validation
-        if (categoryId !== undefined) {
-            const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-            if (!categoryExists) {
-                return res.status(404).json({ message: 'Invalid categoryId provided for update.' });
-            }
-            updateData.categoryId = categoryId;
-        }
-
-        // 4. Check if anything was actually provided to update (optional optimization)
-        if (Object.keys(updateData).length === 0) {
-             return res.status(200).json({ entry: existing }); // Return 200 with existing entry if no changes sent
-        }
-        
-        // 5. Perform the update (unchanged)
-        const entry = await prisma.entry.update({
-            where: { id },
-            data: updateData, // Only properties that were passed in the body
-            include: entryInclude, 
-        });
-
-        return res.json({ entry });
-    } catch (err) {
-        next(err);
+    const updateData: { [key: string]: any } = {};
+    if (title !== undefined) updateData.title = title;
+    if (synopsis !== undefined) updateData.synopsis = synopsis;
+    if (content !== undefined) updateData.content = content;
+    if (categoryId !== undefined) {
+      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
+      if (!categoryExists) return res.status(404).json({ message: 'Invalid categoryId provided for update.' });
+      updateData.categoryId = categoryId;
     }
+    if (pinned !== undefined) updateData.pinned = pinned;
+    if (isPublic !== undefined) updateData.isPublic = isPublic;
+
+    if (Object.keys(updateData).length === 0) return res.status(200).json({ entry: existing });
+
+    const entry = await prisma.entry.update({
+      where: { id },
+      data: updateData,
+      include: entryInclude,
+    });
+
+    return res.json({ entry });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ----------------------------------------------------------------------
-// PATCH /api/entry/restore/:id - restore deleted entry
-// DELETE /api/entry/:id - soft delete
-// These endpoints do not involve Category, so they remain unchanged.
-// ----------------------------------------------------------------------
-
+// PATCH /api/entry/restore/:id
 router.patch('/restore/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
 
     const existing = await prisma.entry.findFirst({ where: { id, userId } });
-    if (!existing || !existing.isDeleted) {
-      return res.status(404).json({ message: 'Entry not found in trash.' });
-    }
+    if (!existing || !existing.isDeleted) return res.status(404).json({ message: 'Entry not found in trash.' });
 
     const entry = await prisma.entry.update({
       where: { id },
       data: { isDeleted: false },
-      include: entryInclude, // Included category for consistent response structure
+      include: entryInclude,
     });
 
     return res.json({ entry });
@@ -189,23 +165,41 @@ router.patch('/restore/:id', async (req, res, next) => {
   }
 });
 
+// ----------------------------------------------------------------------
+// DELETE /api/entry/:id - soft delete
 router.delete('/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
 
     const existing = await prisma.entry.findFirst({ where: { id, userId } });
-    if (!existing || existing.isDeleted) {
-      return res.status(404).json({ message: 'Entry not found.' });
-    }
+    if (!existing || existing.isDeleted) return res.status(404).json({ message: 'Entry not found.' });
 
     const entry = await prisma.entry.update({
       where: { id },
       data: { isDeleted: true },
-      include: entryInclude, // Included category for consistent response structure
+      include: entryInclude,
     });
 
     return res.json({ entry });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ----------------------------------------------------------------------
+// DELETE /api/entry/permanent/:id - permanent delete
+router.delete('/permanent/:id', async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const { id } = req.params;
+
+    const existing = await prisma.entry.findFirst({ where: { id, userId } });
+    if (!existing) return res.status(404).json({ message: 'Entry not found.' });
+
+    await prisma.entry.delete({ where: { id } });
+
+    return res.json({ message: 'Entry permanently deleted.' });
   } catch (err) {
     next(err);
   }
