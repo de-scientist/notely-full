@@ -26,24 +26,28 @@ model User {
 }
 
 model Category {
-  id          String   @id @default(uuid()) @map("CategoryId")
-  name        String   @map("Name")
-  userId      String?  @map("UserId")
-  user        User?    @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now()) @map("Date_Created")
-  updatedAt   DateTime @updatedAt @map("Last_Updated")
+  id               String   @id @default(uuid()) @map("CategoryId")
+  name             String   @map("Name")
+  userId           String?  @map("UserId")
+  user             User?    @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now()) @map("Date_Created")
+  updatedAt        DateTime @updatedAt @map("Last_Updated")
 
   // Public / default / global flags
-  isDefault   Boolean  @default(false) @map("Is_Default")
+  isDefault        Boolean  @default(false) @map("Is_Default")
 
   // AI-related optional weight or score for suggestions
-  aiScore     Float?   @map("AI_Score")
+  aiScore          Float?   @map("AI_Score")
 
-  entries     Entry[]
+  // AI keywords to help auto-suggest categories
+  suggestedKeywords String? @map("Suggested_Keywords")
+
+  entries          Entry[]
 
   @@unique([name, userId])
   @@map("Categories")
 }
+
 
 model Entry {
   id          String   @id @default(uuid()) @map("EntryId")
