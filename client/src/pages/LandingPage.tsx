@@ -44,6 +44,46 @@ const StatCard: React.FC<StatCardProps> = ({ value, label, icon: Icon }) => (
 );
 // =========================================================================
 
+// Smooth Reveal Observer
+function useRevealAnimations() {
+    useEffect(() => {
+        const elements = document.querySelectorAll(".reveal");
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("reveal-visible");
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        elements.forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
+    }, []);
+}
+
+// Parallax Hero Effect
+function useParallax() {
+    useEffect(() => {
+        const hero = document.querySelector(".hero-parallax");
+        if (!hero) return;
+
+        const handler = (e: MouseEvent) => {
+            const x = (e.clientX - window.innerWidth / 2) * 0.0025;
+            const y = (e.clientY - window.innerHeight / 2) * 0.0025;
+            hero.setAttribute(
+                "style",
+                `transform: translate(${x}px, ${y}px); transition: transform 0.05s linear;`
+            );
+        };
+
+        window.addEventListener("mousemove", handler);
+        return () => window.removeEventListener("mousemove", handler);
+    }, []);
+}
 
 export function LandingPage() {
     return (
