@@ -27,10 +27,12 @@ interface Entry {
 export function NotesListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery<{ entries: Entry[] }>(
-    ['entries'],
-    async () => (await api.get('/entries')).data
-  );
+  
+  const { data, isLoading } = useQuery({
+  queryKey: ['entries'],
+  queryFn: async (): Promise<{ entries: Entry[] }> => (await api.get('/entries')).data,
+});
+
 
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
