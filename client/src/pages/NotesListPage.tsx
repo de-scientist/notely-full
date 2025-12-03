@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "../components/ui/card";
 import { Badge } from '../components/ui/badge';
-import { Loader2, Tag, FilePenLine, Trash2, ArrowRight, PlusCircle } from 'lucide-react';
+import { Loader2, Tag, FilePenLine, Trash2, ArrowRight, PlusCircle, Star, StarOff } from 'lucide-react';
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const SOLID_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 text-white shadow-md shadow-fuchsia-500/50";
@@ -16,6 +16,7 @@ interface Entry {
   synopsis: string;
   content: string;
   isDeleted: boolean;
+  pinned: boolean;
   dateCreated: string;
   lastUpdated: string;
   category: { name: string };
@@ -38,6 +39,15 @@ export function NotesListPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entries'] });
       queryClient.invalidateQueries({ queryKey: ['entries-trash'] });
+    },
+  });
+
+  const togglePinMutation = useMutation({
+    mutationFn: async ({ id, pinned }: { id: string; pinned: boolean }) => {
+      await api.patch(`/entries/${id}`, { pinned });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entries'] });
     },
   });
 
@@ -79,16 +89,35 @@ export function NotesListPage() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {entries.map((entry) => (
-          <Card key={entry.id} className="flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all hover:shadow-lg hover:scale-[1.01]">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
-              <Badge variant="secondary" className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}>
-                <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
-              </Badge>
+          <Card
+            key={entry.id}
+            className={`flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all hover:shadow-lg hover:scale-[1.01] ${
+              entry.pinned ? 'border-2 border-fuchsia-500' : ''
+            }`}
+          >
+            <CardHeader className="pb-3 flex justify-between items-start">
+              <div>
+                <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
+                <Badge
+                  variant="secondary"
+                  className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}
+                >
+                  <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
+                </Badge>
+              </div>
+              <div className="cursor-pointer" onClick={() => togglePinMutation.mutate({ id: entry.id, pinned: !entry.pinned })}>
+                {entry.pinned ? (
+                  <Star className="h-5 w-5 text-yellow-400" />
+                ) : (
+                  <StarOff className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                )}
+              </div>
             </CardHeader>
 
             <CardContent className="pt-0 pb-3">
-              <p className="text-sm text-muted-foreground line-clamp-2">{entry.synopsis}</p>
+              <p className="text-sm text-muted-foreground line-clamp-3">
+                {entry.synopsis || entry.content.slice(0, 120) + (entry.content.length > 120 ? '...' : '')}
+              </p>
             </CardContent>
 
             <CardFooter className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
