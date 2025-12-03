@@ -7,6 +7,7 @@ import { api } from '../lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { motion, AnimatePresence } from 'framer-motion'; // <-- Animation
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -141,16 +142,26 @@ export function NewEntryPage() {
                             </div>
                         ) : (
                             <>
-                                <h2 className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS} break-words`}>
-                                    {title || 'Untitled Entry'}
-                                </h2>
-                                <p className="text-sm text-muted-foreground italic">{synopsis || 'No synopsis provided.'}</p>
-                                <Separator />
-                                <div className={`prose dark:prose-invert max-w-none p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 min-h-[300px] ${!isPreviewReady ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {content || 'Write content to preview here.'}
-                                    </ReactMarkdown>
-                                </div>
+                                <AnimatePresence mode="popLayout">
+                                    <motion.div 
+                                        key={title + synopsis + content} 
+                                        initial={{ opacity: 0, y: 10 }} 
+                                        animate={{ opacity: 1, y: 0 }} 
+                                        exit={{ opacity: 0, y: -10 }} 
+                                        transition={{ duration: 0.25 }}
+                                    >
+                                        <h2 className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS} break-words`}>
+                                            {title || 'Untitled Entry'}
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground italic">{synopsis || 'No synopsis provided.'}</p>
+                                        <Separator />
+                                        <div className={`prose dark:prose-invert max-w-none p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 min-h-[300px] ${!isPreviewReady ? 'opacity-50 pointer-events-none' : ''}`}>
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                {content || 'Write content to preview here.'}
+                                            </ReactMarkdown>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
                             </>
                         )}
                     </CardContent>
