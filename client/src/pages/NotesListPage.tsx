@@ -36,14 +36,13 @@ export function NotesListPage() {
   });
 
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('recent'); // 'recent' | 'pinned' | 'alphabetical'
 
   useEffect(() => {
-    if (data?.entries) {
-      setEntries(data.entries);
-    }
+    if (data?.entries) setEntries(data.entries);
   }, [data]);
 
   const deleteMutation = useMutation({
@@ -57,6 +56,26 @@ export function NotesListPage() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['entries'] }),
   });
+
+  const bulkDelete = async () => {
+    await Promise.all(Array.from(selectedNotes).map(id => api.delete(`/entries/${id}`)));
+    setSelectedNotes(new Set());
+    queryClient.invalidateQueries({ queryKey: ['entries'] });
+  };
+
+  const bulkPin = async (pin: boolean) => {
+    await Promise.all(Array.from(selectedNotes).map(id => api.patch(`/entries/${id}`, { pinned: pin })));
+    queryClient.invalidateQueries({ queryKey: ['entries'] });
+  };
+
+  const toggleSelectNote = (id: string) => {
+    setSelectedNotes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id);
+      else newSet.add(id);
+      return newSet;
+    });
+  };
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -115,7 +134,7 @@ export function NotesListPage() {
         </Button>
       </div>
 
-      {/* Stats & Search */}
+      {/* Stats & Bulk Actions */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex gap-4 items-center">
           <div className="bg-fuchsia-100 dark:bg-fuchsia-900/20 px-4 py-2 rounded-md shadow-sm">
@@ -132,41 +151,48 @@ export function NotesListPage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500"/>
-            <input
-              type="text"
-              placeholder="Search notes..."
-              className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        {selectedNotes.size > 0 && (
+          <div className="flex gap-2">
+            <Button className="bg-green-500 hover:bg-green-600 text-white" onClick={() => bulkPin(true)}>Pin Selected</Button>
+            <Button className="bg-yellow-500 hover:bg-yellow-600 text-white" onClick={() => bulkPin(false)}>Unpin Selected</Button>
+            <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={bulkDelete}>Delete Selected</Button>
           </div>
-
-          <select
-            className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-
-          <select
-            className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-          >
-            <option value="recent">Recently Updated</option>
-            <option value="pinned">Pinned First</option>
-            <option value="alphabetical">A-Z</option>
-          </select>
-        </div>
+        )}
       </div>
 
-      {/* Notes Grid with Quick Actions */}
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500"/>
+          <input
+            type="text"
+            placeholder="Search notes..."
+            className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <select
+          className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+        <select
+          className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+        >
+          <option value="recent">Recently Updated</option>
+          <option value="pinned">Pinned First</option>
+          <option value="alphabetical">A-Z</option>
+        </select>
+      </div>
+
+      {/* Notes Grid */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="notes-grid">
           {(provided) => (
@@ -188,17 +214,24 @@ export function NotesListPage() {
                       `}
                     >
                       <CardHeader className="pb-3 flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
-                          <Badge
-                            variant="secondary"
-                            className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}
-                          >
-                            <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
-                          </Badge>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedNotes.has(entry.id)}
+                            onChange={() => toggleSelectNote(entry.id)}
+                            className="accent-fuchsia-500"
+                          />
+                          <div>
+                            <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
+                            <Badge
+                              variant="secondary"
+                              className={`w-fit text-xs mt-1 dark:bg-fuchsia-900/20 ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500`}
+                            >
+                              <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
+                            </Badge>
+                          </div>
                         </div>
 
-                        {/* Quick Actions Hover Menu */}
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
                           <Button
                             size="sm"
