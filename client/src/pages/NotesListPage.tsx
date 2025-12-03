@@ -29,17 +29,14 @@ export function NotesListPage() {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery<{ entries: Entry[] }>({
     queryKey: ['entries'],
-    queryFn: async () => {
-      const res = await api.get('/entries');
-      return res.data;
-    },
+    queryFn: async () => (await api.get('/entries')).data,
   });
 
   const [entries, setEntries] = useState<Entry[]>([]);
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortOption, setSortOption] = useState('recent'); // 'recent' | 'pinned' | 'alphabetical'
+  const [sortOption, setSortOption] = useState('recent');
 
   useEffect(() => {
     if (data?.entries) setEntries(data.entries);
@@ -51,9 +48,7 @@ export function NotesListPage() {
   });
 
   const togglePinMutation = useMutation({
-    mutationFn: async ({ id, pinned }: { id: string; pinned: boolean }) => {
-      await api.patch(`/entries/${id}`, { pinned });
-    },
+    mutationFn: async ({ id, pinned }: { id: string; pinned: boolean }) => await api.patch(`/entries/${id}`, { pinned }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['entries'] }),
   });
 
@@ -68,6 +63,12 @@ export function NotesListPage() {
     queryClient.invalidateQueries({ queryKey: ['entries'] });
   };
 
+  const bulkMoveCategory = async (categoryName: string) => {
+    await Promise.all(Array.from(selectedNotes).map(id => api.patch(`/entries/${id}`, { category: { name: categoryName } })));
+    setSelectedNotes(new Set());
+    queryClient.invalidateQueries({ queryKey: ['entries'] });
+  };
+
   const toggleSelectNote = (id: string) => {
     setSelectedNotes(prev => {
       const newSet = new Set(prev);
@@ -75,6 +76,14 @@ export function NotesListPage() {
       else newSet.add(id);
       return newSet;
     });
+  };
+
+  const selectAll = () => {
+    setSelectedNotes(new Set(entries.map(e => e.id)));
+  };
+
+  const deselectAll = () => {
+    setSelectedNotes(new Set());
   };
 
   const onDragEnd = (result: DropResult) => {
@@ -86,10 +95,10 @@ export function NotesListPage() {
   };
 
   const filteredEntries = entries
-    .filter((entry) => 
+    .filter((entry) =>
       (entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.synopsis.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.category.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
+        entry.synopsis.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        entry.category.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
       (selectedCategory === 'All' || entry.category.name === selectedCategory)
     )
     .sort((a, b) => {
@@ -106,20 +115,18 @@ export function NotesListPage() {
     </div>
   );
 
-  if (!entries.length) {
-    return (
-      <div className="mt-16 flex flex-col items-center justify-center text-center space-y-4">
-        <PlusCircle className="h-12 w-12 text-fuchsia-500 animate-bounce" />
-        <h2 className="text-2xl font-semibold dark:text-white">No Notes Yet</h2>
-        <p className="text-gray-600 dark:text-gray-400 max-w-sm">
-          You haven&apos;t created any notes yet. Click below to start capturing your ideas!
-        </p>
-        <Button className={CTA_BUTTON_CLASS} onClick={() => navigate('/app/notes/new')}>
-          Create a New Note
-        </Button>
-      </div>
-    );
-  }
+  if (!entries.length) return (
+    <div className="mt-16 flex flex-col items-center justify-center text-center space-y-4">
+      <PlusCircle className="h-12 w-12 text-fuchsia-500 animate-bounce" />
+      <h2 className="text-2xl font-semibold dark:text-white">No Notes Yet</h2>
+      <p className="text-gray-600 dark:text-gray-400 max-w-sm">
+        You haven&apos;t created any notes yet. Click below to start capturing your ideas!
+      </p>
+      <Button className={CTA_BUTTON_CLASS} onClick={() => navigate('/app/notes/new')}>
+        Create a New Note
+      </Button>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -152,15 +159,27 @@ export function NotesListPage() {
         </div>
 
         {selectedNotes.size > 0 && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button className="bg-green-500 hover:bg-green-600 text-white" onClick={() => bulkPin(true)}>Pin Selected</Button>
             <Button className="bg-yellow-500 hover:bg-yellow-600 text-white" onClick={() => bulkPin(false)}>Unpin Selected</Button>
             <Button className="bg-red-500 hover:bg-red-600 text-white" onClick={bulkDelete}>Delete Selected</Button>
+            <select
+              className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+              onChange={(e) => bulkMoveCategory(e.target.value)}
+              defaultValue=""
+            >
+              <option value="" disabled>Move to Category</option>
+              {categories.filter(c => c !== 'All').map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <Button className="bg-fuchsia-400 hover:bg-fuchsia-500 text-white" onClick={selectAll}>Select All</Button>
+            <Button className="bg-gray-400 hover:bg-gray-500 text-white" onClick={deselectAll}>Deselect All</Button>
           </div>
         )}
       </div>
 
-      {/* Search and Filters */}
+      {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-2 items-center w-full sm:w-auto">
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500"/>
