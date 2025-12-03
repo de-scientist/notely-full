@@ -62,7 +62,7 @@ model Entry {
   user        User     @relation(fields: [userId], references: [id])
 
   categoryId  String   @map("CategoryId")
-  category    Category @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   createdAt   DateTime @default(now()) @map("Date_Created")
   updatedAt   DateTime @updatedAt @map("Last_Updated")
