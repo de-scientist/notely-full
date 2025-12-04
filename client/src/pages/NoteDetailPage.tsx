@@ -145,13 +145,46 @@ export function NoteDetailPage() {
 
                         <CardContent className="p-8 md:p-10">
                             {/* Markdown Rendering */}
-                            {/* Using utility classes for prose styling for better consistency */}
                             <div className={`prose lg:prose-xl dark:prose-invert max-w-none 
                                             prose-headings:text-fuchsia-700 dark:prose-headings:text-fuchsia-500 
                                             prose-strong:text-fuchsia-600 dark:prose-strong:text-fuchsia-400
                                             prose-blockquote:border-l-fuchsia-500 dark:prose-blockquote:border-l-fuchsia-400`}
                             >
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        // Custom styling for elements
+                                        h1: ({ node, ...props }) => <h1 {...props} className="text-4xl mt-8 mb-4 font-extrabold" />,
+                                        h2: ({ node, ...props }) => <h2 {...props} className="text-3xl mt-7 mb-3 font-bold" />,
+                                        h3: ({ node, ...props }) => <h3 {...props} className="text-2xl mt-6 mb-2 font-semibold" />,
+                                        
+                                        // Links: Primary color and bold for prominence
+                                        a: ({ node, ...props }) => <a {...props} className={`font-bold ${PRIMARY} hover:text-fuchsia-400 transition-colors underline`} />,
+
+                                        // Lists: Using custom markers for better branding
+                                        li: ({ node, ...props }) => (
+                                            <li {...props} className="marker:text-fuchsia-600 dark:marker:text-fuchsia-400">
+                                                {props.children}
+                                            </li>
+                                        ),
+
+                                        // Code Blocks: Clear separation with background and border
+                                        pre: ({ node, ...props }) => (
+                                            <pre 
+                                                {...props} 
+                                                className="p-4 rounded-lg bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-700 overflow-x-auto text-sm"
+                                            />
+                                        ),
+
+                                        // Inline Code: Muted background
+                                        code: ({ node, ...props }) => (
+                                            <code 
+                                                {...props} 
+                                                className="bg-fuchsia-100 dark:bg-fuchsia-900/50 px-1 py-0.5 rounded text-fuchsia-700 dark:text-fuchsia-300 font-mono text-sm"
+                                            />
+                                        ),
+                                    }}
+                                >
                                     {entry.content}
                                 </ReactMarkdown>
                             </div>
