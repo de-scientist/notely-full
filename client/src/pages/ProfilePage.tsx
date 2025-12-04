@@ -11,13 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
-// 👇 Updated Shadcn Imports
+
 import { Button } from "../components/ui/button";
 import { 
     Card,
     CardHeader,
     CardContent,
-    CardFooter,
     CardTitle,
     CardDescription,
 } from "../components/ui/card";
@@ -27,7 +26,6 @@ import { Separator } from '../components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { 
     User, 
-    Mail, 
     Lock, 
     LogOut, 
     Save, 
