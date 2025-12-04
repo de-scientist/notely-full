@@ -12,7 +12,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Separator } from '../components/ui/separator';
 
 // Icons
-import { Trash2, FilePenLine, Tag, Loader2, BookOpen, CalendarClock } from 'lucide-react';
+import { 
+    Trash2, 
+    FilePenLine, 
+    Tag, 
+    Loader2, 
+    BookOpen, 
+    CalendarClock,
+    ArrowLeftCircle
+} from 'lucide-react';
 
 // Brand color classes
 const PRIMARY = "text-fuchsia-600 dark:text-fuchsia-500";
@@ -161,18 +169,15 @@ export function NoteDetailPage() {
                     {/* Markdown Rendering */}
                     <div className="prose lg:prose-xl dark:prose-invert max-w-none">
 
-                        {/* Brand-colored headings + italics */}
+                        {/* Brand-colored headings */}
                         <style>
                             {`
                                 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-                                    color: rgb(192 38 211); /* fuchsia-600 */
+                                    color: rgb(192 38 211);
                                     font-weight: 700;
                                 }
-                                .prose em {
-                                    opacity: .9;
-                                }
                                 .prose strong {
-                                    color: rgb(162 28 175); /* deeper fuchsia */
+                                    color: rgb(162 28 175);
                                 }
                                 .prose blockquote {
                                     border-left-color: rgb(192 38 211);
@@ -186,6 +191,18 @@ export function NoteDetailPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* BACK TO NOTES BUTTON */}
+            <div>
+                <Link to="/app/notes">
+                    <Button
+                        className="mt-4 px-6 py-5 text-lg font-semibold flex items-center gap-2 bg-fuchsia-600 hover:bg-fuchsia-700 text-white rounded-xl shadow-md shadow-fuchsia-500/30"
+                    >
+                        <ArrowLeftCircle className="h-5 w-5" />
+                        Back to All Notes
+                    </Button>
+                </Link>
+            </div>
         </div>
     );
 }
