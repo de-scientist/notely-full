@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { Button } from "../components/ui/button";
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "../components/ui/card";
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "../components/ui/card";
 import { Badge } from '../components/ui/badge';
-import { Loader2, Tag, ArrowRight, PlusCircle, Star, StarOff, Search, Trash2, Edit, MoreVertical } from 'lucide-react';
+import { Loader2, Tag, ArrowRight, PlusCircle, Star, StarOff, Search, Trash2, Edit, MoreVertical, NotebookPen } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useEffect } from 'react';
 
@@ -31,7 +31,7 @@ interface NoteCardProps {
     draggableProps?: any;
     dragHandleProps?: any;
     innerRef?: React.Ref<HTMLDivElement>;
-    onDelete: (id: string) => void;
+    onDelete: (id: string) => void; // Used correctly now
     onTogglePin: (id: string, pinned: boolean) => void;
 }
 
@@ -89,7 +89,7 @@ function NoteCard({ entry, isDragging = false, draggableProps, dragHandleProps, 
                     Updated {new Date(entry.lastUpdated).toLocaleDateString()}
                 </span>
                 
-                {/* 🟢 Button Alignment Improvement: Condensed actions for better space utilization */}
+                {/* 🟢 Corrected: Using onDelete prop instead of calling deleteMutation directly */}
                 <div className="flex gap-2">
                     <Link to={`/app/notes/${entry.id}/edit`}>
                         <Button size="sm" variant="outline" title="Edit Note" className="p-2 h-8 w-8">
@@ -116,7 +116,7 @@ function NoteCard({ entry, isDragging = false, draggableProps, dragHandleProps, 
     );
 }
 
-// Main Component (No changes here, as it uses the updated NoteCard)
+// Main Component
 export function NotesListPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -162,16 +162,28 @@ export function NotesListPage() {
         </div>
     );
 
+    // 🟢 UPDATED EMPTY STATE UX (Improved Visuals)
     if (!entries.length) return (
-        <div className="mt-16 flex flex-col items-center justify-center text-center space-y-4">
-            <PlusCircle className="h-12 w-12 text-fuchsia-500 animate-bounce" />
-            <h2 className="text-2xl font-semibold dark:text-white">No Notes Yet</h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-sm">
-                You haven&apos;t created any notes yet. Click below to start capturing your ideas!
-            </p>
-            <Button className={CTA_BUTTON_CLASS} onClick={() => navigate('/app/notes/new')}>
-                Create a New Note
-            </Button>
+        <div className="mt-20 flex justify-center w-full">
+            <Card className="w-full max-w-lg p-10 text-center shadow-2xl shadow-fuchsia-500/10 border-2 border-fuchsia-300 dark:border-fuchsia-700 bg-white dark:bg-gray-800 transition-all duration-300">
+                <CardHeader className="flex flex-col items-center p-0">
+                    <NotebookPen className="h-16 w-16 text-fuchsia-600 dark:text-fuchsia-400 mb-4 animate-pulse-slow" />
+                    <CardTitle className="text-3xl font-extrabold text-gray-800 dark:text-white">
+                        Your Notebook is Empty
+                    </CardTitle>
+                    <CardDescription className="mt-3 text-lg text-gray-600 dark:text-gray-400 max-w-sm">
+                        Start capturing your brilliant ideas, tasks, or knowledge by creating your first note.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="mt-8 p-0">
+                    <Button 
+                        className={`${CTA_BUTTON_CLASS} w-full text-lg h-12 font-semibold`} 
+                        onClick={() => navigate('/app/notes/new')}
+                    >
+                        <PlusCircle className="h-5 w-5 mr-2" /> Create a New Note
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
     );
 
