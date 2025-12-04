@@ -9,7 +9,8 @@ import {
     CardFooter
 } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Check, Trash2, User, Users, Feather, Clock, Search, Folder, Zap, PencilLine, LogIn } from 'lucide-react';
+// NEW: ArrowUpCircle for the Floating Action Button (FAB)
+import { Check, Trash2, User, Users, Feather, Clock, Search, Folder, Zap, PencilLine, LogIn, ArrowUpCircle } from 'lucide-react'; 
 import { Separator } from '../components/ui/separator';
 
 // 💜 Define Primary Color (Fuchsia/OneNote)
@@ -18,14 +19,14 @@ const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 
 
-// 🟢 Define Complementary Color (Lime/Emerald)
-// Using a slightly muted Emerald/Green for a more professional, less jarring complement.
+// 🟢 Define Complementary Color (Lime/Emerald) - Retained for contrast in specific text
 const COMPLEMENTARY_COLOR_CLASS = "text-emerald-500 dark:text-emerald-400";
-const COMPLEMENTARY_OUTLINE_CLASS = "border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-gray-700";
+// COMPLEMENTARY_OUTLINE_CLASS is now updated to a more neutral/primary-related style for Login button
+const PRIMARY_OUTLINE_CLASS = "border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-50 dark:border-fuchsia-400 dark:text-fuchsia-400 dark:hover:bg-gray-700";
 
 
 // =========================================================================
-// 💡 CONCEPTUAL COMPONENT: StatCard (No change needed, uses PRIMARY)
+// 💡 CONCEPTUAL COMPONENT: StatCard
 // =========================================================================
 interface StatCardProps {
     value: string;
@@ -89,8 +90,13 @@ export function LandingPage() {
     useRevealAnimations();
     useParallax();
 
+    // Scroll to the top of the main container (Hero section)
+    const scrollToTop = () => {
+        document.getElementById('main-content-container')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
-        <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center py-20 px-4 sm:px-6 lg:px-8 reveal pulse-on-load">
+        <div id="main-content-container" className="flex min-h-[calc(100vh-4rem)] flex-col items-center py-20 px-4 sm:px-6 lg:px-8 reveal pulse-on-load">
 
             <div className="max-w-5xl space-y-16 text-center">
 
@@ -108,54 +114,53 @@ export function LandingPage() {
                     </p>
                 </div>
 
-               {/* CTA */}
-<div className="flex justify-center gap-6 reveal hover-lift">
+                {/* CTA - IMPROVED */}
+                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 reveal hover-lift">
 
-    {/* Register Button */}
-    <Link to="/register">
-        <Button
-            size="lg"
-            className={`
-                h-12 px-8 text-lg font-semibold flex items-center gap-3 group
-                transition-all duration-200 active:scale-[0.97]
-                ${GRADIENT_CLASS}
-            `}
-        >
-            <PencilLine 
-                className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1" 
-            />
-            <span className="transition-opacity duration-300 group-hover:opacity-90">
-                Start Taking Notes (It's Free)
-            </span>
-        </Button>
-    </Link>
+                    {/* Register Button (Primary CTA) */}
+                    <Link to="/register">
+                        <Button
+                            size="lg"
+                            className={`
+                                h-12 px-8 text-lg font-semibold flex items-center gap-3 group w-full sm:w-auto
+                                transition-all duration-200 active:scale-[0.97]
+                                ${GRADIENT_CLASS}
+                            `}
+                        >
+                            <PencilLine 
+                                className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1" 
+                            />
+                            <span className="transition-opacity duration-300 group-hover:opacity-90">
+                                Start Taking Notes (It's Free)
+                            </span>
+                        </Button>
+                    </Link>
 
-    {/* Login Button */}
-    <Link to="/login">
-        <Button
-            variant="outline"
-            size="lg"
-            className="
-                flex items-center gap-3 group
-                border-2 border-fuchsia-600
-                bg-gradient-to-r from-emerald-500 to-emerald-700
-                text-white transition-all duration-200 font-semibold
-                rounded-full px-12 py-7 text-lg
-                dark:border-fuchsia-400 dark:hover:bg-emerald-800
-                active:scale-[0.97]
-                shadow-md hover:shadow-lg
-            "
-        >
-            <LogIn 
-                className="w-5 h-5 transform transition-all duration-300 group-hover:-translate-x-1" 
-            />
-            <span className="transition-opacity duration-300 group-hover:opacity-90">
-                Log in for full experience
-            </span>
-        </Button>
-    </Link>
+                    {/* Login Button (Secondary CTA - Visual Update) */}
+                    <Link to="/login">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className={`
+                                flex items-center gap-3 group w-full sm:w-auto
+                                border-2 ${PRIMARY_OUTLINE_CLASS} 
+                                text-fuchsia-600 dark:text-fuchsia-400
+                                bg-transparent hover:bg-fuchsia-50/20 dark:hover:bg-fuchsia-900/20
+                                transition-all duration-200 font-semibold rounded-lg px-8 py-6 text-lg
+                                active:scale-[0.97]
+                                shadow-sm hover:shadow-md
+                            `}
+                        >
+                            <LogIn 
+                                className="w-5 h-5 transform transition-all duration-300 group-hover:-translate-x-1" 
+                            />
+                            <span className="transition-opacity duration-300 group-hover:opacity-90">
+                                Log in
+                            </span>
+                        </Button>
+                    </Link>
 
-</div>
+                </div>
 
                 <Separator className="mt-16 bg-gray-300 dark:bg-gray-700 reveal" />
 
@@ -166,7 +171,7 @@ export function LandingPage() {
                     <div className="hover-lift"><StatCard value="< 2.0s" label="Avg. Load Time" icon={Clock} /></div>
                 </div>
 
-                {/* FEATURES CARD */}
+                {/* FEATURES CARD - IMPROVED GRID AND HOVER */}
                 <Card className={`mt-16 w-full text-left shadow-2xl shadow-gray-400/20 dark:shadow-gray-900/50 border-t-4 border-t-fuchsia-600 dark:border-t-fuchsia-500 reveal hover-lift`}>
 
                     <CardHeader className="pt-8 pb-4">
@@ -178,9 +183,9 @@ export function LandingPage() {
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-0">
+                    {/* Feature Grid: 1 column on small, 2 on medium, 3 on large */}
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-0">
 
-                        {/* No styling changes. Just motion. */}
                         {[
                             { icon: Feather, title: "Frictionless Writing", desc: "Utilize powerful Markdown for formatting, tables, and code blocks..." },
                             { icon: Search, title: "Instant Search", desc: "Find any note in seconds with fast, full-text indexing..." },
@@ -191,7 +196,13 @@ export function LandingPage() {
                         ].map((f, i) => (
                             <div
                                 key={i}
-                                className={`flex flex-col p-6 rounded-xl border shadow-sm hover:shadow-lg dark:border-gray-700 bg-white dark:bg-gray-800 space-y-2 reveal hover-lift`}
+                                className={`
+                                    flex flex-col p-6 rounded-xl border shadow-sm dark:border-gray-700 
+                                    bg-white dark:bg-gray-800 space-y-2 reveal hover-lift
+                                    // New: Enhanced hover effect
+                                    hover:shadow-fuchsia-400/30 dark:hover:shadow-fuchsia-900/50 hover:shadow-xl
+                                    transition-all duration-300
+                                `}
                             >
                                 <f.icon className={`h-8 w-8 ${PRIMARY_COLOR_CLASS}`} />
                                 <p className="font-bold text-lg text-gray-900 dark:text-gray-50">{f.title}</p>
@@ -208,6 +219,25 @@ export function LandingPage() {
                 </Card>
 
             </div>
+
+            {/* NEW: Floating Action Button (FAB) for Scroll-to-Top */}
+            <Button
+                onClick={scrollToTop}
+                size="icon"
+                className={`
+                    fixed bottom-8 right-8 h-12 w-12 rounded-full 
+                    ${ACCENT_BG_CLASS} shadow-xl shadow-fuchsia-500/50 
+                    transition-opacity duration-300 opacity-0 
+                    md:opacity-100 lg:hidden 
+                    active:scale-[0.9]
+                `}
+                // Hiding the FAB on large screens and initially on small screens
+                // (opacity is handled by a separate scroll-detection hook in a real app,
+                // but for this snippet, we ensure it's hidden on desktop)
+                aria-label="Scroll to top"
+            >
+                <ArrowUpCircle className="h-6 w-6" />
+            </Button>
 
         </div>
     );
