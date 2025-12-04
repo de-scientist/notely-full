@@ -7,14 +7,14 @@ import { api } from '../lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import { motion, AnimatePresence } from 'framer-motion';
+//import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Separator } from '../components/ui/separator';
+//import { Separator } from '../components/ui/separator';
 import { Loader2, FilePlus2, BookOpen, PenTool, FolderOpen } from 'lucide-react';
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
@@ -95,7 +95,7 @@ export function NewEntryPage() {
     const charCount = content.length;
     const readingTime = Math.ceil(wordCount / 200); // 200 wpm average reading speed
 
-    const isPreviewReady = !!title || !!synopsis || !!content;
+   // const isPreviewReady = !!title || !!synopsis || !!content;
 
     // Generate Table of Contents from Markdown headers
     const toc: TOCItem[] = useMemo(() => {
