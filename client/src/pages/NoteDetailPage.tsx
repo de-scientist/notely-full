@@ -19,7 +19,9 @@ import {
     Loader2, 
     BookOpen, 
     CalendarClock,
-    ArrowLeftCircle
+    ArrowLeftCircle,
+    Info, // Added Info icon
+    ClipboardList, // Added ClipboardList icon
 } from 'lucide-react';
 
 // Brand color classes
@@ -27,7 +29,8 @@ const PRIMARY = "text-fuchsia-600 dark:text-fuchsia-500";
 const OUTLINE =
     "border-fuchsia-500 text-fuchsia-600 dark:border-fuchsia-500 dark:text-fuchsia-500 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/40";
 const DELETE_BTN =
-    "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-500/50";
+    "bg-red-600 hover:bg-700 text-white shadow-md shadow-red-500/50";
+const ACCENT_BG = "bg-fuchsia-50 dark:bg-fuchsia-900/40"; // New accent background class
 
 interface Entry {
     id: string;
@@ -91,117 +94,137 @@ export function NoteDetailPage() {
         hour: 'numeric',
         minute: '2-digit',
     });
+    
+    // Simple calculation for reading time (200 WPM)
+    const wordCount = entry.content.trim().split(/\s+/).filter(Boolean).length;
+    const readingTime = Math.ceil(wordCount / 200);
 
     return (
-        <div className="mx-auto max-w-5xl py-10 space-y-8">
-
-            {/* Top Section */}
-            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 pb-6 border-b dark:border-gray-700">
-
-                <div className="space-y-1">
-
-                    {/* Title */}
-                    <h1 className="text-4xl font-extrabold tracking-tight dark:text-white leading-snug">
-                        <span className={`${PRIMARY}`}>
-                            {entry.title}
-                        </span>
-                    </h1>
-
-                    {/* Synopsis */}
-                    <p className="text-lg text-gray-600 dark:text-gray-400 italic max-w-2xl">
-                        {entry.synopsis}
-                    </p>
-
-                    {/* Metadata */}
-                    <div className="flex items-center gap-4 pt-3 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
-
-                        {/* Category */}
-                        <span className="inline-flex items-center px-3 py-1 bg-fuchsia-50 dark:bg-fuchsia-900/40 rounded-full text-xs font-medium border border-fuchsia-200 dark:border-fuchsia-700">
-                            <Tag className={`h-3 w-3 mr-1 ${PRIMARY}`} />
-                            <span className={PRIMARY}>{entry.category.name}</span>
-                        </span>
-
-                        {/* Updated date */}
-                        <span className="inline-flex items-center text-xs">
-                            <CalendarClock className="h-3 w-3 mr-1 text-gray-500 dark:text-gray-400" />
-                            Last updated: {formattedDate}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 shrink-0">
-                    <Link to={`/app/notes/${entry.id}/edit`}>
-                        <Button variant="outline" className={OUTLINE}>
-                            <FilePenLine className="h-4 w-4 mr-2" />
-                            Edit Note
-                        </Button>
-                    </Link>
-
-                    <Button
-                        onClick={() => deleteMutation.mutate()}
-                        disabled={deleteMutation.isPending}
-                        className={DELETE_BTN}
-                    >
-                        {deleteMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                            <Trash2 className="h-4 w-4 mr-2" />
-                        )}
-                        Delete
-                    </Button>
-                </div>
+        <div className="mx-auto max-w-7xl py-10 px-4">
+            
+            {/* Top Navigation / Back Button */}
+            <div className="mb-6">
+                <Button variant="ghost" className={`text-sm text-gray-500 hover:text-fuchsia-600 dark:text-gray-400 dark:hover:text-fuchsia-400`} onClick={() => navigate('/app/notes')}>
+                    <ArrowLeftCircle className="h-4 w-4 mr-2" />
+                    Back to All Notes
+                </Button>
             </div>
 
-            {/* Main Content */}
-            <Card className="shadow-2xl dark:bg-gray-800/80 border dark:border-gray-700">
-                <CardHeader>
-                    <CardTitle className={`text-xl font-semibold flex items-center gap-2 ${PRIMARY}`}>
-                        <BookOpen className="h-5 w-5" />
-                        Note Content
-                    </CardTitle>
-                </CardHeader>
+            {/* Main Layout: 2/3 Content, 1/3 Sidebar */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* --- LEFT COLUMN: CONTENT --- */}
+                <div className="lg:col-span-2 space-y-6">
 
-                <Separator className="dark:bg-gray-700" />
+                    {/* Title & Synopsis Card (Prominent Header) */}
+                    <Card className={`shadow-xl dark:bg-gray-800/80 border-l-4 border-fuchsia-500`}>
+                        <CardHeader className='pb-4'>
+                            <h1 className="text-4xl font-extrabold tracking-tight dark:text-white leading-tight">
+                                <span className={`${PRIMARY} hover:text-fuchsia-700 transition-colors`}>
+                                    {entry.title}
+                                </span>
+                            </h1>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-lg text-gray-700 dark:text-gray-400 italic max-w-2xl border-l-4 pl-4 border-fuchsia-300 dark:border-fuchsia-700">
+                                {entry.synopsis}
+                            </p>
+                        </CardContent>
+                    </Card>
 
-                <CardContent className="p-10">
+                    {/* Main Content Rendering Card */}
+                    <Card className="shadow-2xl dark:bg-gray-800/80 border dark:border-gray-700">
+                        <CardHeader>
+                            <CardTitle className={`text-xl font-semibold flex items-center gap-2 ${PRIMARY}`}>
+                                <BookOpen className="h-5 w-5" />
+                                Note Content
+                            </CardTitle>
+                        </CardHeader>
 
-                    {/* Markdown Rendering */}
-                    <div className="prose lg:prose-xl dark:prose-invert max-w-none">
+                        <Separator className="dark:bg-gray-700" />
 
-                        {/* Brand-colored headings */}
-                        <style>
-                            {`
-                                .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-                                    color: rgb(192 38 211);
-                                    font-weight: 700;
-                                }
-                                .prose strong {
-                                    color: rgb(162 28 175);
-                                }
-                                .prose blockquote {
-                                    border-left-color: rgb(192 38 211);
-                                }
-                            `}
-                        </style>
+                        <CardContent className="p-8 md:p-10">
+                            {/* Markdown Rendering */}
+                            {/* Using utility classes for prose styling for better consistency */}
+                            <div className={`prose lg:prose-xl dark:prose-invert max-w-none 
+                                            prose-headings:text-fuchsia-700 dark:prose-headings:text-fuchsia-500 
+                                            prose-strong:text-fuchsia-600 dark:prose-strong:text-fuchsia-400
+                                            prose-blockquote:border-l-fuchsia-500 dark:prose-blockquote:border-l-fuchsia-400`}
+                            >
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {entry.content}
+                                </ReactMarkdown>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {entry.content}
-                        </ReactMarkdown>
-                    </div>
-                </CardContent>
-            </Card>
+                {/* --- RIGHT COLUMN: DETAILS & ACTIONS (Sticky Sidebar) --- */}
+                <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 self-start">
 
-            {/* BACK TO NOTES BUTTON */}
-            <div>
-                <Link to="/app/notes">
-                    <Button
-                        className="mt-4 px-6 py-5 text-lg font-semibold flex items-center gap-2 bg-fuchsia-600 hover:bg-fuchsia-700 text-white rounded-xl shadow-md shadow-fuchsia-500/30"
-                    >
-                        <ArrowLeftCircle className="h-5 w-5" />
-                        Back to All Notes
-                    </Button>
-                </Link>
+                    {/* ACTIONS CARD */}
+                    <Card className={`shadow-lg dark:bg-gray-900 border ${ACCENT_BG}`}>
+                        <CardHeader className="pb-3">
+                             <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${PRIMARY}`}>
+                                <ClipboardList className="h-4 w-4" /> Actions
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className='flex flex-col gap-3'>
+                            <Link to={`/app/notes/${entry.id}/edit`}>
+                                <Button className={`w-full ${OUTLINE}`}>
+                                    <FilePenLine className="h-4 w-4 mr-2" />
+                                    Edit Note
+                                </Button>
+                            </Link>
+                            <Button
+                                onClick={() => deleteMutation.mutate()}
+                                disabled={deleteMutation.isPending}
+                                className={`w-full ${DELETE_BTN}`}
+                            >
+                                {deleteMutation.isPending ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                )}
+                                Delete
+                            </Button>
+                        </CardContent>
+                    </Card>
+                    
+                    {/* METADATA CARD */}
+                    <Card className="shadow-lg dark:bg-gray-900 border dark:border-gray-700">
+                        <CardHeader className="pb-3">
+                            <CardTitle className={`text-lg font-semibold flex items-center gap-2 ${PRIMARY}`}>
+                                <Info className="h-4 w-4" /> Details
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className='space-y-3 text-sm text-gray-700 dark:text-gray-300'>
+                            
+                            {/* Category */}
+                            <div className="flex justify-between items-center border-b pb-2 border-fuchsia-100 dark:border-fuchsia-900">
+                                <span className="font-medium flex items-center gap-2"><Tag className="h-4 w-4 text-fuchsia-500" /> Category</span>
+                                <span className={`font-semibold ${PRIMARY}`}>{entry.category.name}</span>
+                            </div>
+
+                            {/* Last Updated */}
+                            <div className="flex justify-between items-center border-b pb-2 border-fuchsia-100 dark:border-fuchsia-900">
+                                <span className="font-medium flex items-center gap-2"><CalendarClock className="h-4 w-4 text-fuchsia-500" /> Last Updated</span>
+                                <span className="text-right">{formattedDate}</span>
+                            </div>
+
+                            {/* Word Count & Reading Time */}
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium">Word Count</span>
+                                <span>{wordCount} words</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="font-medium">Reading Time</span>
+                                <span>~{readingTime} min</span>
+                            </div>
+
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );
