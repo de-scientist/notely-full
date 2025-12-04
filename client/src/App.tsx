@@ -44,7 +44,7 @@ const getInitials = (firstName: string | undefined, lastName: string | undefined
 // 💡 NEW UX COMPONENT: User Dropdown Menu
 // =========================================================================
 function UserNav() {
-    const { user, logout } = useAuthStore();
+    const { user, clear } = useAuthStore();
     const avatarSrc = user?.avatar ?? undefined;
 
     // Use a function to safely call logout and handle navigation/UI state
@@ -52,7 +52,7 @@ function UserNav() {
         // Assuming logout is a synchronous action on the store
         // In a real app, you might await an API call here.
         // @ts-ignore - Assuming logout exists on useAuthStore
-        logout(); 
+        clear(); 
         // No need to navigate, as ProtectedRoute will handle redirect.
     };
 
