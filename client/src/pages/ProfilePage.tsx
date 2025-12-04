@@ -132,6 +132,7 @@ function AvatarUpload({ avatarUrl, setAvatarUrl }: AvatarUploadProps) {
 
                 <div className="flex-1 space-y-2">
                     <input
+                    title='avatar'
                         type="file"
                         id="avatar-upload-file"
                         ref={fileInputRef}
