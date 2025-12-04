@@ -1,3 +1,7 @@
+import { Separator } from "@/components/ui/separator";
+// NEW Icons: Shield for Legal/Privacy, FileText for Terms, LifeBuoy for Help
+import { Github, Mail, Globe, Heart, BookOpen, FilePlus, User, Trash2, Shield, FileText, LifeBuoy } from "lucide-react"; 
+
 // 💜 Define OneNote-inspired color palette variables
 // We'll use Tailwind's `fuchsia` or `purple` and adjust the shades for the primary color.
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
@@ -5,24 +9,21 @@ const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700
 
 // 💡 GRADIENT CLASS: Updated to a professional purple/magenta gradient
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
-import { Separator } from "@/components/ui/separator";
-import { Github, Mail, Globe, Heart, BookOpen, FilePlus, User, Trash2 } from "lucide-react"; 
 
 // Helper function for dynamic year in copyright
 const currentYear = new Date().getFullYear();
 
 export default function AppFooter() {
-    // ⚠️ NOTE: The original `pl-4` offset is removed here as it suggests a fixed sidebar, 
-    // but a footer should typically span the full width of the main content area.
     
     return (
         <footer className="w-full bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-16">
             <div className="max-w-6xl mx-auto px-6 py-12">
                 
+                {/* Updated Grid: 2 columns on small, 4 columns on medium */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+                    
                     {/* 1. Brand & Mission (Notely Focused) */}
                     <div className="col-span-2 md:col-span-1">
-                        {/* 👇 UPDATED: text-primary replaced with fuchsia shade (using text-fuchsia-700) */}
                         <h2 className={`text-3xl font-extrabold tracking-tight ${PRIMARY_COLOR_CLASS}`}>
                             Notely
                         </h2>
@@ -33,40 +34,42 @@ export default function AppFooter() {
 
                     {/* 2. Quick Links (Application Navigation) */}
                     <div className="md:col-span-1">
-                        {/* 👇 UPDATED: border-primary replaced with fuchsia shade */}
                         <h3 className={`text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 ${PRIMARY_COLOR_CLASS.replace('text', 'border')} pl-2`}>
                             App Navigation
                         </h3>
                         <ul className="space-y-3 text-gray-700 dark:text-gray-300 text-base">
                             <li>
-                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
-                                <a href="/app/notes" className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}>
+                                <a 
+                                    href="/app/notes" 
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Go to My Notes page"
+                                >
                                     <BookOpen className="h-4 w-4" /> My Notes
                                 </a>
                             </li>
                             <li>
-                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
                                 <a
                                     href="/app/notes/new"
                                     className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Create a new note entry"
                                 >
                                     <FilePlus className="h-4 w-4" /> New Entry
                                 </a>
                             </li>
                             <li>
-                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
                                 <a
                                     href="/app/profile"
                                     className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Go to Profile settings"
                                 >
                                     <User className="h-4 w-4" /> Profile
                                 </a>
                             </li>
                             <li>
-                                {/* 👇 UPDATED: hover:text-primary replaced with fuchsia shade */}
                                 <a
                                     href="/app/trash"
                                     className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Go to Trash/Recycle Bin"
                                 >
                                     <Trash2 className="h-4 w-4" /> Trash
                                 </a>
@@ -74,46 +77,80 @@ export default function AppFooter() {
                         </ul>
                     </div>
 
-                    {/* 3. Connect/Socials (Retained Developer Links) */}
-                    <div className="md:col-span-2">
-                        {/* 👇 UPDATED: border-primary replaced with fuchsia shade */}
+                    {/* NEW: 3. Legal & Support (UX Improvement: Essential Links) */}
+                    <div className="md:col-span-1">
+                        <h3 className={`text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 ${PRIMARY_COLOR_CLASS.replace('text', 'border')} pl-2`}>
+                            Legal & Support
+                        </h3>
+                        <ul className="space-y-3 text-gray-700 dark:text-gray-300 text-base">
+                            <li>
+                                <a 
+                                    href="/privacy" 
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Read our Privacy Policy"
+                                >
+                                    <Shield className="h-4 w-4" /> Privacy Policy
+                                </a>
+                            </li>
+                            <li>
+                                <a 
+                                    href="/terms" 
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Read our Terms of Service"
+                                >
+                                    <FileText className="h-4 w-4" /> Terms of Service
+                                </a>
+                            </li>
+                            <li>
+                                <a 
+                                    href="/help" 
+                                    className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors flex items-center gap-2`}
+                                    aria-label="Go to Help Center"
+                                >
+                                    <LifeBuoy className="h-4 w-4" /> Help Center
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* 4. Connect/Socials (Developer Links) */}
+                    <div className="md:col-span-1">
                         <h3 className={`text-lg font-bold mb-4 text-gray-900 dark:text-white border-l-2 ${PRIMARY_COLOR_CLASS.replace('text', 'border')} pl-2`}>
                             Built by Mark Gitau
                         </h3>
                         <ul className="space-y-3 text-base text-gray-700 dark:text-gray-300">
                             <li className="flex items-center gap-3">
-                                {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
                                 <Github className={`h-5 w-5 ${PRIMARY_COLOR_CLASS}`} />
                                 <a
                                     href="https://github.com/de-scientist"
                                     target="_blank"
-                                    // 👇 UPDATED: hover:text-primary replaced with fuchsia shade
                                     className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors font-medium`}
                                     rel="noopener noreferrer"
+                                    aria-label="View source code on GitHub"
                                 >
-                                    GitHub / View Source Code
+                                    GitHub / View Source
                                 </a>
                             </li>
+                            {/* UX Improvement: Separator between contact links for clarity */}
+                            <Separator className="bg-gray-200 dark:bg-gray-700 my-2" />
                             <li className="flex items-center gap-3">
-                                {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
                                 <Mail className={`h-5 w-5 ${PRIMARY_COLOR_CLASS}`} />
                                 <a
                                     href="mailto:gitaumark502@gmail.com"
-                                    // 👇 UPDATED: hover:text-primary replaced with fuchsia shade
                                     className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors font-medium`}
+                                    aria-label="Send support email"
                                 >
                                     Support Email
                                 </a>
                             </li>
                             <li className="flex items-center gap-3">
-                                {/* 👇 UPDATED: text-primary replaced with fuchsia shade */}
                                 <Globe className={`h-5 w-5 ${PRIMARY_COLOR_CLASS}`} />
                                 <a
                                     href="https://1descientist.vercel.app/"
                                     target="_blank"
-                                    // 👇 UPDATED: hover:text-primary replaced with fuchsia shade
                                     className={`hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[0]} dark:hover:${PRIMARY_COLOR_CLASS.replace('text', 'text').split(' ')[1]} transition-colors font-medium`}
                                     rel="noopener noreferrer"
+                                    aria-label="Visit the developer's portfolio"
                                 >
                                     Developer Portfolio
                                 </a>
