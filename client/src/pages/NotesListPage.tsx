@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "../components/ui/card";
 import { Badge } from '../components/ui/badge';
-import { Loader2, Tag, FilePenLine, Trash2, ArrowRight, PlusCircle, Star, StarOff, Search } from 'lucide-react';
+import { Loader2, Tag, ArrowRight, PlusCircle, Star, StarOff, Search } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useEffect } from 'react';
 
@@ -29,10 +29,9 @@ export function NotesListPage() {
   const queryClient = useQueryClient();
   
   const { data, isLoading } = useQuery({
-  queryKey: ['entries'],
-  queryFn: async (): Promise<{ entries: Entry[] }> => (await api.get('/entries')).data,
-});
-
+    queryKey: ['entries'],
+    queryFn: async (): Promise<{ entries: Entry[] }> => (await api.get('/entries')).data,
+  });
 
   const [entries, setEntries] = useState<Entry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -103,6 +102,7 @@ export function NotesListPage() {
 
   return (
     <div className="space-y-6">
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h1 className="text-3xl font-bold dark:text-white">My Notes</h1>
@@ -144,7 +144,7 @@ export function NotesListPage() {
           {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
         </select>
         <select
-        aria-label="Sort notes"
+          aria-label="Sort notes"
           className="rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
@@ -155,12 +155,12 @@ export function NotesListPage() {
         </select>
       </div>
 
-      {/* Recently Updated Sticky */}
+      {/* Recently Updated */}
       <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 p-4 rounded-md shadow-md z-20">
         <h2 className="text-xl font-semibold dark:text-white mb-2">Recently Updated</h2>
-        <div className="flex gap-4 overflow-x-auto">
+        <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-fuchsia-400/50 scrollbar-track-gray-200/50">
           {recentNotes.map(note => (
-            <Card key={note.id} className="flex-shrink-0 w-64 p-3 shadow-md dark:bg-gray-800 flex flex-col justify-between">
+            <Card key={note.id} className="flex-shrink-0 w-64 p-3 shadow-md dark:bg-gray-800 flex flex-col justify-between transition transform hover:scale-[1.02]">
               <CardHeader className="pb-1 flex justify-between items-start">
                 <div>
                   <CardTitle className="text-lg dark:text-white line-clamp-1">{note.title}</CardTitle>
@@ -186,13 +186,13 @@ export function NotesListPage() {
         </div>
       </div>
 
-      {/* Pinned Notes Section */}
+      {/* Pinned Notes */}
       {pinnedNotes.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold dark:text-white mb-2">📌 Pinned Notes</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {pinnedNotes.map(entry => (
-              <Card key={entry.id} className="flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all border-2 border-fuchsia-500">
+              <Card key={entry.id} className="flex flex-col justify-between shadow-md dark:bg-gray-800 transition-all border-2 border-fuchsia-500 hover:scale-[1.02]">
                 <CardHeader className="pb-3 flex justify-between items-start">
                   <div>
                     <CardTitle className="text-xl dark:text-white">{entry.title}</CardTitle>
@@ -216,7 +216,7 @@ export function NotesListPage() {
         </div>
       )}
 
-      {/* Regular Notes Grid */}
+      {/* Regular Notes */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="notes-grid">
           {(provided) => (
