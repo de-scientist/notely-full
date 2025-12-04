@@ -16,8 +16,10 @@ import { Trash2, FilePenLine, Tag, Loader2, BookOpen, CalendarClock } from 'luci
 
 // Brand color classes
 const PRIMARY = "text-fuchsia-600 dark:text-fuchsia-500";
-const OUTLINE = "border-fuchsia-500 text-fuchsia-600 dark:border-fuchsia-500 dark:text-fuchsia-500 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/40";
-const DELETE_BTN = "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-500/50";
+const OUTLINE =
+    "border-fuchsia-500 text-fuchsia-600 dark:border-fuchsia-500 dark:text-fuchsia-500 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/40";
+const DELETE_BTN =
+    "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-500/50";
 
 interface Entry {
     id: string;
@@ -89,6 +91,7 @@ export function NoteDetailPage() {
             <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 pb-6 border-b dark:border-gray-700">
 
                 <div className="space-y-1">
+
                     {/* Title */}
                     <h1 className="text-4xl font-extrabold tracking-tight dark:text-white leading-snug">
                         <span className={`${PRIMARY}`}>
@@ -158,14 +161,21 @@ export function NoteDetailPage() {
                     {/* Markdown Rendering */}
                     <div className="prose lg:prose-xl dark:prose-invert max-w-none">
 
-                        {/* Brand-colored headings */}
+                        {/* Brand-colored headings + italics */}
                         <style>
                             {`
-                                .prose h1, .prose h2, .prose h3, .prose h4 {
+                                .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
                                     color: rgb(192 38 211); /* fuchsia-600 */
+                                    font-weight: 700;
                                 }
                                 .prose em {
-                                    opacity: 0.9;
+                                    opacity: .9;
+                                }
+                                .prose strong {
+                                    color: rgb(162 28 175); /* deeper fuchsia */
+                                }
+                                .prose blockquote {
+                                    border-left-color: rgb(192 38 211);
                                 }
                             `}
                         </style>
