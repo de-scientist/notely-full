@@ -20,6 +20,7 @@ import { Toaster } from "./components/ui/sonner";
 import { PrivacyPolicy } from './pages/PrivacyPolicy'; // Assuming you have these components
 import { TermsOfService } from './pages/TermsOfService';
 import { HelpSupport } from './pages/HelpSupport';
+import { ContactPage } from './pages/ContactPage';
 
 // Shadcn imports for User Dropdown (Assuming basic components)
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./components/ui/dropdown-menu";
