@@ -187,43 +187,82 @@ export function NewEntryPage() {
 
                 {/* LIVE PREVIEW + TOC */}
                 <div className="flex flex-col gap-4 sticky top-8">
-                    <Card className="dark:bg-gray-900 shadow-lg hover:shadow-xl transition-all">
-                        <CardHeader>
-                            <CardTitle className="text-2xl font-bold dark:text-white">Live Preview</CardTitle>
-                            <CardDescription className="dark:text-gray-400">Markdown rendering of your note.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4 overflow-hidden max-h-[600px]">
-                            <div ref={previewRef} className="overflow-y-auto max-h-[550px] px-2">
-                                <ReactMarkdown 
-                                    remarkPlugins={[remarkGfm]} 
-                                    components={{
-                                        h1: ({node, ...props}) => <h1 id={props.children?.toString().toLowerCase().replace(/\s+/g, '-')} {...props} className="text-3xl font-bold mt-6 mb-2" />,
-                                        h2: ({node, ...props}) => <h2 id={props.children?.toString().toLowerCase().replace(/\s+/g, '-')} {...props} className="text-2xl font-bold mt-4 mb-2" />,
-                                        h3: ({node, ...props}) => <h3 id={props.children?.toString().toLowerCase().replace(/\s+/g, '-')} {...props} className="text-xl font-semibold mt-3 mb-2" />
-                                    }}
-                                >
-                                    {content || 'Write content to preview here.'}
-                                </ReactMarkdown>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-2">
-                            Category: {categories.find(c => c.id === categoryId)?.name ?? 'N/A'}
-                        </CardFooter>
-                    </Card>
+                    {/* LIVE PREVIEW – Upgraded UI/UX */}
+<Card className="dark:bg-gray-900 shadow-xl hover:shadow-2xl transition-all rounded-xl border border-fuchsia-600/20">
+  <CardHeader className="pb-2">
+    <CardTitle className="text-2xl font-bold dark:text-white">
+      Live Preview
+    </CardTitle>
+    <CardDescription className="dark:text-gray-400">
+      See your note as it blossoms.
+    </CardDescription>
+  </CardHeader>
 
-                    {toc.length > 0 && (
-                        <Card className="dark:bg-gray-800 shadow-md p-4 max-h-[300px] overflow-y-auto">
-                            <h3 className="text-lg font-bold dark:text-white mb-2">Table of Contents</h3>
-                            <ul className="space-y-1">
-                                {toc.map(item => (
-                                    <li key={item.id} className={`pl-${(item.level - 1) * 4} cursor-pointer text-sm text-fuchsia-600 hover:underline`}
-                                        onClick={() => scrollToHeader(item.id)}>
-                                        {item.text}
-                                    </li>
-                                ))}
-                            </ul>
-                        </Card>
-                    )}
+  <CardContent className="space-y-6 overflow-hidden max-h-[650px] p-4 rounded-lg">
+
+    {/* TITLE */}
+    <h1
+      className={`text-3xl font-extrabold tracking-tight ${PRIMARY_TEXT_CLASS}`}
+    >
+      {title || "Title will appear here..."}
+    </h1>
+
+    {/* SYNOPSIS */}
+    <p className="italic text-gray-600 dark:text-gray-300 text-lg">
+      {synopsis || "Your synopsis will display here…"}
+    </p>
+
+    {/* DIVIDER */}
+    <div className="border-b border-fuchsia-600/30 my-4" />
+
+    {/* CONTENT */}
+    <div
+      ref={previewRef}
+      className="overflow-y-auto max-h-[500px] pr-2 prose prose-sm dark:prose-invert
+                 prose-headings:text-fuchsia-600 prose-h1:text-fuchsia-600
+                 prose-h2:text-fuchsia-600 prose-h3:text-fuchsia-600
+                 prose-h4:text-fuchsia-600 prose-strong:text-fuchsia-600"
+    >
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({ node, ...props }) => (
+            <h1
+              id={props.children?.toString().toLowerCase().replace(/\s+/g, "-")}
+              {...props}
+              className="text-3xl font-bold mt-6 mb-3"
+            />
+          ),
+          h2: ({ node, ...props }) => (
+            <h2
+              id={props.children?.toString().toLowerCase().replace(/\s+/g, "-")}
+              {...props}
+              className="text-2xl font-bold mt-5 mb-3"
+            />
+          ),
+          h3: ({ node, ...props }) => (
+            <h3
+              id={props.children?.toString().toLowerCase().replace(/\s+/g, "-")}
+              {...props}
+              className="text-xl font-semibold mt-4 mb-2"
+            />
+          ),
+          p: ({ node, ...props }) => (
+            <p className="leading-relaxed my-3" {...props} />
+          ),
+        }}
+      >
+        {content || "*Start writing to see a live preview…*"}
+      </ReactMarkdown>
+    </div>
+  </CardContent>
+
+  <CardFooter className="text-sm text-gray-500 dark:text-gray-400 border-t dark:border-gray-700 pt-2">
+    Category: {categories.find((c) => c.id === categoryId)?.name ?? "N/A"}
+  </CardFooter>
+</Card>
+
+                    
                 </div>
             </div>
         </div>
