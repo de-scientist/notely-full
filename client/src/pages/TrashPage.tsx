@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 // 👇 Updated Shadcn Imports
 import { Button } from "../components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "../components/ui/card";
 import { RotateCcw, Loader2, Tag, Trash2, Zap, AlertTriangle } from 'lucide-react';
 
 // 💜 Define OneNote-inspired color palette variables
@@ -126,58 +126,68 @@ export function TrashPage() {
                 {entries.map((entry) => (
                     <Card 
                         key={entry.id} 
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 dark:bg-gray-800 transition-shadow hover:shadow-lg border-l-4 border-red-500 dark:border-red-700"
+                        className="flex flex-col dark:bg-gray-800 transition-shadow hover:shadow-lg border-l-4 border-red-500 dark:border-red-700"
                     >
-                        {/* Card Content Area */}
-                        <div className="flex-1 min-w-0 pr-4 space-y-1 mb-3 sm:mb-0">
-                            <CardTitle className="text-lg font-semibold dark:text-white line-clamp-1">{entry.title}</CardTitle>
-                            <CardDescription className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                        {/* 1. Card Header (Title) */}
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-xl font-semibold dark:text-white line-clamp-1">{entry.title}</CardTitle>
+                        </CardHeader>
+
+                        {/* 2. Card Content (Synopsis & Meta) */}
+                        <CardContent className="pt-0 pb-4">
+                            <p className="text-sm text-muted-foreground line-clamp-2">{entry.synopsis}</p>
+                            <CardDescription className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400 mt-2">
                                 <span className="inline-flex items-center font-medium">
                                     <Tag className={`h-3 w-3 mr-1 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} />
                                     {entry.category.name}
                                 </span>
                                 <span>| Deleted on {new Date(entry.lastUpdated).toLocaleDateString()}</span>
                             </CardDescription>
-                            <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{entry.synopsis}</p>
-                        </div>
+                        </CardContent>
 
-                        {/* 🟢 Action Buttons (Well-Aligned) */}
-                        <div className="flex space-x-2 flex-shrink-0">
-                            {/* Restore Button */}
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => restoreMutation.mutate(entry.id)}
-                                disabled={restoreMutation.isPending}
-                                className={`
-                                    flex items-center border-fuchsia-600 hover:bg-fuchsia-50 dark:border-fuchsia-700 
-                                    dark:hover:bg-fuchsia-900/50 ${PRIMARY_COLOR_CLASS}
-                                `}
-                            >
-                                {restoreMutation.isPending ? (
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                ) : (
-                                    <RotateCcw className="h-4 w-4 mr-2" />
-                                )}
-                                Restore
-                            </Button>
+                        {/* 3. Card Footer (Actions) */}
+                        <CardFooter className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                Item ID: {entry.id.substring(0, 8)}...
+                            </span>
                             
-                            {/* 🟢 Permanently Delete Button */}
-                            <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => permanentDeleteMutation.mutate(entry.id)}
-                                disabled={permanentDeleteMutation.isPending}
-                                title="Permanently Delete Note"
-                                className="flex items-center"
-                            >
-                                {permanentDeleteMutation.isPending ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                )}
-                            </Button>
-                        </div>
+                            <div className="flex space-x-2 flex-shrink-0">
+                                {/* Restore Button */}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => restoreMutation.mutate(entry.id)}
+                                    disabled={restoreMutation.isPending || permanentDeleteMutation.isPending}
+                                    className={`
+                                        flex items-center border-fuchsia-600 hover:bg-fuchsia-50 dark:border-fuchsia-700 
+                                        dark:hover:bg-fuchsia-900/50 ${PRIMARY_COLOR_CLASS}
+                                    `}
+                                >
+                                    {restoreMutation.isPending ? (
+                                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    ) : (
+                                        <RotateCcw className="h-4 w-4 mr-2" />
+                                    )}
+                                    Restore
+                                </Button>
+                                
+                                {/* Permanently Delete Button */}
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => permanentDeleteMutation.mutate(entry.id)}
+                                    disabled={permanentDeleteMutation.isPending || restoreMutation.isPending}
+                                    title="Permanently Delete Note"
+                                    className="flex items-center"
+                                >
+                                    {permanentDeleteMutation.isPending ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Trash2 className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            </div>
+                        </CardFooter>
                     </Card>
                 ))}
             </div>
