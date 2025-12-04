@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from "../components/ui/card";
 import { Badge } from '../components/ui/badge';
-import { Loader2, Tag, ArrowRight, PlusCircle, Star, StarOff, Search, Trash2, Edit } from 'lucide-react';
+import { Loader2, Tag, ArrowRight, PlusCircle, Star, StarOff, Search, Trash2, Edit, MoreVertical } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useEffect } from 'react';
 
@@ -51,12 +51,22 @@ function NoteCard({ entry, isDragging = false, draggableProps, dragHandleProps, 
         >
             <CardHeader className={`pb-2 ${isRecent ? 'p-3' : 'p-4'}`}>
                 <div className="flex justify-between items-start">
-                    <CardTitle className={`line-clamp-2 ${isRecent ? 'text-lg' : 'text-xl'} dark:text-white`}>
-                        {entry.title}
-                    </CardTitle>
-                    {entry.pinned && (
-                        <Star className="h-5 w-5 ml-2 text-yellow-400 flex-shrink-0" />
-                    )}
+                    {/* Title and Pin/Unpin Action */}
+                    <div className="flex-1 min-w-0 pr-2">
+                        <CardTitle className={`line-clamp-2 ${isRecent ? 'text-lg' : 'text-xl'} dark:text-white`}>
+                            {entry.title}
+                        </CardTitle>
+                    </div>
+                    {/* Pin/Unpin Button - High Visibility */}
+                    <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        title={entry.pinned ? "Unpin Note" : "Pin Note"}
+                        onClick={() => onTogglePin(entry.id, !entry.pinned)}
+                        className={`p-1 h-8 w-8 ml-auto ${entry.pinned ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500 hover:text-yellow-500'}`}
+                    >
+                        {entry.pinned ? <Star className="h-5 w-5 fill-yellow-500" /> : <StarOff className="h-5 w-5" />}
+                    </Button>
                 </div>
                 <div className="mt-1 flex justify-between items-center">
                     <Badge
@@ -79,20 +89,10 @@ function NoteCard({ entry, isDragging = false, draggableProps, dragHandleProps, 
                     Updated {new Date(entry.lastUpdated).toLocaleDateString()}
                 </span>
                 
-                {/* // 🟢 Button Alignment Fix: Consolidate actions in a button group
-                // Ensures all buttons are size "sm" or "xs" and are aligned right
-                */}
+                {/* 🟢 Button Alignment Improvement: Condensed actions for better space utilization */}
                 <div className="flex gap-2">
-                    <Button 
-                        size="sm" 
-                        variant="outline" 
-                        title={entry.pinned ? "Unpin Note" : "Pin Note"}
-                        onClick={() => onTogglePin(entry.id, !entry.pinned)}
-                    >
-                        {entry.pinned ? <StarOff className="h-4 w-4 text-yellow-500" /> : <Star className="h-4 w-4 text-gray-400" />}
-                    </Button>
                     <Link to={`/app/notes/${entry.id}/edit`}>
-                        <Button size="sm" variant="outline" title="Edit Note">
+                        <Button size="sm" variant="outline" title="Edit Note" className="p-2 h-8 w-8">
                             <Edit className="h-4 w-4" />
                         </Button>
                     </Link>
@@ -101,11 +101,12 @@ function NoteCard({ entry, isDragging = false, draggableProps, dragHandleProps, 
                         variant="destructive" 
                         title="Delete Note"
                         onClick={() => onDelete(entry.id)}
+                        className="p-2 h-8 w-8"
                     >
                         <Trash2 className="h-4 w-4" />
                     </Button>
                     <Link to={`/app/notes/${entry.id}`}>
-                        <Button size="sm" className={SOLID_BUTTON_CLASS} title="Read Full Note">
+                        <Button size="sm" className={SOLID_BUTTON_CLASS} title="Read Full Note" >
                             <ArrowRight className="h-4 w-4" />
                         </Button>
                     </Link>
@@ -115,7 +116,7 @@ function NoteCard({ entry, isDragging = false, draggableProps, dragHandleProps, 
     );
 }
 
-// Main Component
+// Main Component (No changes here, as it uses the updated NoteCard)
 export function NotesListPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
