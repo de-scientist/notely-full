@@ -43,9 +43,11 @@ export function NewEntryPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const { data, isLoading: isLoadingCategories } = useQuery<{ categories: Category[] }>(
-        ['categories'], async () => (await api.get('/categories')).data
-    );
+   const { data, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => (await api.get('/categories')).data as { categories: Category[] },
+});
+
     const categories = data?.categories ?? [];
 
     const [title, setTitle, clearTitle] = usePersistentState('newEntryTitle', '');
