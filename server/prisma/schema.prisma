@@ -93,6 +93,6 @@ model Bookmark {
 
   createdAt DateTime @default(now()) @map("Date_Saved")
 
-  @@unique([userId, entryId]) // prevents duplicate saving
+  @@unique([userId, entryId])
   @@map("Bookmarks")
 }
