@@ -1,21 +1,26 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { requireAuth } from '../middleware/auth.ts';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 const router = Router();
 
 router.use(requireAuth);
 
-// --- Helper for Prisma includes (to avoid repetition) ---
 const entryInclude = {
   category: {
     select: { id: true, name: true },
   },
 };
 
+/** Helper — generate short public share IDs */
+function generateShareId() {
+  return crypto.randomBytes(8).toString('hex'); // 16-char slug
+}
+
 // ----------------------------------------------------------------------
-// POST /api/entries - create a new entry
+// POST /api/entries - create a new entry (UPDATED FOR SHARE LINK)
 router.post('/', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -37,6 +42,7 @@ router.post('/', async (req, res, next) => {
         categoryId,
         pinned: pinned ?? false,
         isPublic: isPublic ?? false,
+        publicShareId: isPublic ? generateShareId() : null,
       },
       include: entryInclude,
     });
@@ -48,7 +54,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// GET /api/entries - get all non-deleted entries for user
+// GET /api/entries - unchanged
 router.get('/', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -56,7 +62,7 @@ router.get('/', async (req, res, next) => {
     const entries = await prisma.entry.findMany({
       where: { userId, isDeleted: false },
       orderBy: [
-        { pinned: 'desc' }, // Pinned entries first
+        { pinned: 'desc' },
         { createdAt: 'desc' },
       ],
       include: entryInclude,
@@ -69,7 +75,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// GET /api/entries/trash
+// GET /api/entries/trash - unchanged
 router.get('/trash', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -87,7 +93,7 @@ router.get('/trash', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// GET /api/entry/:id
+// GET /api/entry/:id - unchanged
 router.get('/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -107,7 +113,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// PATCH /api/entry/:id
+// PATCH /api/entry/:id (UPDATED FOR PUBLIC/PRIVATE SHARE LINK)
 router.patch('/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -117,19 +123,32 @@ router.patch('/:id', async (req, res, next) => {
     const existing = await prisma.entry.findFirst({ where: { id, userId } });
     if (!existing || existing.isDeleted) return res.status(404).json({ message: 'Entry not found.' });
 
-    const updateData: { [key: string]: any } = {};
+    const updateData = {};
+
     if (title !== undefined) updateData.title = title;
     if (synopsis !== undefined) updateData.synopsis = synopsis;
     if (content !== undefined) updateData.content = content;
+
     if (categoryId !== undefined) {
-      const categoryExists = await prisma.category.findUnique({ where: { id: categoryId } });
-      if (!categoryExists) return res.status(404).json({ message: 'Invalid categoryId provided for update.' });
+      const valid = await prisma.category.findUnique({ where: { id: categoryId } });
+      if (!valid) return res.status(404).json({ message: 'Invalid categoryId provided.' });
       updateData.categoryId = categoryId;
     }
-    if (pinned !== undefined) updateData.pinned = pinned;
-    if (isPublic !== undefined) updateData.isPublic = isPublic;
 
-    if (Object.keys(updateData).length === 0) return res.status(200).json({ entry: existing });
+    if (pinned !== undefined) updateData.pinned = pinned;
+
+    // Handle public/private with share link regeneration
+    if (isPublic !== undefined) {
+      updateData.isPublic = isPublic;
+
+      if (isPublic && !existing.publicShareId) {
+        updateData.publicShareId = generateShareId();
+      }
+
+      if (!isPublic) {
+        updateData.publicShareId = null;
+      }
+    }
 
     const entry = await prisma.entry.update({
       where: { id },
@@ -144,7 +163,7 @@ router.patch('/:id', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// PATCH /api/entry/restore/:id
+// RESTORE — unchanged
 router.patch('/restore/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -166,7 +185,7 @@ router.patch('/restore/:id', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// DELETE /api/entry/:id - soft delete
+// SOFT DELETE — unchanged
 router.delete('/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -188,7 +207,7 @@ router.delete('/:id', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// DELETE /api/entry/permanent/:id - permanent delete
+// PERMANENT DELETE — unchanged
 router.delete('/permanent/:id', async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -200,6 +219,64 @@ router.delete('/permanent/:id', async (req, res, next) => {
     await prisma.entry.delete({ where: { id } });
 
     return res.json({ message: 'Entry permanently deleted.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ----------------------------------------------------------------------
+// ⭐ NEW FEATURE: BOOKMARKS
+// ----------------------------------------------------------------------
+
+// Save Entry
+router.post('/:id/bookmark', async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const { id: entryId } = req.params;
+
+    await prisma.bookmark.upsert({
+      where: { userId_entryId: { userId, entryId } },
+      update: {},
+      create: { userId, entryId },
+    });
+
+    return res.json({ message: 'Entry bookmarked.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Remove Entry
+router.delete('/:id/bookmark', async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const { id: entryId } = req.params;
+
+    await prisma.bookmark.delete({
+      where: { userId_entryId: { userId, entryId } },
+    });
+
+    return res.json({ message: 'Bookmark removed.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// List Bookmarked Entries
+router.get('/bookmarks/all', async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+
+    const bookmarks = await prisma.bookmark.findMany({
+      where: { userId },
+      include: {
+        entry: {
+          include: entryInclude,
+        },
+      },
+    });
+
+    return res.json({ bookmarks });
   } catch (err) {
     next(err);
   }
