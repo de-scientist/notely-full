@@ -21,6 +21,8 @@ model User {
 
   categories Category[]
   entries    Entry[]
+  bookmarks Bookmark[]
+
 
   @@map("Users")
 }
