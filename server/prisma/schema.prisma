@@ -76,6 +76,9 @@ model Entry {
   createdAt   DateTime @default(now()) @map("Date_Created")
   updatedAt   DateTime @updatedAt @map("Last_Updated")
 
+  bookmarkedBy Bookmark[]
+
+
   @@map("Entries")
 }
 
