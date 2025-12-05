@@ -89,7 +89,7 @@ model Bookmark {
   user      User     @relation(fields: [userId], references: [id])
 
   entryId   String   @map("EntryId")
-  entry     Entry    @relation(fields: [entryId], references: [id])
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   createdAt DateTime @default(now()) @map("Date_Saved")
 
