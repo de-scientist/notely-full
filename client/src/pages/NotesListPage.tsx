@@ -17,7 +17,7 @@ import {
   Edit,
   Share2,
   Bookmark,
-  BookmarkOff,
+  BookmarkX,
   NotebookPen
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -153,7 +153,7 @@ function NoteCard({
             onClick={() => onToggleBookmark(entry.id, !isBookmarked)}
             className="p-2 h-8 w-8"
           >
-            {isBookmarked ? <Bookmark className="h-4 w-4" /> : <BookmarkOff className="h-4 w-4" />}
+            {isBookmarked ? <Bookmark className="h-4 w-4" /> : <BookmarkX className="h-4 w-4" />}
           </Button>
 
           {/* Share - will copy share URL if public, or toggle public then copy */}
