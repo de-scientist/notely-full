@@ -62,6 +62,8 @@ model Entry {
   isDeleted   Boolean  @default(false) @map("Is_Deleted")
   pinned      Boolean  @default(false) @map("Pinned")
   isPublic    Boolean  @default(false) @map("Is_Public")
+  publicShareId String? @unique @map("Public_Share_Id")
+
 
   userId      String   @map("UserId")
   user        User     @relation(fields: [userId], references: [id])
