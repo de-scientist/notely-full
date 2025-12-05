@@ -76,3 +76,18 @@ model Entry {
 
   @@map("Entries")
 }
+
+model Bookmark {
+  id        String   @id @default(uuid()) @map("BookmarkId")
+
+  userId    String   @map("UserId")
+  user      User     @relation(fields: [userId], references: [id])
+
+  entryId   String   @map("EntryId")
+  entry     Entry    @relation(fields: [entryId], references: [id])
+
+  createdAt DateTime @default(now()) @map("Date_Saved")
+
+  @@unique([userId, entryId]) // prevents duplicate saving
+  @@map("Bookmarks")
+}
