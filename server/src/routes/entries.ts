@@ -2,11 +2,39 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { requireAuth } from '../middleware/auth.ts';
 import crypto from 'crypto';
+import { Request, Response, NextFunction } from 'express'; // 💡 Import Request, Response, NextFunction
 
 const prisma = new PrismaClient();
 const router = Router();
 
 router.use(requireAuth);
+
+// ----------------------------------------------------------------------
+// 🎯 FIX: Define interfaces for Request Body data
+// ----------------------------------------------------------------------
+
+interface EntryCreationData {
+    title: string;
+    synopsis: string;
+    content: string;
+    categoryId: string;
+    pinned?: boolean;
+    isPublic?: boolean;
+}
+
+interface EntryUpdateData {
+    title?: string;
+    synopsis?: string;
+    content?: string;
+    categoryId?: string;
+    pinned?: boolean;
+    isPublic?: boolean;
+    // Add other potential update fields here if necessary
+}
+
+// ----------------------------------------------------------------------
+// End of new interfaces
+// ----------------------------------------------------------------------
 
 const entryInclude = {
   category: {
@@ -20,11 +48,13 @@ function generateShareId() {
 }
 
 // ----------------------------------------------------------------------
-// POST /api/entries - create a new entry (UPDATED FOR SHARE LINK)
-router.post('/', async (req, res, next) => {
+// POST /api/entries - create a new entry (UPDATED FOR TYPE CASTING)
+// Use the custom Request body type for better safety
+router.post('/', async (req: Request<{}, {}, EntryCreationData>, res, next) => {
   try {
     const userId = req.user!.id;
-    const { title, synopsis, content, categoryId, pinned, isPublic } = req.body;
+    // 🎯 FIX APPLIED: TypeScript now recognizes the shape of req.body
+    const { title, synopsis, content, categoryId, pinned, isPublic } = req.body; 
 
     if (!title || !synopsis || !content || !categoryId) {
       return res.status(400).json({ message: 'Title, synopsis, content, and categoryId are required.' });
@@ -113,31 +143,37 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ----------------------------------------------------------------------
-// PATCH /api/entry/:id (UPDATED FOR PUBLIC/PRIVATE SHARE LINK)
-router.patch('/:id', async (req, res, next) => {
+// PATCH /api/entry/:id (UPDATED FOR TYPE CASTING)
+// Use the custom Request body type for better safety
+router.patch('/:id', async (req: Request<{ id: string }, {}, EntryUpdateData>, res, next) => {
   try {
     const userId = req.user!.id;
     const { id } = req.params;
-    const { title, synopsis, content, categoryId, pinned, isPublic } = req.body;
+    // 🎯 FIX APPLIED: TypeScript now recognizes the shape of req.body
+    const { title, synopsis, content, categoryId, pinned, isPublic } = req.body; 
 
     const existing = await prisma.entry.findFirst({ where: { id, userId } });
     if (!existing || existing.isDeleted) return res.status(404).json({ message: 'Entry not found.' });
 
-    const updateData = {};
+    // The type of updateData is inferred correctly by Prisma as Partial<Entry>
+    const updateData: any = {};
 
     if (title !== undefined) updateData.title = title;
     if (synopsis !== undefined) updateData.synopsis = synopsis;
     if (content !== undefined) updateData.content = content;
 
+    // 🎯 FIX APPLIED: categoryId is now safely accessed
     if (categoryId !== undefined) {
       const valid = await prisma.category.findUnique({ where: { id: categoryId } });
       if (!valid) return res.status(404).json({ message: 'Invalid categoryId provided.' });
       updateData.categoryId = categoryId;
     }
 
+    // 🎯 FIX APPLIED: pinned is now safely accessed
     if (pinned !== undefined) updateData.pinned = pinned;
 
     // Handle public/private with share link regeneration
+    // 🎯 FIX APPLIED: isPublic is now safely accessed
     if (isPublic !== undefined) {
       updateData.isPublic = isPublic;
 
@@ -145,6 +181,7 @@ router.patch('/:id', async (req, res, next) => {
         updateData.publicShareId = generateShareId();
       }
 
+      // 🎯 FIX APPLIED: The explicit check is safe
       if (!isPublic) {
         updateData.publicShareId = null;
       }
