@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import { Button } from "../components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "../components/ui/card";
 import { Badge } from '../components/ui/badge';
-import { toast } from "sonner"; // 💡 UX Improvement: Import toast for feedback
+import { toast } from "sonner";
 import {
     Loader2,
     Tag,
@@ -41,7 +41,7 @@ interface Entry {
     category: { name: string };
 }
 
-// Reusable Note Card Component (unchanged props/structure)
+// Reusable Note Card Component
 interface NoteCardProps {
     entry: Entry;
     isDragging?: boolean;
@@ -85,28 +85,28 @@ function NoteCard({
                 ${simple ? 'w-64 flex-shrink-0' : ''}
             `}
         >
-            {/* Top-right bookmark button */}
-            <div className="absolute top-3 right-3 z-20">
-                <button
-                    onClick={() => onToggleBookmark(entry.id, !isBookmarked)}
-                    title={isBookmarked ? "Remove from Saved" : "Save for later"}
-                    className={`
-                        p-2 rounded-full bg-white/90 dark:bg-gray-900/80 backdrop-blur-md shadow-sm
-                        hover:scale-105 transform transition-all duration-150
-                        flex items-center justify-center
-                        ${isBookmarked ? 'ring-2 ring-fuchsia-300 dark:ring-fuchsia-700' : 'opacity-90'}
-                    `}
-                >
-                    <Bookmark className={`h-4 w-4 ${isBookmarked ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'}`} />
-                </button>
-            </div>
+            {/* Removed top-right absolute bookmark button */}
 
             <CardHeader className={`pb-2 ${simple ? 'p-3' : 'p-4'}`}>
                 <div className="flex justify-between items-start gap-3">
                     <div className="flex-1 min-w-0">
-                        <CardTitle className={`line-clamp-2 ${simple ? 'text-lg' : 'text-xl'} dark:text-white`}>
-                            {entry.title}
-                        </CardTitle>
+                        <div className="flex items-center gap-2 mb-1">
+                            {/* 🎯 UX FIX: Bookmark icon on the left of the card header title */}
+                            <button
+                                onClick={() => onToggleBookmark(entry.id, !isBookmarked)}
+                                title={isBookmarked ? "Remove from Saved" : "Save for later"}
+                                className={`
+                                    p-1 rounded-full hover:scale-105 transform transition-all duration-150
+                                    ${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 dark:text-gray-500 hover:text-yellow-500'}
+                                `}
+                            >
+                                <Bookmark className="h-4 w-4" fill={isBookmarked ? 'currentColor' : 'none'} />
+                            </button>
+                            <CardTitle className={`line-clamp-2 ${simple ? 'text-lg' : 'text-xl'} dark:text-white`}>
+                                {entry.title}
+                            </CardTitle>
+                        </div>
+                        
                         <div className="mt-2 flex items-center gap-2">
                             <Badge
                                 variant="secondary"
@@ -119,6 +119,7 @@ function NoteCard({
                                     Public
                                 </span>
                             )}
+                            {/* Display 'Saved' badge only if not already shown by the icon's primary location */}
                             {isBookmarked && (
                                 <span className="text-xs rounded px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
                                     Saved
@@ -148,12 +149,13 @@ function NoteCard({
                 </p>
             </CardContent>
 
-            <CardFooter className="flex items-center justify-between pt-4 border-t dark:border-gray-700 p-4 space-x-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+            {/* 🎯 UX FIX: Ensure footer icons are well aligned and don't go out of the card */}
+            <CardFooter className="flex items-center justify-between pt-4 border-t dark:border-gray-700 p-4">
+                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
                     Updated {new Date(entry.lastUpdated).toLocaleDateString()}
                 </span>
 
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-2 items-center flex-wrap justify-end">
                     {/* Edit */}
                     <Link to={`/app/notes/${entry.id}/edit`} title="Edit">
                         <Button size="sm" variant="outline" className="p-2 h-8 w-8">
@@ -173,11 +175,11 @@ function NoteCard({
                     </Button>
 
                     {/* Delete */}
-                    <Button 
-                        size="sm" 
-                        variant="destructive" 
-                        title="Delete" 
-                        onClick={() => onDelete(entry.id)} 
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        title="Delete"
+                        onClick={() => onDelete(entry.id)}
                         className="p-2 h-8 w-8"
                     >
                         <Trash2 className="h-4 w-4" />
@@ -185,7 +187,7 @@ function NoteCard({
 
                     {/* Read */}
                     <Link to={`/app/notes/${entry.id}`}>
-                        <Button size="sm" className={SOLID_BUTTON_CLASS} title="Read full note">
+                        <Button size="sm" className={`${SOLID_BUTTON_CLASS} p-2 h-8 w-8`} title="Read full note">
                             <ArrowRight className="h-4 w-4" />
                         </Button>
                     </Link>
@@ -219,9 +221,9 @@ export function NotesListPage() {
         mutationFn: async (id: string) => await api.delete(`/entries/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entries'] });
-            toast.success("Note moved to trash."); // 💡 UX Improvement
+            toast.success("Note moved to trash.");
         },
-        onError: () => toast.error("Failed to delete note."), // 💡 UX Improvement
+        onError: () => toast.error("Failed to delete note."),
     });
 
     const togglePinMutation = useMutation({
@@ -229,34 +231,60 @@ export function NotesListPage() {
             await api.patch(`/entries/${id}`, { pinned }),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['entries'] });
-            toast.info(variables.pinned ? "Note pinned!" : "Note unpinned."); // 💡 UX Improvement
+            toast.info(variables.pinned ? "Note pinned!" : "Note unpinned.");
         },
-        onError: () => toast.error("Failed to toggle pin status."), // 💡 UX Improvement
+        onError: () => toast.error("Failed to toggle pin status."),
     });
 
-    // 🎯 FIX AND UX IMPROVEMENT: Updated to use POST/DELETE endpoints
+    // 🎯 FIX: Implement Optimistic Update for instantaneous UI/Stats reflection
     const toggleBookmarkMutation = useMutation({
         mutationFn: async ({ id, bookmarked }: { id: string; bookmarked: boolean }) => {
             if (bookmarked) {
-                // Server POST /api/entry/:id/bookmark to save
                 return await api.post(`/entries/${id}/bookmark`);
             } else {
-                // Server DELETE /api/entry/:id/bookmark to unsave
                 return await api.delete(`/entries/${id}/bookmark`);
             }
         },
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['entries'] });
-            toast.success(variables.bookmarked ? "Note saved to bookmarks!" : "Bookmark removed."); // 💡 UX Improvement
+        // Optimistic Update
+        onMutate: async ({ id, bookmarked }) => {
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries({ queryKey: ['entries'] });
+
+            // Snapshot the previous value
+            const previousEntries = queryClient.getQueryData<{ entries: Entry[] }>(['entries']);
+
+            // Optimistically update to the new value
+            queryClient.setQueryData<{ entries: Entry[] }>(['entries'], old => {
+                if (!old) return old;
+                return {
+                    entries: old.entries.map(entry => 
+                        entry.id === id ? { ...entry, bookmarked: bookmarked } : entry
+                    ),
+                };
+            });
+
+            // Return a context object with the snapshotted value
+            return { previousEntries };
         },
-        onError: () => toast.error("Failed to toggle bookmark status."), // 💡 UX Improvement
+        onError: (err, variables, context) => {
+            // Roll back to the previous value on error
+            toast.error("Failed to toggle bookmark status. Rolling back changes.");
+            if (context?.previousEntries) {
+                queryClient.setQueryData(['entries'], context.previousEntries);
+            }
+        },
+        onSuccess: (_, variables) => {
+            // Invalidate to fetch the latest data from the server, confirming the change
+            queryClient.invalidateQueries({ queryKey: ['entries'] });
+            toast.success(variables.bookmarked ? "Note saved to bookmarks!" : "Bookmark removed.");
+        },
     });
 
     const togglePublicMutation = useMutation({
         mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) =>
             await api.patch(`/entries/${id}`, { isPublic }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['entries'] }),
-        onError: () => toast.error("Failed to change sharing status."), // 💡 UX Improvement
+        onError: () => toast.error("Failed to change sharing status."),
     });
 
     const onDragEnd = (result: DropResult) => {
@@ -271,30 +299,6 @@ export function NotesListPage() {
     if (isLoading) return (
         <div className="mt-16 flex justify-center">
             <Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_TEXT_CLASS}`} />
-        </div>
-    );
-
-    if (!entries.length) return (
-        <div className="mt-20 flex justify-center w-full">
-            <Card className="w-full max-w-lg p-10 text-center shadow-2xl shadow-fuchsia-500/10 border-2 border-fuchsia-300 dark:border-fuchsia-700 bg-white dark:bg-gray-800 transition-all duration-300">
-                <CardHeader className="flex flex-col items-center p-0">
-                    <NotebookPen className="h-16 w-16 text-fuchsia-600 dark:text-fuchsia-400 mb-4 animate-pulse" />
-                    <CardTitle className="text-3xl font-extrabold text-gray-800 dark:text-white">
-                        Your Notebook is Empty
-                    </CardTitle>
-                    <CardDescription className="mt-3 text-lg text-gray-600 dark:text-gray-400 max-w-sm">
-                        Start capturing your brilliant ideas, tasks, or knowledge by creating your first note.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="mt-8 p-0">
-                    <Button
-                        className={`${CTA_BUTTON_CLASS} w-full text-lg h-12 font-semibold`}
-                        onClick={() => navigate('/app/notes/new')}
-                    >
-                        <PlusCircle className="h-5 w-5 mr-2" /> Create a New Note
-                    </Button>
-                </CardContent>
-            </Card>
         </div>
     );
 
@@ -319,8 +323,8 @@ export function NotesListPage() {
 
     const pinnedNotes = filteredEntries.filter(e => e.pinned);
     const regularNotes = filteredEntries.filter(e => !e.pinned);
-    const recentNotes = [...filteredEntries].sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()).slice(0, 1);
-    const bookmarkedNotes = filteredEntries.filter(e => e.bookmarked);
+    const recentNotes = [...entries].sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()).slice(0, 1); // Use original 'entries' for general recent activity
+    const bookmarkedNotes = filteredEntries.filter(e => e.bookmarked); // This list is now correctly derived from the optimistically updated 'entries' state.
 
     const categories = ['All', ...Array.from(new Set(entries.map(e => e.category.name)))];
 
@@ -331,18 +335,17 @@ export function NotesListPage() {
                 // Make public first
                 await togglePublicMutation.mutateAsync({ id: entry.id, isPublic: true });
             }
-            // 💡 FIX: Ensure the share URL uses the correct share ID if applicable, though for now using entry.id as a placeholder
             // If your server uses publicShareId for public links, you might adjust the URL generation here.
-            const shareUrl = `${window.location.origin}/share/${entry.id}`; 
+            const shareUrl = `${window.location.origin}/share/${entry.id}`;
             
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(shareUrl);
-                toast.success('Share link copied to clipboard!'); // 💡 UX Improvement
+                toast.success('Share link copied to clipboard!');
             } else {
                 window.prompt('Copy this share link', shareUrl);
             }
         } catch (err) {
-            toast.error('Unable to copy share link.'); // 💡 UX Improvement
+            toast.error('Unable to copy share link.');
             console.error(err);
         }
     };
@@ -358,7 +361,7 @@ export function NotesListPage() {
                 </Button>
             </div>
 
-            {/* Stats (unchanged) */}
+            {/* Stats (Updated to reflect changes from 'entries' state, which is now optimistically updated) */}
             <div className="flex gap-4 p-4 border border-fuchsia-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                 <div className="px-4 py-2 rounded-md shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Total Notes</p>
@@ -366,10 +369,11 @@ export function NotesListPage() {
                 </div>
                 <div className="px-4 py-2 rounded-md shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Pinned Notes</p>
-                    <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{pinnedNotes.length}</p>
+                    <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{entries.filter(e => e.pinned).length}</p>
                 </div>
                 <div className="px-4 py-2 rounded-md shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Saved</p>
+                    {/* 🎯 FIX: The filter here relies on the optimistically updated 'entries' state */}
                     <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{entries.filter(e => e.bookmarked).length}</p>
                 </div>
             </div>
@@ -417,8 +421,10 @@ export function NotesListPage() {
                     <span className="text-sm text-gray-600 dark:text-gray-300">Show saved only</span>
                 </label>
             </div>
+            
+            <hr className="border-fuchsia-300/50 dark:border-fuchsia-900/50" />
 
-            {/* Recently Updated (single most recent) (unchanged) */}
+            {/* Recently Updated (single most recent) (unchanged logic) */}
             <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900 shadow-inner">
                 <h2 className="text-xl font-semibold dark:text-white mb-3 border-b pb-2 border-fuchsia-500/50">Recent Activity</h2>
                 <div className="flex gap-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-fuchsia-400/50 scrollbar-track-gray-200/50">
@@ -436,8 +442,10 @@ export function NotesListPage() {
                 </div>
             </div>
 
-            {/* Saved / Bookmarked Section (unchanged) */}
-            {bookmarkedNotes.length > 0 && (
+            <hr className="border-fuchsia-300/50 dark:border-fuchsia-900/50" />
+
+            {/* Saved / Bookmarked Section (logic uses filteredEntries) */}
+            {bookmarkedNotes.length > 0 && showSavedOnly && (
                 <div>
                     <h2 className="text-xl font-semibold dark:text-white mb-4">💾 Saved</h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -455,9 +463,9 @@ export function NotesListPage() {
                     </div>
                 </div>
             )}
-
-            {/* Pinned Notes Section (unchanged) */}
-            {pinnedNotes.length > 0 && (
+            
+            {/* Pinned Notes Section (logic uses filteredEntries) */}
+            {pinnedNotes.length > 0 && !showSavedOnly && (
                 <div>
                     <h2 className="text-xl font-semibold dark:text-white mb-4">📌 Pinned Notes</h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -476,41 +484,45 @@ export function NotesListPage() {
                 </div>
             )}
 
-            {/* Regular Notes Section (Draggable Grid) (unchanged) */}
-            <h2 className="text-xl font-semibold dark:text-white mb-4">
-                {pinnedNotes.length > 0 ? 'Other Notes' : 'All Notes'}
-            </h2>
-            <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="notes-grid">
-                    {(provided) => (
-                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" {...provided.droppableProps} ref={provided.innerRef}>
-                            {regularNotes.length ? regularNotes.map((entry, index) => (
-                                <Draggable key={entry.id} draggableId={entry.id} index={index}>
-                                    {(provided, snapshot) => (
-                                        <NoteCard
-                                            entry={entry}
-                                            isDragging={snapshot.isDragging}
-                                            draggableProps={provided.draggableProps}
-                                            dragHandleProps={provided.dragHandleProps}
-                                            innerRef={provided.innerRef}
-                                            onDelete={(id) => deleteMutation.mutate(id)}
-                                            onTogglePin={(id, pinned) => togglePinMutation.mutate({ id, pinned })}
-                                            onToggleBookmark={(id, bookmarked) => toggleBookmarkMutation.mutate({ id, bookmarked })}
-                                            onShare={handleShare}
-                                            onTogglePublic={(id, isPublic) => togglePublicMutation.mutate({ id, isPublic })}
-                                        />
+            {/* Regular Notes Section (Draggable Grid) (logic uses filteredEntries) */}
+            {(!showSavedOnly || !bookmarkedNotes.length) && (
+                <>
+                    <h2 className="text-xl font-semibold dark:text-white mb-4">
+                        {pinnedNotes.length > 0 ? 'Other Notes' : 'All Notes'}
+                    </h2>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                        <Droppable droppableId="notes-grid">
+                            {(provided) => (
+                                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" {...provided.droppableProps} ref={provided.innerRef}>
+                                    {regularNotes.length ? regularNotes.map((entry, index) => (
+                                        <Draggable key={entry.id} draggableId={entry.id} index={index}>
+                                            {(provided, snapshot) => (
+                                                <NoteCard
+                                                    entry={entry}
+                                                    isDragging={snapshot.isDragging}
+                                                    draggableProps={provided.draggableProps}
+                                                    dragHandleProps={provided.dragHandleProps}
+                                                    innerRef={provided.innerRef}
+                                                    onDelete={(id) => deleteMutation.mutate(id)}
+                                                    onTogglePin={(id, pinned) => togglePinMutation.mutate({ id, pinned })}
+                                                    onToggleBookmark={(id, bookmarked) => toggleBookmarkMutation.mutate({ id, bookmarked })}
+                                                    onShare={handleShare}
+                                                    onTogglePublic={(id, isPublic) => togglePublicMutation.mutate({ id, isPublic })}
+                                                />
+                                            )}
+                                        </Draggable>
+                                    )) : (
+                                        <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                                            No notes match your search or selected category.
+                                        </div>
                                     )}
-                                </Draggable>
-                            )) : (
-                                <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                                    No notes match your search or selected category.
+                                    {provided.placeholder}
                                 </div>
                             )}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-            </DragDropContext>
+                        </Droppable>
+                    </DragDropContext>
+                </>
+            )}
         </div>
     );
 }
