@@ -22,6 +22,9 @@ import { TermsOfService } from './pages/TermsOfService';
 import { HelpSupport } from './pages/HelpSupport';
 import { ContactPage } from './pages/ContactPage';
 
+// ⭐ REQUIRED IMPORT FOR SHARED ROUTE
+import { SharedNotePage } from './pages/SharedNotePage';
+
 // Shadcn imports for User Dropdown (Assuming basic components)
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./components/ui/dropdown-menu";
 import { LogOut, Settings, Feather } from 'lucide-react'; 
@@ -37,188 +40,191 @@ const COMPLEMENTARY_GRADIENT_CLASS = "bg-gradient-to-r from-emerald-500 to-emera
 const SECONDARY_BUTTON_CLASS = "border-2 border-fuchsia-600 hover:bg-fuchsia-50/20 text-fuchsia-600 dark:border-fuchsia-400 dark:text-fuchsia-400 dark:hover:bg-fuchsia-900/20 transition-all font-semibold";
 
 const getInitials = (firstName: string | undefined, lastName: string | undefined): string => {
-  if (!firstName || !lastName) return 'NN';
-  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  if (!firstName || !lastName) return 'NN';
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 };
 
 // =========================================================================
 // 💡 NEW UX COMPONENT: User Dropdown Menu
 // =========================================================================
 function UserNav() {
-    const { user, clear } = useAuthStore();
-    const avatarSrc = user?.avatar ?? undefined;
+    const { user, clear } = useAuthStore();
+    const avatarSrc = user?.avatar ?? undefined;
 
-    // Use a function to safely call logout and handle navigation/UI state
-    const handleLogout = () => {
-        // Assuming logout is a synchronous action on the store
-        // In a real app, you might await an API call here.
-        // @ts-ignore - Assuming logout exists on useAuthStore
-        clear(); 
-        // No need to navigate, as ProtectedRoute will handle redirect.
-    };
+    // Use a function to safely call logout and handle navigation/UI state
+    const handleLogout = () => {
+        // Assuming logout is a synchronous action on the store
+        // In a real app, you might await an API call here.
+        // @ts-ignore - Assuming logout exists on useAuthStore
+        clear(); 
+        // No need to navigate, as ProtectedRoute will handle redirect.
+    };
 
-    if (!user) return null;
+    if (!user) return null;
 
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 cursor-pointer group hover:opacity-90 transition-opacity">
-                    <span className="hidden text-right lg:inline">
-                        <span className="block text-xs text-muted-foreground">Welcome back,</span>
-                        <span className={`block font-semibold text-gray-800 dark:text-gray-100 group-hover:${PRIMARY_TEXT_CLASS}`}>
-                            {user.firstName}
-                        </span>
-                    </span>
-                    <Avatar 
-                        className={`h-9 w-9 border-2 border-transparent group-hover:border-fuchsia-600 transition-colors`}
-                    >
-                        <AvatarImage 
-                            src={avatarSrc} 
-                            alt={`${user.firstName} ${user.lastName} Avatar`}
-                        />
-                        <AvatarFallback className={`${PRIMARY_BG_CLASS} text-primary-foreground font-bold text-xs`}>
-                            {getInitials(user.firstName, user.lastName)}
-                        </AvatarFallback>
-                    </Avatar>
-                </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{`${user.firstName} ${user.lastName}`}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                        </p>
-                    </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                    <Link to="/app/profile" className="flex items-center gap-2 cursor-pointer">
-                        <Settings className="h-4 w-4" /> Profile Settings
-                    </Link>
-                </DropdownMenuItem>
-                {/* Add other utility links here if needed, e.g., Billing */}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className={`flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 hover:!bg-red-50 dark:hover:!bg-red-900/50`}>
-                    <LogOut className="h-4 w-4" /> Log out
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <div className="flex items-center gap-3 cursor-pointer group hover:opacity-90 transition-opacity">
+                    <span className="hidden text-right lg:inline">
+                        <span className="block text-xs text-muted-foreground">Welcome back,</span>
+                        <span className={`block font-semibold text-gray-800 dark:text-gray-100 group-hover:${PRIMARY_TEXT_CLASS}`}>
+                            {user.firstName}
+                        </span>
+                    </span>
+                    <Avatar 
+                        className={`h-9 w-9 border-2 border-transparent group-hover:border-fuchsia-600 transition-colors`}
+                    >
+                        <AvatarImage 
+                            src={avatarSrc} 
+                            alt={`${user.firstName} ${user.lastName} Avatar`}
+                        />
+                        <AvatarFallback className={`${PRIMARY_BG_CLASS} text-primary-foreground font-bold text-xs`}>
+                            {getInitials(user.firstName, user.lastName)}
+                        </AvatarFallback>
+                    </Avatar>
+                </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{`${user.firstName} ${user.lastName}`}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                        </p>
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link to="/app/profile" className="flex items-center gap-2 cursor-pointer">
+                        <Settings className="h-4 w-4" /> Profile Settings
+                    </Link>
+                </DropdownMenuItem>
+                {/* Add other utility links here if needed, e.g., Billing */}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className={`flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 hover:!bg-red-50 dark:hover:!bg-red-900/50`}>
+                    <LogOut className="h-4 w-4" /> Log out
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
 }
 
 // =========================================================================
 // ✏️ UPDATED: AppHeader
 // =========================================================================
 function AppHeader() {
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
+  const { user } = useAuthStore();
+  const isLoggedIn = !!user;
 
-  return (
-    <header className="flex items-center justify-between border-b dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 shadow-sm sticky top-0 z-50">
-      <div className="flex items-center gap-6">
-        <Link 
-          to="/" 
-          className={`text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white transition-colors ${PRIMARY_HOVER_CLASS} flex items-center gap-2`}
-        >
-            <Feather className={`h-6 w-6 ${PRIMARY_TEXT_CLASS}`} />
-            Notely
-        </Link>
-        {isLoggedIn && (
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            {/* Using a cleaner link style for logged-in navigation */}
-            <Link to="/app/notes" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS} hover:underline underline-offset-4`}>
-              My notes
-            </Link>
-            <Link to="/app/notes/new" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS} hover:underline underline-offset-4`}>
-              New entry
-            </Link>
-            <Link to="/app/trash" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS} hover:underline underline-offset-4`}>
-              Trash
-            </Link>
-          </nav>
-        )}
-      </div>
-      
-      <div className="flex items-center gap-4">
-        {!isLoggedIn && (
-          <>
-            {/* Secondary CTA: Login */}
-            <Link to="/login">
-              <Button 
-                variant="outline" 
-                className={`
-                    h-9 px-6 text-md font-semibold 
-                    ${SECONDARY_BUTTON_CLASS}
-                `}
-              >
-                Log in
-              </Button>
-            </Link>
-            {/* Primary CTA: Sign up */}
-            <Link to="/register">
-              <Button 
-                className={`
-                    h-10 px-8 text-md font-semibold 
-                    ${GRADIENT_CLASS}
-                `}
-              >
-                Sign up
-              </Button>
-            </Link>
-          </>
-        )}
-        
-        {isLoggedIn && <UserNav />}
+  return (
+    <header className="flex items-center justify-between border-b dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-3 shadow-sm sticky top-0 z-50">
+      <div className="flex items-center gap-6">
+        <Link 
+          to="/" 
+          className={`text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white transition-colors ${PRIMARY_HOVER_CLASS} flex items-center gap-2`}
+        >
+            <Feather className={`h-6 w-6 ${PRIMARY_TEXT_CLASS}`} />
+            Notely
+        </Link>
+        {isLoggedIn && (
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            {/* Using a cleaner link style for logged-in navigation */}
+            <Link to="/app/notes" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS} hover:underline underline-offset-4`}>
+              My notes
+            </Link>
+            <Link to="/app/notes/new" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS} hover:underline underline-offset-4`}>
+              New entry
+            </Link>
+            <Link to="/app/trash" className={`text-gray-600 dark:text-gray-300 transition-colors ${PRIMARY_HOVER_CLASS} hover:underline underline-offset-4`}>
+              Trash
+            </Link>
+          </nav>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-4">
+        {!isLoggedIn && (
+          <>
+            {/* Secondary CTA: Login */}
+            <Link to="/login">
+              <Button 
+                variant="outline" 
+                className={`
+                    h-9 px-6 text-md font-semibold 
+                    ${SECONDARY_BUTTON_CLASS}
+                `}
+              >
+                Log in
+              </Button>
+            </Link>
+            {/* Primary CTA: Sign up */}
+            <Link to="/register">
+              <Button 
+                className={`
+                    h-10 px-8 text-md font-semibold 
+                    ${GRADIENT_CLASS}
+                `}
+              >
+                Sign up
+              </Button>
+            </Link>
+          </>
+        )}
+        
+        {isLoggedIn && <UserNav />}
 
-      </div>
-    </header>
-  );
+      </div>
+    </header>
+  );
 }
 
 // =========================================================================
 // ✏️ UPDATED: AppLayout (Added Utility Routes)
 // =========================================================================
 function AppLayout() {
-  return (
-    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
-      <AppHeader />
-      {/* Increased max-w for general content, reduced margin to allow full-width utilities */}
-      <main className="mx-auto w-full flex-1"> 
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          
-          {/* Utility Routes (New) */}
-          {/* Using full-width layout for these pages */}
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/help" element={<HelpSupport />} />
-          <Route path="/contact" element={<ContactPage />} />
+  return (
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
+      <AppHeader />
+      {/* Increased max-w for general content, reduced margin to allow full-width utilities */}
+      <main className="mx-auto w-full flex-1"> 
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* ⭐ NEW: Shared Note Route (Public, Read-only access) */}
+          <Route path="/share/:id" element={<SharedNotePage />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/app/notes" element={<NotesListPage />} />
-            <Route path="/app/notes/new" element={<NewEntryPage />} />
-            <Route path="/app/notes/:id" element={<NoteDetailPage />} />
-            <Route path="/app/notes/:id/edit" element={<EditEntryPage />} />
-            <Route path="/app/trash" element={<TrashPage />} />
-            <Route path="/app/profile" element={<ProfilePage />} />
-          </Route>
+          {/* Utility Routes (New) */}
+          {/* Using full-width layout for these pages */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/help" element={<HelpSupport />} />
+          <Route path="/contact" element={<ContactPage />} />
 
-          {/* Fallback Route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/app/notes" element={<NotesListPage />} />
+            <Route path="/app/notes/new" element={<NewEntryPage />} />
+            <Route path="/app/notes/:id" element={<NoteDetailPage />} />
+            <Route path="/app/notes/:id/edit" element={<EditEntryPage />} />
+            <Route path="/app/trash" element={<TrashPage />} />
+            <Route path="/app/profile" element={<ProfilePage />} />
+          </Route>
 
-      <AppFooter />
-      <Toaster richColors position="bottom-right" />
-    </div>
-  );
+          {/* Fallback Route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+
+      <AppFooter />
+      <Toaster richColors position="bottom-right" />
+    </div>
+  );
 }
 
 export default function App() {
-  return <AppLayout />;
+  return <AppLayout />;
 }
