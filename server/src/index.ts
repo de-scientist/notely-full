@@ -11,7 +11,7 @@ import categoriesRouter from './routes/categories.ts';
 import userRouter from './routes/user.ts';
 
 // Import new routes
-import publicEntriesRouter from './routes/public.ts';
+//import publicEntriesRouter from './routes/public.ts';
 //import smartCategoryRouter from './routes/smartCategory.ts';
 //import permanentDeleteRouter from './routes/permanentDelete.ts';
 
@@ -38,7 +38,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
 
 // New routes
-app.use('/api/entries/public', publicEntriesRouter);
+//app.use('/api/entries/public', publicEntriesRouter);
 //app.use('/api/categories/suggest', smartCategoryRouter);
 //app.use('/api/entries/permanent', permanentDeleteRouter);
 
