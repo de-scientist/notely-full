@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-
+import { PrismaClient } from '@prisma/client';
 import { attachUser } from './middleware/auth.ts';
 import { errorHandler } from './middleware/errorHandler.ts';
 import authRouter from './routes/auth.ts';
@@ -14,7 +14,7 @@ import userRouter from './routes/user.ts';
 //import publicEntriesRouter from './routes/public.ts';
 //import smartCategoryRouter from './routes/smartCategory.ts';
 //import permanentDeleteRouter from './routes/permanentDelete.ts';
-
+const prisma = new PrismaClient();
 dotenv.config();
 
 const app = express();
