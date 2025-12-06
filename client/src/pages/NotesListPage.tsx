@@ -17,7 +17,6 @@ import {
   Edit,
   Share2,
   Bookmark,
-  BookmarkX,
   NotebookPen
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -73,18 +72,36 @@ function NoteCard({
   const isBookmarked = !!entry.bookmarked;
   const isPublic = !!entry.isPublic;
 
+  // Touch friendly - small long press support not added here to avoid changing behavior,
+  // but the bookmark button is large & accessible for touch.
   return (
     <Card
       ref={innerRef}
       {...draggableProps}
       {...dragHandleProps}
       className={`
-        group flex flex-col justify-between shadow-lg dark:bg-gray-800 transition-all duration-200
+        relative group flex flex-col justify-between shadow-lg dark:bg-gray-800 transition-all duration-200
         ${isDragging ? 'scale-[1.03] shadow-xl z-10 border-fuchsia-500' : 'hover:scale-[1.01]'}
         ${isPinned && !simple ? 'border-2 border-fuchsia-500' : 'border border-gray-200 dark:border-gray-700'}
         ${simple ? 'w-64 flex-shrink-0' : ''}
       `}
     >
+      {/* Top-right bookmark button (hover visible / always accessible on touch) */}
+      <div className="absolute top-3 right-3 z-20">
+        <button
+          onClick={() => onToggleBookmark(entry.id, !isBookmarked)}
+          title={isBookmarked ? "Remove from Saved" : "Save for later"}
+          className={`
+            p-2 rounded-full bg-white/90 dark:bg-gray-900/80 backdrop-blur-md shadow-sm
+            hover:scale-105 transform transition-all duration-150
+            flex items-center justify-center
+            ${isBookmarked ? 'ring-2 ring-fuchsia-300 dark:ring-fuchsia-700' : 'opacity-90'}
+          `}
+        >
+          <Bookmark className={`h-4 w-4 ${isBookmarked ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'}`} />
+        </button>
+      </div>
+
       <CardHeader className={`pb-2 ${simple ? 'p-3' : 'p-4'}`}>
         <div className="flex justify-between items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -144,17 +161,6 @@ function NoteCard({
               <Edit className="h-4 w-4" />
             </Button>
           </Link>
-
-          {/* Bookmark / Save */}
-          <Button
-            size="sm"
-            variant="ghost"
-            title={isBookmarked ? "Remove from Saved" : "Save for later"}
-            onClick={() => onToggleBookmark(entry.id, !isBookmarked)}
-            className="p-2 h-8 w-8"
-          >
-            {isBookmarked ? <Bookmark className="h-4 w-4" /> : <BookmarkX className="h-4 w-4" />}
-          </Button>
 
           {/* Share - will copy share URL if public, or toggle public then copy */}
           <Button
