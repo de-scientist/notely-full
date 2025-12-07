@@ -39,7 +39,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
 
 // New routes
-app.use('/api/public/entries/:id', publicEntriesRouter);
+app.use('/api/public/entries', publicEntriesRouter);
 //app.use('/api/categories/suggest', smartCategoryRouter);
 //app.use('/api/entries/permanent', permanentDeleteRouter);
 
