@@ -31,29 +31,6 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/api/public/entries/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Use the same logic you had in entryRoutes.ts for public access
-        const entry = await prisma.entry.findUnique({
-            where: { id },
-            include: {
-                category: { select: { id: true, name: true } },
-            },
-        });
-
-        if (!entry || !entry.isPublic) {
-            return res.status(404).json({ message: 'Entry not found or is private.' });
-        }
-
-        return res.json({ entry });
-
-    } catch (err) {
-        console.error("Error fetching public entry:", err);
-        return res.status(500).json({ message: 'Server error fetching public note.' });
-    }
-});
 
 // Existing routes
 app.use('/api/auth', authRouter);
