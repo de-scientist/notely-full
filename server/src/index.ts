@@ -11,7 +11,7 @@ import categoriesRouter from './routes/categories.ts';
 import userRouter from './routes/user.ts';
 
 // Import new routes
-import publicEntriesRouter from './routes/public.ts';
+import publicEntriesRouter from './routes/publicRoutes.ts';
 //import smartCategoryRouter from './routes/smartCategory.ts';
 //import permanentDeleteRouter from './routes/permanentDelete.ts';
 const prisma = new PrismaClient();
