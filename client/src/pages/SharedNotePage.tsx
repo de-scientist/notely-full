@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 
+// Interface for the actual Entry object
 interface SharedEntry {
     id: string;
     title: string;
@@ -21,6 +22,11 @@ interface SharedEntry {
     // Optionally include minimal author info if required, but usually omitted for security
 }
 
+// Interface for the expected Backend Response
+interface PublicEntryResponse {
+    entry: SharedEntry; // The entry is nested inside 'entry'
+}
+
 /**
  * Fetches and displays a public, read-only view of a note.
  */
@@ -28,13 +34,27 @@ export function SharedNotePage() {
     const { id } = useParams<{ id: string }>();
 
     // 1. DATA FETCHING HOOK
-    const { data: entry, isLoading, isError, error } = useQuery<SharedEntry, Error>({
+    // Use the SharedEntry interface for the type of the returned data ('entry')
+    const { 
+        data: entry, 
+        isLoading, 
+        isError, 
+        error 
+    } = useQuery<SharedEntry, Error>({
         queryKey: ['sharedEntry', id],
-        queryFn: async () => {
+        queryFn: async (): Promise<SharedEntry> => {
             if (!id) throw new Error("Note ID is missing.");
-            // Assuming the backend has a dedicated endpoint for public access: /public/entries/:id
-            const response = await api.get(`/public/entries/${id}`);
-            return response.data;
+            
+            // 🎯 FIX APPLIED: Correctly access the nested 'entry' object
+            const response = await api.get<PublicEntryResponse>(`/public/entries/${id}`);
+            
+            // Check for the nesting here: response.data is { entry: SharedEntry }
+            if (!response.data.entry) {
+                // Throw an error if the response structure is unexpected
+                 throw new Error("Invalid response structure from server.");
+            }
+            
+            return response.data.entry; 
         },
         enabled: !!id, // Only run the query if 'id' is present
         retry: 1, // Don't retry if the note is intentionally private (results in 404/403)
@@ -51,10 +71,14 @@ export function SharedNotePage() {
 
     // 3. Error State (e.g., 404 Not Found, 403 Private)
     if (isError || !entry) {
-        // You might want to distinguish between a "not found" (404) and "private" (403) error
-        const errorMessage = (error as any)?.response?.status === 403 
-            ? "Access Denied. This note is private." 
-            : "Note not found or link is invalid.";
+        // Since we are returning response.data.entry, entry will be null if the API call failed
+        
+        // This attempts to extract the status from the error object if it's an Axios error
+        const status = (error as any)?.response?.status;
+        
+        const errorMessage = status === 404
+            ? "Note not found or link is invalid." // Server returns 404 if private/deleted
+            : "An error occurred while fetching the shared note."; 
             
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
@@ -70,10 +94,10 @@ export function SharedNotePage() {
         );
     }
 
-    // 4. Final Data Check (Should be covered by backend, but good safeguard)
+    // 4. Final Data Check (The backend should prevent this, but it's fine)
     if (!entry.isPublic) {
-        // Note exists but is marked private, unauthorized public access
-        return <Navigate to="/access-denied" replace />; // Use a dedicated route or error message
+        // This block should ideally not be hit if the backend is working correctly
+        return <Navigate to="/access-denied" replace />; 
     }
 
     // 5. Success Display
@@ -116,9 +140,6 @@ export function SharedNotePage() {
 
                     {/* Content (Render as plain text or use a sanitizer/renderer if you support rich text like Markdown) */}
                     <div className="prose dark:prose-invert max-w-none break-words whitespace-pre-wrap">
-                        {/* NOTE: If 'content' is Markdown, you must use a library like 'react-markdown' here.
-                           For now, treating it as plain text with line breaks (whitespace-pre-wrap).
-                        */}
                         {entry.content}
                     </div>
                 </CardContent>
@@ -130,4 +151,3 @@ export function SharedNotePage() {
         </div>
     );
 }
-
