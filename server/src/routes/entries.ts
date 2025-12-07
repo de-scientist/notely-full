@@ -21,37 +21,37 @@ interface PublicEntryParams {
  * generated publicShareId. Since your 404 showed /api/public/entries/ID, we use the internal ID 
  * but enforce the 'isPublic: true' check. 
  */
-router.get('/public/entries/:id', async (req: Request<PublicEntryParams>, res, next) => {
-    try {
-        const { id } = req.params;
+// router.get('/public/entries/:id', async (req: Request<PublicEntryParams>, res, next) => {
+//     try {
+//         const { id } = req.params;
 
-        // 1. Find the entry by its internal ID
-        const entry = await prisma.entry.findUnique({
-            where: { id },
-            include: {
-                category: {
-                    select: { id: true, name: true },
-                },
-            },
-        });
+//         // 1. Find the entry by its internal ID
+//         const entry = await prisma.entry.findUnique({
+//             where: { id },
+//             include: {
+//                 category: {
+//                     select: { id: true, name: true },
+//                 },
+//             },
+//         });
 
-        // 2. Check existence AND public status
-        if (!entry || !entry.isPublic) {
-            // Respond with 404 (Not Found) to avoid leaking information about private note IDs
-            return res.status(404).json({ message: 'Entry not found or is private.' });
-        }
+//         // 2. Check existence AND public status
+//         if (!entry || !entry.isPublic) {
+//             // Respond with 404 (Not Found) to avoid leaking information about private note IDs
+//             return res.status(404).json({ message: 'Entry not found or is private.' });
+//         }
 
-        // 3. Success: return the public entry data
-        return res.json({ entry });
+//         // 3. Success: return the public entry data
+//         return res.json({ entry });
 
-    } catch (err) {
-        // Log error and pass to error handler
-        console.error("Error fetching public entry:", err);
-        // Using 400 for bad request/invalid ID format, 500 for true server error
-        res.status(500).json({ message: 'An unexpected error occurred.' });
-        // next(err); // Option to use Express error handler
-    }
-});
+//     } catch (err) {
+//         // Log error and pass to error handler
+//         console.error("Error fetching public entry:", err);
+//         // Using 400 for bad request/invalid ID format, 500 for true server error
+//         res.status(500).json({ message: 'An unexpected error occurred.' });
+//         // next(err); // Option to use Express error handler
+//     }
+// });
 
 
 // ----------------------------------------------------------------------
