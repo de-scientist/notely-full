@@ -1,6 +1,9 @@
 // SharedNotePage.tsx
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Navigate } from 'react-router-dom';
+// 🎯 FIX: Import 'useRef' from 'react'
+import { useRef } from 'react'; 
+// 🎯 FIX: Removed unused 'Navigate' import
+import { useParams } from 'react-router-dom'; 
 import { api } from '../lib/api';
 import { Loader2, NotebookPen, Lock, Tag, Calendar, Clock, Star, Download } from 'lucide-react';
 
@@ -49,6 +52,7 @@ interface PublicEntryResponse {
 export function SharedNotePage() {
     const { id } = useParams<{ id: string }>();
 
+    // 🎯 FIX: 'useRef' is now available
     // Ref to the element we want to convert to PDF
     const noteContentRef = useRef<HTMLDivElement>(null); // 🎯 PDF ref
 
@@ -154,6 +158,7 @@ export function SharedNotePage() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             {/* 🎯 The target element for PDF generation */}
+            {/* The note content is wrapped in a ref'd div */}
             <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0"> 
                 
                 <Card className="shadow-2xl dark:bg-gray-800 border-t-4 border-fuchsia-500 print:shadow-none">
