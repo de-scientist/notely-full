@@ -17,38 +17,40 @@ interface ChatState {
 }
 
 /**
- * Factory function to create the chat store. It allows the initial bot greeting
- * to be customized with the current logged-in user's name.
- * * @param userName The name of the currently logged-in user (e.g., from an authentication context).
- * @returns The Zustand store hook ready for use in components.
- * * NOTE: In your application, you must now call this function once when the user logs in
- * or when the user's name is available to create the actual useChatStore hook.
+ * Factory function to create the chat store. It accepts the userName of the 
+ * currently logged-in user to generate a dynamic initial greeting.
+ * * NOTE: In your application, you must call this function once when the user's name 
+ * is available to create the actual useChatStore hook.
+ * * Example Usage: 
+ * const useChatStore = createChatStore(currentUser.name);
+ * * @param userName The name of the currently logged-in user.
+ * @returns A custom Zustand store hook.
  */
 export const createChatStore = (userName: string) => {
-    // Dynamically generates the initial greeting message using the template literal.
-    const BOT_GREETING = `Hello ${userName}! I’m Notely Assistant. What can I help you with?`;
+    // Dynamically generates the initial greeting message.
+    const DYNAMIC_GREETING = `Hello ${userName}! I’m Notely Assistant. What can I help you with?`;
 
     return create<ChatState>((set) => ({
       open: false,
       messages: [
-        { from: "bot", text: BOT_GREETING }, // Initial message with dynamic user name
+        { from: "bot", text: DYNAMIC_GREETING }, // Dynamic initial message
       ],
       input: "",
 
-      // Toggles the chat window visibility
+      // Preserved functionality: Toggles the chat window visibility
       toggle: () => set((s) => ({ open: !s.open })),
       
-      // Sets the current input value
+      // Preserved functionality: Sets the current input value
       setInput: (v) => set({ input: v }),
       
-      // Adds a new message to the chat history
+      // Preserved functionality: Adds a new message to the chat history
       addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
       
-      // Resets the chat state to its initial configuration
+      // Preserved functionality: Resets the chat state to its initial configuration
       reset: () =>
         set({
           messages: [
-            { from: "bot", text: BOT_GREETING }, // Ensures reset also uses the dynamic greeting
+            { from: "bot", text: DYNAMIC_GREETING }, // Dynamic greeting on reset
           ],
           input: "",
         }),
