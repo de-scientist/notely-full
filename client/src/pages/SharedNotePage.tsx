@@ -1,9 +1,7 @@
 // SharedNotePage.tsx
 import { useQuery } from '@tanstack/react-query';
-// 🎯 FIX: Import 'useRef' from 'react'
-import { useRef } from 'react'; 
-// 🎯 FIX: Removed unused 'Navigate' import
 import { useParams } from 'react-router-dom'; 
+import { useRef } from 'react'; 
 import { api } from '../lib/api';
 import { Loader2, NotebookPen, Lock, Tag, Calendar, Clock, Star, Download } from 'lucide-react';
 
@@ -13,12 +11,11 @@ import jsPDF from 'jspdf'; // 🎯 PDF creation
 import html2canvas from 'html2canvas'; // 🎯 HTML to Canvas conversion for PDF
 
 // UI Components (assuming these are defined in your project)
-import { Button } from "../components/ui/button"; // Assuming you have a Button component
+import { Button } from "../components/ui/button"; 
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
-// Ensure this utility is available or defined in your styles
-import './SharedNotePage.css'; 
+// ❌ FIX APPLIED: The broken import './SharedNotePage.css' has been removed.
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 
@@ -38,12 +35,12 @@ interface SharedEntry {
         lastName: string; 
         username: string;
         avatar?: string;
-    }; // Added user object based on your backend logic
+    };
 }
 
 // Interface for the expected Backend Response
 interface PublicEntryResponse {
-    entry: SharedEntry; // The entry is nested inside 'entry'
+    entry: SharedEntry; 
 }
 
 /**
@@ -52,9 +49,8 @@ interface PublicEntryResponse {
 export function SharedNotePage() {
     const { id } = useParams<{ id: string }>();
 
-    // 🎯 FIX: 'useRef' is now available
     // Ref to the element we want to convert to PDF
-    const noteContentRef = useRef<HTMLDivElement>(null); // 🎯 PDF ref
+    const noteContentRef = useRef<HTMLDivElement>(null); 
 
     // 1. DATA FETCHING HOOK
     const { 
@@ -90,18 +86,18 @@ export function SharedNotePage() {
         
         // Use html2canvas to capture the visual HTML structure
         const canvas = await html2canvas(noteContentRef.current, {
-            scale: 2, // Use higher resolution for better quality
+            scale: 2, 
             logging: false,
         });
 
         const imgData = canvas.toDataURL('image/png');
         
         const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210; // A4 width in mm
-        const pageHeight = 297; // A4 height in mm
+        const imgWidth = 210; 
+        const pageHeight = 297; 
         const imgHeight = canvas.height * imgWidth / canvas.width;
         let heightLeft = imgHeight;
-        let position = 0; // Vertical position in the PDF
+        let position = 0; 
 
         // Add the first page image
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -158,7 +154,7 @@ export function SharedNotePage() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             {/* 🎯 The target element for PDF generation */}
-            {/* The note content is wrapped in a ref'd div */}
+            {/* Added a basic background for PDF capture */}
             <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0"> 
                 
                 <Card className="shadow-2xl dark:bg-gray-800 border-t-4 border-fuchsia-500 print:shadow-none">
