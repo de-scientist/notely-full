@@ -17,7 +17,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 
 // ❌ FIX APPLIED: The broken import './SharedNotePage.css' has been removed.
 
-const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
+// Use standard hex for primary color to avoid oklch issue in html2canvas
+const PRIMARY_HEX_COLOR = "#e879f9"; // fuchsia-400 equivalent for light mode
+const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500"; 
 
 // Interface for the actual Entry object
 interface SharedEntry {
@@ -153,9 +155,40 @@ export function SharedNotePage() {
     // ----------------------------------------------------------------------
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-            {/* 🎯 The target element for PDF generation */}
-            {/* Added a basic background for PDF capture */}
-            <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0"> 
+            
+            {/* 🎯 FIX: Apply supported colors using standard CSS vars 
+               This section provides fallback colors for html2canvas to read. */}
+            <style jsx global>{`
+                .pdf-capture-container {
+                    /* --- Override fuchsia colors --- */
+                    /* fuchsia-600 (used in PRIMARY_TEXT_CLASS, button) */
+                    --color-fuchsia-600: #d946ef; 
+                    /* fuchsia-500 (used in dark text/card border) */
+                    --color-fuchsia-500: #a855f7; 
+                    /* fuchsia-700 (used in button hover) */
+                    --color-fuchsia-700: #c026d3;
+
+                    /* --- Override gray/neutral colors if they use modern formats --- */
+                    /* text-gray-600 */
+                    --color-gray-600: #4b5563; 
+                    /* dark:text-gray-400 */
+                    --color-gray-400: #9ca3af; 
+                    /* dark:bg-gray-800 */
+                    --color-gray-800: #1f2937;
+                    /* text-gray-500 */
+                    --color-gray-500: #6b7280;
+                }
+
+                /* Ensure utility classes map to the supported colors within the container */
+                .pdf-capture-container .text-fuchsia-600 { color: var(--color-fuchsia-600) !important; }
+                .pdf-capture-container .dark\\:text-fuchsia-500 { color: var(--color-fuchsia-500) !important; }
+                .pdf-capture-container .bg-fuchsia-600 { background-color: var(--color-fuchsia-600) !important; }
+                .pdf-capture-container .hover\\:bg-fuchsia-700:hover { background-color: var(--color-fuchsia-700) !important; }
+                /* Add more overrides as needed for other colored elements (borders, text, etc.) */
+            `}</style>
+
+            {/* 🎯 The target element for PDF generation, now with the fallback class */}
+            <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0 pdf-capture-container"> 
                 
                 <Card className="shadow-2xl dark:bg-gray-800 border-t-4 border-fuchsia-500 print:shadow-none">
                     <CardHeader className="pb-4">
@@ -206,6 +239,7 @@ export function SharedNotePage() {
             <div className="flex justify-center mt-8">
                 <Button 
                     onClick={handleDownloadPdf} 
+                    // This button inherits the PDF safe colors from the style block above
                     className="bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors"
                 >
                     <Download className="h-5 w-5 mr-2" />
