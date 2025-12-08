@@ -1,0 +1,9 @@
+// src/dom-to-image-more.d.ts
+declare module 'dom-to-image-more' {
+  export function toSvg(node: Node, options?: any): Promise<string>;
+  export function toPng(node: Node, options?: any): Promise<string>;
+  export function toJpeg(node: Node, options?: any): Promise<string>;
+  export function toBlob(node: Node, options?: any): Promise<Blob>;
+  export function toPixelData(node: Node, options?: any): Promise<Uint8Array>;
+  // Add other functions if needed, but toPng is the main one used here.
+}
