@@ -20,6 +20,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 // The broken import './SharedNotePage.css' has been removed.
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500"; 
 
+// 🎯 FIX: Define consistent, user-friendly date format options
+const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+};
+
 // Interface for the actual Entry object
 interface SharedEntry {
     id: string;
@@ -167,8 +177,7 @@ export function SharedNotePage() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             
-            {/* 🎯 FIX: Added padding (p-8) and forced white background for clean PDF capture.
-               The 'pdf-capture' class helps ensure clear styling for the image export process. */}
+            {/* 🎯 The target element for PDF generation */}
             <div 
                 ref={noteContentRef} 
                 className="bg-white p-8 pdf-capture" // Added p-8 and ensured bg-white
@@ -204,10 +213,10 @@ export function SharedNotePage() {
                                 <Tag className="h-3.5 w-3.5" /> {entry.category.name}
                             </Badge>
                             <span className="flex items-center gap-1">
-                                <Calendar className="h-3.5 w-3.5" /> Created: {new Date(entry.dateCreated).toLocaleDateString()}
+                                <Calendar className="h-3.5 w-3.5" /> Created: **{new Date(entry.dateCreated).toLocaleTimeString(undefined, DATE_OPTIONS)}**
                             </span>
                             <span className="flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5" /> Updated: {new Date(entry.lastUpdated).toLocaleDateString()}
+                                <Clock className="h-3.5 w-3.5" /> Updated: **{new Date(entry.lastUpdated).toLocaleTimeString(undefined, DATE_OPTIONS)}**
                             </span>
                         </div>
 
