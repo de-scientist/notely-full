@@ -204,6 +204,7 @@ function AppLayout() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/help" element={<HelpSupport />} />
           <Route path="/contact" element={<ContactPage />} />
+         
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
@@ -220,6 +221,7 @@ function AppLayout() {
         </Routes>
       </main>
 
+     <Chatbot />
       <AppFooter />
       <Toaster richColors position="bottom-right" />
     </div>
