@@ -21,7 +21,7 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy'; // Assuming you have thes
 import { TermsOfService } from './pages/TermsOfService';
 import { HelpSupport } from './pages/HelpSupport';
 import { ContactPage } from './pages/ContactPage';
-import Chatbot from './pages/Chatbot';
+import Chatbot from './components/chatbot/Chatbot';
 
 // ⭐ REQUIRED IMPORT FOR SHARED ROUTE
 import { SharedNotePage } from './pages/SharedNotePage';
