@@ -8,16 +8,16 @@ import { Loader2, NotebookPen, Lock, Tag, Calendar, Clock, Star, Download } from
 // External Libraries for new features
 import ReactMarkdown from 'react-markdown'; // 🎯 Markdown rendering
 import jsPDF from 'jspdf'; // 🎯 PDF creation
-import html2canvas from 'html2canvas'; // 🎯 HTML to Canvas conversion for PDF
+
+// 🎯 FIX: Using dom-to-image-more as a robust alternative to html2canvas
+import * as domToImage from 'dom-to-image-more';
 
 // UI Components (assuming these are defined in your project)
 import { Button } from "../components/ui/button"; 
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
-// ❌ The broken import './SharedNotePage.css' has been removed.
-
-// ❌ FIX: Removed unused PRIMARY_HEX_COLOR
+// The broken import './SharedNotePage.css' has been removed.
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500"; 
 
 // Interface for the actual Entry object
@@ -77,26 +77,35 @@ export function SharedNotePage() {
     });
 
     // ----------------------------------------------------------------------
-    // 🎯 PDF Download Handler
+    // 🎯 PDF Download Handler (Updated to use dom-to-image-more)
     // ----------------------------------------------------------------------
     const handleDownloadPdf = async () => {
         if (!entry || !noteContentRef.current) return;
 
+        // Use dom-to-image-more to get the image data URL
+        const imgData = await domToImage.toPng(noteContentRef.current, {
+            // Optional: Increase quality/scale for better PDF look
+            quality: 1,
+            cacheBust: true,
+        });
+
         // Use the title for the filename
         const filename = `${entry.title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
         
-        // Use html2canvas to capture the visual HTML structure
-        const canvas = await html2canvas(noteContentRef.current, {
-            scale: 2, 
-            logging: false,
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        
+        // Calculate image height while maintaining aspect ratio
+        const img = new Image();
+        img.src = imgData;
+        
+        // Wait for image dimensions to be available
+        await new Promise<void>((resolve) => {
+            img.onload = () => resolve();
         });
 
-        const imgData = canvas.toDataURL('image/png');
-        
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210; 
-        const pageHeight = 297; 
-        const imgHeight = canvas.height * imgWidth / canvas.width;
+        const imgHeight = img.height * imgWidth / img.width;
         let heightLeft = imgHeight;
         let position = 0; 
 
@@ -105,7 +114,7 @@ export function SharedNotePage() {
         heightLeft -= pageHeight;
 
         // Loop for multi-page documents
-        while (heightLeft >= 0) {
+        while (heightLeft > 0) { // Check for > 0 to ensure we only add pages if content remains
             position = heightLeft - imgHeight;
             pdf.addPage();
             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -155,40 +164,10 @@ export function SharedNotePage() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             
-            {/* 🎯 FIX: Using <style dangerouslySetInnerHTML> to correctly inject global CSS.
-               This prevents the TypeScript/JSX errors (2322) while providing hex fallbacks for html2canvas. */}
-            <style dangerouslySetInnerHTML={{ __html: `
-                .pdf-capture-container {
-                    /* --- Override fuchsia colors --- */
-                    /* fuchsia-600 (used in PRIMARY_TEXT_CLASS, button) */
-                    --color-fuchsia-600: #d946ef; 
-                    /* fuchsia-500 (used in dark text/card border) */
-                    --color-fuchsia-500: #a855f7; 
-                    /* fuchsia-700 (used in button hover) */
-                    --color-fuchsia-700: #c026d3;
-
-                    /* --- Override gray/neutral colors if they use modern formats --- */
-                    /* text-gray-600 */
-                    --color-gray-600: #4b5563; 
-                    /* dark:text-gray-400 */
-                    --color-gray-400: #9ca3af; 
-                    /* dark:bg-gray-800 */
-                    --color-gray-800: #1f2937;
-                    /* text-gray-500 */
-                    --color-gray-500: #6b7280;
-                }
-
-                /* Ensure utility classes map to the supported colors within the container */
-                .pdf-capture-container .text-fuchsia-600 { color: var(--color-fuchsia-600) !important; }
-                .pdf-capture-container .dark\\:text-fuchsia-500 { color: var(--color-fuchsia-500) !important; }
-                .pdf-capture-container .bg-fuchsia-600 { background-color: var(--color-fuchsia-600) !important; }
-                .pdf-capture-container .hover\\:bg-fuchsia-700:hover { background-color: var(--color-fuchsia-700) !important; }
-                .pdf-capture-container .border-fuchsia-500 { border-color: var(--color-fuchsia-500) !important; }
-                /* Add more overrides for other fuchsia/gray classes as needed for complete PDF styling */
-            ` }} />
-
-            {/* 🎯 The target element for PDF generation, now with the fallback class */}
-            <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0 pdf-capture-container"> 
+            {/* The problematic <style> block is no longer needed with dom-to-image-more */}
+            
+            {/* 🎯 The target element for PDF generation */}
+            <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0"> 
                 
                 <Card className="shadow-2xl dark:bg-gray-800 border-t-4 border-fuchsia-500 print:shadow-none">
                     <CardHeader className="pb-4">
