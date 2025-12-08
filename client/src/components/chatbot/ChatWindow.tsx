@@ -1,11 +1,22 @@
 import ChatBubble from "./ChatBubble";
-import { useChatStore } from "./useChatStore";
+import { createChatStore } from "./useChatStore"; // Import the factory function
 import { getBotReply } from "./botLogic";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
-export default function ChatWindow() {
-  const { messages, addMessage, input, setInput } = useChatStore();
+// Define a type for the initialized store hook for clean typing
+// The store hook is of type ReturnType<typeof createChatStore> but called when used.
+// We'll type the prop as any for simplicity, but in a real app, it would be a specific type.
+type UseChatStoreHook = ReturnType<typeof createChatStore>;
+
+// The ChatWindow component now accepts the initialized store hook as a prop.
+interface ChatWindowProps {
+    useStore: UseChatStoreHook;
+}
+
+export default function ChatWindow({ useStore }: ChatWindowProps) {
+  // Use the initialized store hook passed via props
+  const { messages, addMessage, input, setInput } = useStore();
 
   const send = () => {
     if (!input.trim()) return;
@@ -40,3 +51,20 @@ export default function ChatWindow() {
     </div>
   );
 }
+
+// --- Example of how the ChatWindow would be used in a parent component ---
+/*
+// In a parent component (e.g., App.tsx) where the userName is known:
+
+import { createChatStore } from './useChatStore';
+
+// 1. Get the current user's name (e.g., from an auth context)
+const currentUserName = "Alex"; 
+
+// 2. Initialize the store hook once
+const useChatStoreHook = createChatStore(currentUserName);
+
+function ParentComponent() {
+    return <ChatWindow useStore={useChatStoreHook} />;
+}
+*/
