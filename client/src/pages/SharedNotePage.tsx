@@ -15,10 +15,9 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
-// ❌ FIX APPLIED: The broken import './SharedNotePage.css' has been removed.
+// ❌ The broken import './SharedNotePage.css' has been removed.
 
-// Use standard hex for primary color to avoid oklch issue in html2canvas
-const PRIMARY_HEX_COLOR = "#e879f9"; // fuchsia-400 equivalent for light mode
+// ❌ FIX: Removed unused PRIMARY_HEX_COLOR
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500"; 
 
 // Interface for the actual Entry object
@@ -156,9 +155,9 @@ export function SharedNotePage() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             
-            {/* 🎯 FIX: Apply supported colors using standard CSS vars 
-               This section provides fallback colors for html2canvas to read. */}
-            <style jsx global>{`
+            {/* 🎯 FIX: Using <style dangerouslySetInnerHTML> to correctly inject global CSS.
+               This prevents the TypeScript/JSX errors (2322) while providing hex fallbacks for html2canvas. */}
+            <style dangerouslySetInnerHTML={{ __html: `
                 .pdf-capture-container {
                     /* --- Override fuchsia colors --- */
                     /* fuchsia-600 (used in PRIMARY_TEXT_CLASS, button) */
@@ -184,8 +183,9 @@ export function SharedNotePage() {
                 .pdf-capture-container .dark\\:text-fuchsia-500 { color: var(--color-fuchsia-500) !important; }
                 .pdf-capture-container .bg-fuchsia-600 { background-color: var(--color-fuchsia-600) !important; }
                 .pdf-capture-container .hover\\:bg-fuchsia-700:hover { background-color: var(--color-fuchsia-700) !important; }
-                /* Add more overrides as needed for other colored elements (borders, text, etc.) */
-            `}</style>
+                .pdf-capture-container .border-fuchsia-500 { border-color: var(--color-fuchsia-500) !important; }
+                /* Add more overrides for other fuchsia/gray classes as needed for complete PDF styling */
+            ` }} />
 
             {/* 🎯 The target element for PDF generation, now with the fallback class */}
             <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0 pdf-capture-container"> 
@@ -239,7 +239,6 @@ export function SharedNotePage() {
             <div className="flex justify-center mt-8">
                 <Button 
                     onClick={handleDownloadPdf} 
-                    // This button inherits the PDF safe colors from the style block above
                     className="bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors"
                 >
                     <Download className="h-5 w-5 mr-2" />
