@@ -42,6 +42,40 @@ interface Entry {
     category: { name: string };
 }
 
+/**
+ * Helper function to format a date string into a relative time string (e.g., "5 minutes ago").
+ * Uses the built-in Intl.RelativeTimeFormat for modern browsers.
+ */
+function formatRelativeTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+    if (seconds < 60) {
+        return "just now";
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+        return formatter.format(-minutes, 'minute');
+    }
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+        return formatter.format(-hours, 'hour');
+    }
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) {
+        return formatter.format(-days, 'day');
+    }
+    
+    // For longer periods, fall back to a simple date
+    return `on ${date.toLocaleDateString()}`;
+}
+
 // Reusable Note Card Component
 interface NoteCardProps {
     entry: Entry;
@@ -73,6 +107,9 @@ function NoteCard({
     const isPinned = !!entry.pinned;
     const isBookmarked = !!entry.bookmarked;
     const isPublic = !!entry.isPublic;
+    
+    // --- UPDATED DATE DISPLAY ---
+    const relativeTime = formatRelativeTime(entry.lastUpdated);
 
     return (
         <Card
@@ -151,7 +188,8 @@ function NoteCard({
 
             <CardFooter className={`flex items-center justify-between pt-4 border-t dark:border-gray-700 ${simple ? 'p-3' : 'p-4'}`}>
                 <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
-                    Updated {new Date(entry.lastUpdated).toLocaleDateString()}
+                    {/* --- UPDATED LINE --- */}
+                    Updated {relativeTime}
                 </span>
 
                 <div className="flex gap-2 items-center flex-wrap justify-end">
@@ -496,7 +534,7 @@ export function NotesListPage() {
                         />
                     ))}
                     {!recentNotes.length && (
-                         <p className="text-sm text-gray-500 dark:text-gray-400 py-2">No recent notes found.</p>
+                             <p className="text-sm text-gray-500 dark:text-gray-400 py-2">No recent notes found.</p>
                     )}
                 </div>
             </div>
