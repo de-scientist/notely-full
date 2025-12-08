@@ -16,10 +16,15 @@ interface ChatState {
   reset: () => void;
 }
 
+// NOTE: In a real application, the USER_NAME placeholder would be replaced 
+// by an actual variable holding the current user's name/handle.
+const BOT_GREETING_TEMPLATE = (user: string) => 
+  `Hello ${user}! I’m Notely Assistant. What can I help you with?`;
+
 export const useChatStore = create<ChatState>((set) => ({
   open: false,
   messages: [
-    { from: "bot", text: "Hello! I’m Notely Assistant. What can I help you with?" },
+    { from: "bot", text: BOT_GREETING_TEMPLATE("USER_NAME") }, // Updated initial message
   ],
   input: "",
 
@@ -29,7 +34,7 @@ export const useChatStore = create<ChatState>((set) => ({
   reset: () =>
     set({
       messages: [
-        { from: "bot", text: "Hello! I’m Notely Assistant. What can I help you with?" },
+        { from: "bot", text: BOT_GREETING_TEMPLATE("USER_NAME") }, // Updated reset message
       ],
       input: "",
     }),
