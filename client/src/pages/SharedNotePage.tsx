@@ -9,7 +9,7 @@ import { Loader2, NotebookPen, Lock, Tag, Calendar, Clock, Star, Download } from
 import ReactMarkdown from 'react-markdown'; // 🎯 Markdown rendering
 import jsPDF from 'jspdf'; // 🎯 PDF creation
 
-// 🎯 FIX: Using dom-to-image-more as a robust alternative to html2canvas
+// 🎯 NOTE: Ensure you have created the dom-to-image-more.d.ts file for TypeScript to be happy.
 import * as domToImage from 'dom-to-image-more';
 
 // UI Components (assuming these are defined in your project)
@@ -77,16 +77,18 @@ export function SharedNotePage() {
     });
 
     // ----------------------------------------------------------------------
-    // 🎯 PDF Download Handler (Updated to use dom-to-image-more)
+    // 🎯 PDF Download Handler (Using dom-to-image-more)
     // ----------------------------------------------------------------------
     const handleDownloadPdf = async () => {
         if (!entry || !noteContentRef.current) return;
 
         // Use dom-to-image-more to get the image data URL
         const imgData = await domToImage.toPng(noteContentRef.current, {
-            // Optional: Increase quality/scale for better PDF look
+            // Use a higher scale for better resolution in the PDF
             quality: 1,
             cacheBust: true,
+            // Ensure background is explicitly white for clean capture, regardless of dark mode
+            bgcolor: 'white', 
         });
 
         // Use the title for the filename
@@ -105,6 +107,7 @@ export function SharedNotePage() {
             img.onload = () => resolve();
         });
 
+        // The captured image size
         const imgHeight = img.height * imgWidth / img.width;
         let heightLeft = imgHeight;
         let position = 0; 
@@ -113,8 +116,8 @@ export function SharedNotePage() {
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
-        // Loop for multi-page documents
-        while (heightLeft > 0) { // Check for > 0 to ensure we only add pages if content remains
+        // Loop for multi-page documents (for long notes)
+        while (heightLeft > 0) { 
             position = heightLeft - imgHeight;
             pdf.addPage();
             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -164,12 +167,16 @@ export function SharedNotePage() {
     return (
         <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
             
-            {/* The problematic <style> block is no longer needed with dom-to-image-more */}
-            
-            {/* 🎯 The target element for PDF generation */}
-            <div ref={noteContentRef} className="bg-white dark:bg-gray-900 p-0"> 
+            {/* 🎯 FIX: Added padding (p-8) and forced white background for clean PDF capture.
+               The 'pdf-capture' class helps ensure clear styling for the image export process. */}
+            <div 
+                ref={noteContentRef} 
+                className="bg-white p-8 pdf-capture" // Added p-8 and ensured bg-white
+            > 
                 
-                <Card className="shadow-2xl dark:bg-gray-800 border-t-4 border-fuchsia-500 print:shadow-none">
+                <Card 
+                    className="shadow-2xl bg-white dark:bg-gray-800 border-t-4 border-fuchsia-500 print:shadow-none"
+                >
                     <CardHeader className="pb-4">
                         <div className="flex items-start justify-between">
                             <CardTitle className="text-3xl font-extrabold dark:text-white flex items-center gap-3">
