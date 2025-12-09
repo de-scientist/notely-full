@@ -2,7 +2,6 @@
 import { useEffect, useRef, useMemo } from "react";
 import ChatBubble from "../chatbot/ChatBubble";
 import { useChatStore } from "../AI/useChatStore";
-// Assuming askNotelyAI returns { reply: string, intent: string } based on previous context
 import { askNotelyAI } from "@/lib/chats"; 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -29,8 +28,11 @@ export default function ChatWindow() {
 
   // Auto-scroll to the bottom when messages or loading state change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    // FIX: Scroll only if the ref exists and there are messages/loading state
+    if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages.length, loading]); // Optimized dependency array
 
   const speak = (text: string) => {
     if (!("speechSynthesis" in window)) return;
@@ -41,7 +43,7 @@ export default function ChatWindow() {
     window.speechSynthesis.speak(utter);
   };
 
-  // --- Speech Recognition Logic ---
+  // --- Speech Recognition Logic (Unchanged functionality) ---
   const startListening = () => {
     if (!SpeechRecognition) {
       addMessage({
@@ -88,9 +90,7 @@ export default function ChatWindow() {
   const sendVoiceQuery = async (text: string) => {
     setLoading(true);
     try {
-      // Assuming askNotelyAI returns { reply: string, intent: string }
       const res = await askNotelyAI(text, { channel: "voice" }) as any;
-      // FIX: Ensure the reply field is being used correctly
       addMessage({ from: "bot", text: res.reply }); 
       speak(res.reply);
     } catch {
@@ -102,7 +102,7 @@ export default function ChatWindow() {
     setLoading(false);
   };
 
-  // --- Text Input Logic ---
+  // --- Text Input Logic (Unchanged functionality) ---
   const sendTextQuery = async () => {
     if (!input.trim() || loading) return;
     
@@ -112,9 +112,7 @@ export default function ChatWindow() {
     setLoading(true);
 
     try {
-      // Assuming askNotelyAI returns { reply: string, intent: string }
       const res = await askNotelyAI(userQuery, { channel: "web" }) as any;
-      // FIX: Ensure the reply field is being used correctly
       addMessage({ from: "bot", text: res.reply });
       speak(res.reply);
     } catch {
@@ -126,7 +124,6 @@ export default function ChatWindow() {
     setLoading(false);
   };
   
-  // Handle Enter key press
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && input.trim()) {
       sendTextQuery();
@@ -134,7 +131,6 @@ export default function ChatWindow() {
   };
 
   return (
-    // Height maintained at 480px, but structure reinforced for visibility
     <div className="w-96 h-[480px] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
       
       {/* Header */}
@@ -144,22 +140,24 @@ export default function ChatWindow() {
       </div>
       
       {/* Chat Messages Area */}
-      {/* FIX: Ensure the chat messages are visible and scrollable */}
-      <ScrollArea className="flex-1 p-4 space-y-4">
-        {messages.map((m, i) => (
-          <ChatBubble key={i} msg={m} />
-        ))}
-        
-        {/* Loading Indicator */}
-        {loading && (
-          <div className="flex items-center space-x-2 text-indigo-500 text-sm p-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>AI is typing...</span>
-          </div>
-        )}
-        
-        {/* Scroll anchor */}
-        <div ref={messagesEndRef} />
+      <ScrollArea className="flex-1"> {/* ScrollArea takes up all available space */}
+        {/* FIX: Use a simple div for message content and padding */}
+        <div className="p-4 space-y-4"> 
+            {messages.map((m, i) => (
+                <ChatBubble key={i} msg={m} />
+            ))}
+            
+            {/* Loading Indicator */}
+            {loading && (
+            <div className="flex items-center space-x-2 text-indigo-500 text-sm p-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>AI is typing...</span>
+            </div>
+            )}
+            
+            {/* Scroll anchor (must be inside the scrollable content) */}
+            <div ref={messagesEndRef} className="h-0" />
+        </div>
       </ScrollArea>
 
       {/* Input and Action Bar */}
