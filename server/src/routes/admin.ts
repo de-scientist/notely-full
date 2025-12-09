@@ -4,7 +4,7 @@ import { saveDoc, listDocs, embedText, queryDocs } from "../lib/rag";
 import { db } from "../lib/db"; // Assuming `db` is your Prisma/database client
 import { randomUUID } from "crypto";
 // IMPORTANT: Assuming you have a global EventEmitter for handling server-side events (SSE)
-import { analyticsEmitter } from "../lib/analyticsEmitter"; 
+import { analyticsEmitter } from "../lib/analyticsEmitter.ts";
 
 // Initialize OpenAI client globally
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
