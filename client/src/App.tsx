@@ -223,7 +223,10 @@ function AppLayout() {
         </Routes>
       </main>
 
-      <AdminRoute />
+      {/* ✅ FIX: AdminRoute must be inside the main <Routes> block. */}
+          {/* We define a parent route for '/admin/*' and let AdminRoute handle the rest of the nesting. 
+             We pass the element={<AdminRoute />} to let it render its own internal <Routes>. */}
+          <Route path="/admin/*" element={<AdminRoute />} />
       <Chatbot />
       <AppFooter />
       <Toaster richColors position="bottom-right" />
