@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Server side for Notely application",
   "main": "index.ts",
-  
   "scripts": {
     "build": "tsc",
     "seed": "tsx prisma/seed.ts",
@@ -21,6 +20,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "openai": "^6.10.0",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
