@@ -1,5 +1,5 @@
 import { Express, Request, Response } from "express";
-import { addDocsToStore } from "./vectorStore";
+import { addDocsToStore } from "./vectorStore.ts";
 
 /**
  * Sets up an Express route for uploading RAG knowledge base content.
