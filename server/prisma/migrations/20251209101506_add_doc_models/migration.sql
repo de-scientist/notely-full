@@ -1,0 +1,30 @@
+BEGIN TRY
+
+BEGIN TRAN;
+
+-- CreateTable
+CREATE TABLE [dbo].[Doc] (
+    [id] NVARCHAR(1000) NOT NULL,
+    [title] NVARCHAR(1000) NOT NULL,
+    [content] TEXT NOT NULL,
+    [embedding] NVARCHAR(1000),
+    [source] NVARCHAR(1000),
+    [createdAt] DATETIME2 NOT NULL CONSTRAINT [Doc_createdAt_df] DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT [Doc_pkey] PRIMARY KEY CLUSTERED ([id])
+);
+
+-- CreateIndex
+CREATE NONCLUSTERED INDEX [Doc_createdAt_idx] ON [dbo].[Doc]([createdAt]);
+
+COMMIT TRAN;
+
+END TRY
+BEGIN CATCH
+
+IF @@TRANCOUNT > 0
+BEGIN
+    ROLLBACK TRAN;
+END;
+THROW
+
+END CATCH
