@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { analyticsEmitter } from "../lib/analyticsEmitter"; // Assuming this path is correct
-import { pipeline, Pipeline } from "stream"; // Use Node's pipeline utility
+import { analyticsEmitter } from "../lib/analyticsEmitter.ts";// Assuming this path is correct
+import { pipeline } from "stream"; // Use Node's pipeline utility
 import { promisify } from "util";
 import csvStringify from "csv-stringify"; // Changed to named import for clarity
 
