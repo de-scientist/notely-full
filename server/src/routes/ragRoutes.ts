@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { PrismaClient } from "@prisma/client";
 // NOTE: Assuming your project has the 'similarity' library, 
 // its path might need adjustment based on your Express setup.
-import { cosine } from "../lib/similarity"; 
+import { cosine } from "../lib/similarity.ts";
 
 // Initialize clients outside the route function
 const prisma = new PrismaClient();
