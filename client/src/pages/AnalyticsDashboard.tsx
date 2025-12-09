@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
 import { Loader2, TrendingUp, Zap, MessageSquare } from "lucide-react";
 
+// Define the server base URL to align with askNotelyAI
+const API_BASE_URL = "http://localhost:5000"; 
+
 // FIX 1: Update data types to include an index signature for Recharts compatibility
 interface ChartDataInput {
   [key: string]: any; // Add index signature
@@ -34,9 +37,10 @@ export default function AnalyticsDashboard() {
     setError(null);
     try {
       const [intentsRes, hourlyRes, topRes] = await Promise.all([
-        fetch("/api/analytics/intents"),
-        fetch("/api/analytics/hourly"),
-        fetch("/api/analytics/top-queries"),
+        // FIX: Use absolute URL
+        fetch(`${API_BASE_URL}/api/analytics/intents`),
+        fetch(`${API_BASE_URL}/api/analytics/hourly`),
+        fetch(`${API_BASE_URL}/api/analytics/top-queries`),
       ]);
 
       if (!intentsRes.ok || !hourlyRes.ok || !topRes.ok) {
@@ -59,11 +63,12 @@ export default function AnalyticsDashboard() {
       setHourly(mappedHourly);
 
       // Top Queries Data
-      setTopQueries(topData.top || topData); // FIX: 'topData' is now definitely initialized.
+      setTopQueries(topData.top || topData);
 
     } catch (e) {
       console.error(e);
-      setError("Error loading dashboard data.");
+      // Enhanced error detail for the user
+      setError("Error loading dashboard data. Check network status and server connection on port 5000.");
     } finally {
       setIsLoading(false);
     }
