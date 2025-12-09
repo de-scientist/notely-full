@@ -8,9 +8,9 @@ export default function AdminRoute() {
   return (
     <Routes>
       <Route path="/admin" element={<AdminLayout />}>
-        <Route path="rag" element={<RAGUploader />} />
-        <Route path="queries" element={<QueriesTable />} />
-        <Route path="messages" element={<MessagesInbox />} />
+        <Route path="/rag" element={<RAGUploader />} />
+        <Route path="/queries" element={<QueriesTable />} />
+        <Route path="/messages" element={<MessagesInbox />} />
       </Route>
     </Routes>
   );
