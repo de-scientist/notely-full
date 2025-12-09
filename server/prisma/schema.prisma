@@ -96,3 +96,19 @@ model Bookmark {
   @@unique([userId, entryId])
   @@map("Bookmarks")
 }
+
+model ChatLog {
+  id         String   @id @default(cuid())
+  userId     String?  // optional if you track logged in users
+  query      String
+  reply      String
+  intent     String?  // optional, filled by backend NLP or simple routing
+  channel    String   @default("web") // "web" | "voice" | "api"
+  createdAt  DateTime @default(now())
+  metadata   Json?
+  // Indexes for analytics
+  @@index([createdAt])
+  @@index([intent])
+
+  @@map("ChatLogs")
+}
