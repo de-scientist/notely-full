@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
 import OpenAI from "openai";
 import { PrismaClient } from "@prisma/client";
-import { analyticsEmitter } from "../lib/analyticsEmitter";
-import { cosine } from "../lib/similarity";
+import { analyticsEmitter } from "../lib/analyticsEmitter.ts";
+import { cosine } from "../lib/similarity.ts";
 
 // Initialize clients outside the route function
 const prisma = new PrismaClient();
