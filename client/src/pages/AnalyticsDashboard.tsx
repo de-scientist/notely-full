@@ -2,20 +2,22 @@ import { useEffect, useState, useCallback } from "react";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
 import { Loader2, TrendingUp, Zap, MessageSquare } from "lucide-react"; // Icons for better visual hierarchy
 
-// Define basic data types for clarity
-interface IntentData {
+// FIX 1: Update data types to include an index signature for Recharts compatibility
+interface ChartDataInput {
+  [key: string]: any; // Add index signature
+  count: number;
+}
+
+interface IntentData extends ChartDataInput {
   intent: string;
-  count: number;
 }
 
-interface HourlyData {
+interface HourlyData extends ChartDataInput {
   hour: string;
-  count: number;
 }
 
-interface QueryData {
+interface QueryData extends ChartDataInput {
   query: string;
-  count: number;
 }
 
 export default function AnalyticsDashboard() {
@@ -25,7 +27,6 @@ export default function AnalyticsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Define COLORS and ensure enough colors for common intents + 'unknown'
   const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6", "#F97316"]; // Tailwind-inspired colors
 
   const fetchData = useCallback(async () => {
@@ -45,7 +46,7 @@ export default function AnalyticsDashboard() {
       const [intentsData, hourlyData, topData] = await Promise.all([
         intentsRes.json(),
         hourlyRes.json(),
-        topRes.json(),
+        topData.json(),
       ]);
 
       // Intents Data
@@ -122,9 +123,10 @@ export default function AnalyticsDashboard() {
                       paddingAngle={5}
                       fill="#8884d8"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      // FIX 2: Added null check for 'percent'
+                      label={({ name, percent }) => `${name}: ${percent !== undefined ? (percent * 100).toFixed(0) : 0}%`}
                     >
-                      {intents.map((entry, idx) => (
+                      {intents.map((_, idx) => ( // FIX 3: Changed 'entry' to '_' to ignore the unused variable
                         <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                       ))}
                     </Pie>
