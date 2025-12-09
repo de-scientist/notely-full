@@ -18,7 +18,8 @@ export default function ChatWindow() {
   const { messages, addMessage, input, setInput, loading, setLoading } =
     useChatStore();
   
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Ref is now used to maintain the scroll position anchor for the 'reversed' flow
+  const messagesStartRef = useRef<HTMLDivElement>(null); 
 
   const SpeechRecognition = useMemo(() => 
     typeof window !== "undefined"
@@ -26,13 +27,16 @@ export default function ChatWindow() {
       : null, 
   []);
 
-  // Auto-scroll to the bottom when messages or loading state change
+  // FIX: New useEffect hook to ensure scroll position is maintained at the bottom (start of the reversed list)
   useEffect(() => {
-    // FIX: Scroll only if the ref exists and there are messages/loading state
-    if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    // Scroll to the 'start' of the reversed list (which is the bottom of the chat view) 
+    // when messages are loaded initially or when new messages come in.
+    if (messagesStartRef.current) {
+        messagesStartRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages.length, loading]); // Optimized dependency array
+  }, [messages.length, loading]); 
+  // NOTE: This effect is still necessary because the ScrollArea component 
+  // doesn't always automatically manage the flex-col-reverse flow perfectly.
 
   const speak = (text: string) => {
     if (!("speechSynthesis" in window)) return;
@@ -140,23 +144,30 @@ export default function ChatWindow() {
       </div>
       
       {/* Chat Messages Area */}
-      <ScrollArea className="flex-1"> {/* ScrollArea takes up all available space */}
-        {/* FIX: Use a simple div for message content and padding */}
-        <div className="p-4 space-y-4"> 
-            {messages.map((m, i) => (
-                <ChatBubble key={i} msg={m} />
-            ))}
-            
-            {/* Loading Indicator */}
-            {loading && (
+      <ScrollArea className="flex-1"> 
+        {/* FIX: Use flex-col-reverse. This displays items from bottom to top. 
+           The user can now freely scroll up to view old history without the 
+           scroll snapping constantly. */}
+        <div className="p-4 space-y-4 flex flex-col-reverse"> 
+          
+          {/* Scroll anchor placed at the logical "start" (bottom of the viewport) */}
+          <div ref={messagesStartRef} className="h-0" />
+
+          {/* Loading Indicator (appears at the bottom, before the scroll anchor) */}
+          {loading && (
             <div className="flex items-center space-x-2 text-indigo-500 text-sm p-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>AI is typing...</span>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>AI is typing...</span>
             </div>
-            )}
-            
-            {/* Scroll anchor (must be inside the scrollable content) */}
-            <div ref={messagesEndRef} className="h-0" />
+          )}
+          
+          {/* FIX: Reverse the array to maintain the chronological order in the reversed column flow.
+             The latest message (at the end of the array) will render first, 
+             placing it at the bottom of the visible area. */}
+          {[...messages].reverse().map((m, i) => (
+              <ChatBubble key={i} msg={m} />
+          ))}
+
         </div>
       </ScrollArea>
 
