@@ -49,29 +49,22 @@ export function chatRoutes() {
       else if (/(search|find|lookup)/.test(lower)) intent = "search";
       else if (/(navigate|home|open)/.test(lower)) intent = "navigation";
 
-      // --- FIX APPLIED HERE ---
-      // Convert `userId`, `channel`, and `metadata` from `undefined` to `null` 
-      // if they are missing, as required by Prisma's generated types for optional fields.
+      // --- Database Logging ---
       const dbUserId = userId ?? null;
-      const dbChannel = channel ?? "web"; // Channel has a default but setting it to 'web' is fine
-      // If your 'metadata' field in Prisma is defined as String? (for SQL Server), 
-      // you must stringify the object/data before saving it.
-      // If your 'metadata' field is defined as Json? (for Postgres), you can pass the object or null.
-      const dbMetadata = metadata ? JSON.stringify(metadata) : null; 
-      // Assuming String? type for metadata based on previous error context:
+      const dbChannel = channel ?? "web";
+      const dbMetadata = metadata ? JSON.stringify(metadata) : null;
 
-      // Log to DB
       await prisma.chatLog.create({
         data: {
-          userId: dbUserId,       // Now string | null
+          userId: dbUserId,
           query: message,
           reply: answer,
           intent,
           channel: dbChannel,
-          metadata: dbMetadata,   // Now string | null (assuming String? schema)
+          metadata: dbMetadata,
         },
       });
-      // --- END FIX ---
+      // --- END Database Logging ---
 
       return res.send({ reply: answer, intent });
     } catch (err) {
@@ -80,37 +73,60 @@ export function chatRoutes() {
     }
   });
 
-  // Analytics routes remain unchanged (omitted for brevity, but they would follow here)
+  // --- GET /api/analytics/top-queries ---
   router.get("/api/analytics/top-queries", async (req: Request, res: Response) => {
-    const top = await prisma.$queryRawUnsafe(`
-      SELECT query, COUNT(*) AS count
-      FROM "ChatLog"
-      GROUP BY query
-      ORDER BY count DESC
-      LIMIT 30;
-    `);
-    return res.send({ top });
+    try {
+      // Adjusted quoting for SQL Server: using [ChatLog]
+      const top = await prisma.$queryRawUnsafe(`
+        SELECT query, COUNT(*) AS count
+        FROM [ChatLog]
+        GROUP BY query
+        ORDER BY count DESC
+        OFFSET 0 ROWS FETCH NEXT 30 ROWS ONLY; 
+        -- SQL Server uses OFFSET/FETCH for LIMIT
+      `);
+      return res.send({ top });
+    } catch (e) {
+      console.error("Error fetching top queries:", e);
+      return res.status(500).send({ error: "Database error fetching top queries." });
+    }
   });
 
+  // --- GET /api/analytics/intents ---
   router.get("/api/analytics/intents", async (req: Request, res: Response) => {
-    const intents = await prisma.$queryRawUnsafe(`
-      SELECT intent, COUNT(*) AS count
-      FROM "ChatLog"
-      GROUP BY intent
-      ORDER BY count DESC;
-    `);
-    return res.send({ intents });
+    try {
+      // Adjusted quoting for SQL Server: using [ChatLog]
+      const intents = await prisma.$queryRawUnsafe(`
+        SELECT intent, COUNT(*) AS count
+        FROM [ChatLog]
+        GROUP BY intent
+        ORDER BY count DESC;
+      `);
+      return res.send({ intents });
+    } catch (e) {
+      console.error("Error fetching intents:", e);
+      return res.status(500).send({ error: "Database error fetching intents." });
+    }
   });
 
+  // --- GET /api/analytics/hourly (SQL SERVER FIX) ---
   router.get("/api/analytics/hourly", async (req: Request, res: Response) => {
-    const hourly = await prisma.$queryRawUnsafe(`
-      SELECT date_trunc('hour', "createdAt") as hour, COUNT(*) as count
-      FROM "ChatLog"
-      WHERE "createdAt" > now() - interval '7 days'
-      GROUP BY hour
-      ORDER BY hour;
-    `);
-    return res.send({ hourly });
+    // FIX: Using SQL Server functions (DATEADD, DATEDIFF, GETDATE) for date arithmetic and grouping.
+    try {
+      const hourly = await prisma.$queryRawUnsafe(`
+        SELECT 
+          DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0) as hour, 
+          COUNT(*) as count
+        FROM [ChatLog]
+        WHERE [createdAt] >= DATEADD(day, -7, GETDATE()) -- Last 7 days
+        GROUP BY DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0)
+        ORDER BY hour;
+      `);
+      return res.send({ hourly });
+    } catch (e) {
+      console.error("Error fetching hourly data (SQL Server syntax error detected):", e);
+      return res.status(500).send({ error: "Database error fetching hourly data. SQL Server syntax may need verification." });
+    }
   });
 
   return router;
