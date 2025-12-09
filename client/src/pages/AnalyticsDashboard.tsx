@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
-import { Loader2, TrendingUp, Zap, MessageSquare } from "lucide-react"; // Icons for better visual hierarchy
+import { Loader2, TrendingUp, Zap, MessageSquare } from "lucide-react";
 
 // FIX 1: Update data types to include an index signature for Recharts compatibility
 interface ChartDataInput {
@@ -27,7 +27,7 @@ export default function AnalyticsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6", "#F97316"]; // Tailwind-inspired colors
+  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6", "#F97316"]; 
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -43,11 +43,10 @@ export default function AnalyticsDashboard() {
         throw new Error("Failed to fetch all analytics data.");
       }
 
-      const [intentsData, hourlyData, topData] = await Promise.all([
-        intentsRes.json(),
-        hourlyRes.json(),
-        topData.json(),
-      ]);
+      // FIX: Explicitly run .json() and assign to correctly scoped, typed variables
+      const intentsData: any = await intentsRes.json();
+      const hourlyData: any = await hourlyRes.json();
+      const topData: any = await topRes.json();
 
       // Intents Data
       setIntents(intentsData.intents || intentsData);
@@ -60,7 +59,7 @@ export default function AnalyticsDashboard() {
       setHourly(mappedHourly);
 
       // Top Queries Data
-      setTopQueries(topData.top || topData);
+      setTopQueries(topData.top || topData); // FIX: 'topData' is now definitely initialized.
 
     } catch (e) {
       console.error(e);
@@ -123,10 +122,9 @@ export default function AnalyticsDashboard() {
                       paddingAngle={5}
                       fill="#8884d8"
                       labelLine={false}
-                      // FIX 2: Added null check for 'percent'
                       label={({ name, percent }) => `${name}: ${percent !== undefined ? (percent * 100).toFixed(0) : 0}%`}
                     >
-                      {intents.map((_, idx) => ( // FIX 3: Changed 'entry' to '_' to ignore the unused variable
+                      {intents.map((_, idx) => ( 
                         <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                       ))}
                     </Pie>
