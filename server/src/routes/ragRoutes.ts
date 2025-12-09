@@ -1,8 +1,6 @@
 import { Router, Request, Response } from "express";
 import OpenAI from "openai";
 import { PrismaClient } from "@prisma/client";
-// NOTE: Assuming your project has the 'similarity' library, 
-// its path might need adjustment based on your Express setup.
 import { cosine } from "../lib/similarity.ts";
 
 // Initialize clients outside the route function
@@ -31,16 +29,27 @@ export function ragRoutes() {
         input: content,
       });
 
-      const embedding = embResp.data[0].embedding; // number[]
+      // FIX 1 (Error 2532): Safely access embedding data and handle case where data might be missing.
+      const embedding = embResp.data[0]?.embedding; 
+      
+      if (!embedding) {
+          return res.status(500).send({ error: "Failed to generate embedding." });
+      }
 
       // 2. Store document and its embedding in the database
       const doc = await prisma.doc.create({
-        data: { title, content, embedding: embedding as any, source },
+        data: { 
+            title, 
+            content, 
+            embedding: embedding as any, 
+            // FIX 2 (Error 2375): Explicitly convert 'undefined' to 'null' for Prisma compatibility.
+            source: source ?? null, 
+        },
       });
 
       return res.send({ ok: true, doc });
     } catch (err) {
-      console.error(err); // Changed from app.log.error
+      console.error(err); 
       return res.status(500).send({ error: "upload failed" });
     }
   });
@@ -59,7 +68,13 @@ export function ragRoutes() {
         model: "text-embedding-3-large",
         input: query,
       });
-      const qVec = embResp.data[0].embedding as number[];
+      
+      // FIX 3 (Error 2532): Safely access embedding data and handle case where data might be missing.
+      const qVec = embResp.data[0]?.embedding as number[] | undefined;
+      
+      if (!qVec) {
+          return res.status(500).send({ error: "Failed to generate query vector." });
+      }
 
       // 2. Fetch all documents (in a production system, this would be a vector DB query)
       const docs = await prisma.doc.findMany({ where: {}, take: 1000 });
@@ -68,7 +83,6 @@ export function ragRoutes() {
       const scored = docs.map((d) => {
         const e = d.embedding as number[] | null;
         if (!e) return { doc: d, score: -1 };
-        // Using the imported cosine similarity function
         const score = cosine(qVec, e); 
         return { doc: d, score };
       });
@@ -82,7 +96,7 @@ export function ragRoutes() {
 
       return res.send({ top });
     } catch (err) {
-      console.error(err); // Changed from app.log.error
+      console.error(err); 
       return res.status(500).send({ error: "search failed" });
     }
   });
