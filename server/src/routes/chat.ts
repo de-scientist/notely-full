@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import dotenv from 'dotenv';
 import OpenAI from "openai";
 
 /**
@@ -9,6 +10,7 @@ export function chatRoutes() {
   // Use Express Router to group routes
   const router = Router();
   
+  dotenv.config();
   // Initialize the OpenAI client outside the route handler for performance
   const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
