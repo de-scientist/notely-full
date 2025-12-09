@@ -2,10 +2,10 @@ export async function askNotelyAI(message: string) {
   // Use the full URL for the API endpoint. 
   // Get the server URL from an environment variable or define it here.
   // Assuming the server runs on the port defined in index.ts (e.g., 5000).
-  const SERVER_URL = process.env.VITE_API_BASE_URL || "http://localhost:5000"; 
+  //const SERVER_URL = process.env.VITE_API_BASE_URL || "http://localhost:5000"; 
   
   // Construct the full API URL
-  const API_URL = `${SERVER_URL}/api/chat`;
+  const API_URL = "http://localhost:5000/api/chat";
 
   const res = await fetch(API_URL, {
     method: "POST",
