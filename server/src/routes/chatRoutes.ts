@@ -12,7 +12,7 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  * Creates and returns an Express Router instance with the RAG chat route.
  * @returns An Express Router instance.
  */
-export function chatRoutes() { // Changed signature to return Router
+export function chatRoutes1() { // Changed signature to return Router
   const router = Router();
 
   // --- POST /api/chat (Main RAG Chat Logic) ---

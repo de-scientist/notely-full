@@ -10,6 +10,9 @@ import entriesRouter from './routes/entries.ts';
 import categoriesRouter from './routes/categories.ts';
 import userRouter from './routes/user.ts';
 import { chatRoutes } from "./routes/chats.ts";
+import { chatRoutes1 } from "./routes/chatRoutes.ts"; 
+import { analyticsRoutes } from "./routes/analyticsRoutes.ts";
+import { ragRoutes } from "./routes/ragRoutes.ts";
 
 // Import new routes
 import publicEntriesRouter from './routes/publicRoutes.ts';
