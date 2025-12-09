@@ -73,59 +73,57 @@ export function chatRoutes() {
     }
   });
 
-  // --- GET /api/analytics/top-queries ---
+  // --- GET /api/analytics/top-queries (SQL Server FIX) ---
   router.get("/api/analytics/top-queries", async (req: Request, res: Response) => {
     try {
-      // Adjusted quoting for SQL Server: using [ChatLog]
+      // FIX: Changed to unquoted table name and used TOP 30 syntax
       const top = await prisma.$queryRawUnsafe(`
-        SELECT query, COUNT(*) AS count
-        FROM [ChatLog]
+        SELECT TOP 30 query, COUNT(*) AS count
+        FROM ChatLog
         GROUP BY query
-        ORDER BY count DESC
-        OFFSET 0 ROWS FETCH NEXT 30 ROWS ONLY; 
-        -- SQL Server uses OFFSET/FETCH for LIMIT
+        ORDER BY count DESC;
       `);
       return res.send({ top });
     } catch (e) {
       console.error("Error fetching top queries:", e);
-      return res.status(500).send({ error: "Database error fetching top queries." });
+      return res.status(500).send({ error: "Database error fetching top queries. Check table name: ChatLog." });
     }
   });
 
-  // --- GET /api/analytics/intents ---
+  // --- GET /api/analytics/intents (SQL Server FIX) ---
   router.get("/api/analytics/intents", async (req: Request, res: Response) => {
     try {
-      // Adjusted quoting for SQL Server: using [ChatLog]
+      // FIX: Changed to unquoted table name
       const intents = await prisma.$queryRawUnsafe(`
         SELECT intent, COUNT(*) AS count
-        FROM [ChatLog]
+        FROM ChatLog
         GROUP BY intent
         ORDER BY count DESC;
       `);
       return res.send({ intents });
     } catch (e) {
       console.error("Error fetching intents:", e);
-      return res.status(500).send({ error: "Database error fetching intents." });
+      return res.status(500).send({ error: "Database error fetching intents. Check table name: ChatLog." });
     }
   });
 
-  // --- GET /api/analytics/hourly (SQL SERVER FIX) ---
+  // --- GET /api/analytics/hourly (SQL Server FIX) ---
   router.get("/api/analytics/hourly", async (req: Request, res: Response) => {
-    // FIX: Using SQL Server functions (DATEADD, DATEDIFF, GETDATE) for date arithmetic and grouping.
     try {
+      // FIX: Changed to unquoted table name
       const hourly = await prisma.$queryRawUnsafe(`
         SELECT 
           DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0) as hour, 
           COUNT(*) as count
-        FROM [ChatLog]
+        FROM ChatLog
         WHERE [createdAt] >= DATEADD(day, -7, GETDATE()) -- Last 7 days
         GROUP BY DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0)
         ORDER BY hour;
       `);
       return res.send({ hourly });
     } catch (e) {
-      console.error("Error fetching hourly data (SQL Server syntax error detected):", e);
-      return res.status(500).send({ error: "Database error fetching hourly data. SQL Server syntax may need verification." });
+      console.error("Error fetching hourly data (SQL Server syntax may still be failing):", e);
+      return res.status(500).send({ error: "Database error fetching hourly data. Check table name and SQL Server syntax." });
     }
   });
 
