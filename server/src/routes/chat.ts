@@ -49,7 +49,10 @@ If user asks unrelated questions, politely redirect them back to app support.`,
         ],
       });
 
-      const answer = completion.choices[0].message.content;
+      // --- FIX APPLIED HERE ---
+      // Safely access the message content using optional chaining (`?`) and the nullish coalescing operator (`??`)
+      const answer = completion.choices[0]?.message?.content ?? "AI Assistant failed to generate a reply.";
+      // --- END FIX ---
       
       // Use Express res.send() to return the successful response
       return res.send({ reply: answer });
@@ -62,4 +65,3 @@ If user asks unrelated questions, politely redirect them back to app support.`,
   
   return router;
 }
-
