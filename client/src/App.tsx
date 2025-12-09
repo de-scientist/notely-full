@@ -25,7 +25,7 @@ import Chatbot from './components/AI/Chatbot';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 // ⭐ REQUIRED IMPORT FOR SHARED ROUTE
 import { SharedNotePage } from './pages/SharedNotePage';
-import AdminRoute from './admin/AdminRoute';
+//import AdminRoute from './admin/AdminRoute';
 import AdminApp from './admin2/AdminApp';
 
 // Shadcn imports for User Dropdown (Assuming basic components)
@@ -195,6 +195,7 @@ function AppLayout() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin/*" element={<AdminApp />} />
           
           {/* Shared Note Route */}
           <Route path="/share/:id" element={<SharedNotePage />} />
@@ -218,8 +219,8 @@ function AppLayout() {
           </Route>
 
           {/* ✅ CORRECT FIX: AdminRoute now properly lives inside <Routes> */}
-          <Route path="/admin/*" element={<AdminRoute />} />
-          <Route path="/*" element={<AdminApp />} />
+{/*           <Route path="/admin/*" element={<AdminRoute />} /> */}
+          
           {/* Fallback Route - remains last */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
