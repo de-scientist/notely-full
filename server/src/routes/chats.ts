@@ -54,6 +54,7 @@ export function chatRoutes() {
       const dbChannel = channel ?? "web";
       const dbMetadata = metadata ? JSON.stringify(metadata) : null;
 
+      // NOTE: This call uses Prisma's client, which knows the table name, so no raw SQL change needed here.
       await prisma.chatLog.create({
         data: {
           userId: dbUserId,
@@ -76,49 +77,49 @@ export function chatRoutes() {
   // --- GET /api/analytics/top-queries (SQL Server FIX) ---
   router.get("/api/analytics/top-queries", async (req: Request, res: Response) => {
     try {
-      // FIX: Changed to unquoted table name and used TOP 30 syntax
+      // FIX: Changed table name from ChatLog to [ChatLogs] and used safe brackets
       const top = await prisma.$queryRawUnsafe(`
-        SELECT TOP 30 query, COUNT(*) AS count
-        FROM ChatLog
-        GROUP BY query
-        ORDER BY count DESC;
+        SELECT TOP 30 [query], COUNT(*) AS [count]
+        FROM [ChatLogs]
+        GROUP BY [query]
+        ORDER BY [count] DESC;
       `);
       return res.send({ top });
     } catch (e) {
       console.error("Error fetching top queries:", e);
-      return res.status(500).send({ error: "Database error fetching top queries. Check table name: ChatLog." });
+      return res.status(500).send({ error: "Database error fetching top queries. Check table name: ChatLogs." });
     }
   });
 
   // --- GET /api/analytics/intents (SQL Server FIX) ---
   router.get("/api/analytics/intents", async (req: Request, res: Response) => {
     try {
-      // FIX: Changed to unquoted table name
+      // FIX: Changed table name from ChatLog to [ChatLogs] and used safe brackets
       const intents = await prisma.$queryRawUnsafe(`
-        SELECT intent, COUNT(*) AS count
-        FROM ChatLog
-        GROUP BY intent
-        ORDER BY count DESC;
+        SELECT [intent], COUNT(*) AS [count]
+        FROM [ChatLogs]
+        GROUP BY [intent]
+        ORDER BY [count] DESC;
       `);
       return res.send({ intents });
     } catch (e) {
       console.error("Error fetching intents:", e);
-      return res.status(500).send({ error: "Database error fetching intents. Check table name: ChatLog." });
+      return res.status(500).send({ error: "Database error fetching intents. Check table name: ChatLogs." });
     }
   });
 
   // --- GET /api/analytics/hourly (SQL Server FIX) ---
   router.get("/api/analytics/hourly", async (req: Request, res: Response) => {
     try {
-      // FIX: Changed to unquoted table name
+      // FIX: Changed table name from ChatLog to [ChatLogs] and used safe brackets
       const hourly = await prisma.$queryRawUnsafe(`
         SELECT 
-          DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0) as hour, 
-          COUNT(*) as count
-        FROM ChatLog
+          DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0) as [hour], 
+          COUNT(*) as [count]
+        FROM [ChatLogs]
         WHERE [createdAt] >= DATEADD(day, -7, GETDATE()) -- Last 7 days
         GROUP BY DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0)
-        ORDER BY hour;
+        ORDER BY [hour];
       `);
       return res.send({ hourly });
     } catch (e) {
