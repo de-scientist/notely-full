@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { downloadCSV } from "@/lib/csv";
-import { useQueryStream } from "../hooks/useQueryStream";
+import { useQueryStream } from "@/admin/hooks/useQueryStream";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // Import Shadcn Table components
 import { Loader2, Download, Search, AlertTriangle, MessageSquare } from 'lucide-react';
