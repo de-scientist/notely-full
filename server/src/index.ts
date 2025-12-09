@@ -45,9 +45,6 @@ app.use(chatRoutes());
 
 app.use("/", chatRoutes1()); 
 app.use("/", analyticsRoutes()); 
-
-// 5. Mount the RAG (Retrieval-Augmented Generation) routes
-// Routes inside use paths like "/api/rag/upload"
 app.use("/", ragRoutes());
 
 // New routes
