@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
 export default function ChatWindow() {
+  // Assuming loading and setLoading have been added to the ChatState interface and useChatStore
   const { messages, addMessage, input, setInput, loading, setLoading } =
     useChatStore();
 
@@ -18,7 +19,8 @@ export default function ChatWindow() {
     setLoading(true);
 
     try {
-      const { reply } = await askNotelyAI(question);
+      // FIX: Changed destructuring to assign the returned string directly to 'reply'
+      const reply = await askNotelyAI(question);
       addMessage({ from: "bot", text: reply });
     } catch {
       addMessage({
