@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import ChatBubble from "../chatbot/ChatBubble";
 import { useChatStore } from "../AI/useChatStore";
-import { askNotelyAI } from "@/api/chat";
+import { askNotelyAI } from "@/lib/chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
