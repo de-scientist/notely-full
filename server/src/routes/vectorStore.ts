@@ -2,13 +2,12 @@
 // or from specialized sub-packages (e.g., '@langchain/openai')
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { OpenAIEmbeddings } from "@langchain/openai"; 
-// ✅ FIX 2: Corrected the import path for MemoryVectorStore
-import { MemoryVectorStore } from "@langchain/community/vectorstores/memory"; 
+// ✅ FINAL FIX: The MemoryVectorStore is now located in the '@langchain/classic' package.
+import { MemoryVectorStore } from "@langchain/classic/vectorstores/memory"; 
 
 // --- Initialization ---
 
-// FIX 2: Ensure the OpenAIEmbeddings constructor is called with API key if needed
-// The default constructor often relies on the OPENAI_API_KEY environment variable.
+// The default constructor relies on the OPENAI_API_KEY environment variable.
 const embeddings = new OpenAIEmbeddings();
 
 export const vectorStore = new MemoryVectorStore(embeddings);
