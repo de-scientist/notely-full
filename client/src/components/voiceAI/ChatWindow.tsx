@@ -1,6 +1,6 @@
 // ChatWindow.tsx
 import { useEffect } from "react";
-import ChatBubble from "./ChatBubble";
+import ChatBubble from "../chatbot/ChatBubble";
 import { useChatStore } from "./useChatStore";
 import { askNotelyAI } from "@/api/chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
