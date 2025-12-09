@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import RagUploader from "./RagUploader";
 import UserInbox from "./UserInbox";
+import QueryTable from "./QueryTable";
 
 export default function AdminApp() {
   return (
@@ -13,6 +14,7 @@ export default function AdminApp() {
           <a href="/admin" className="block">Dashboard</a>
           <a href="/admin/rag" className="block">RAG Manager</a>
           <a href="/admin/inbox" className="block">User Messages</a>
+          <a href="/admin/table" className="block">Query Table</a>
         </aside>
 
         <main className="flex-1 bg-gray-100">
@@ -20,6 +22,7 @@ export default function AdminApp() {
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/rag" element={<RagUploader />} />
             <Route path="/admin/inbox" element={<UserInbox />} />
+            <Route path="/admin/table" element={<QueryTable />} />
           </Routes>
         </main>
       </div>
