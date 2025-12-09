@@ -105,7 +105,7 @@ model ChatLog {
   intent     String?  // optional, filled by backend NLP or simple routing
   channel    String   @default("web") // "web" | "voice" | "api"
   createdAt  DateTime @default(now())
-  metadata   Json?
+  metadata   String?
   // Indexes for analytics
   @@index([createdAt])
   @@index([intent])
