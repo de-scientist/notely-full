@@ -1,19 +1,28 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Upload, MessageSquare, ListChecks, LayoutDashboard, Feather } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button"; // Assuming Button is available
+import { Button } from "@/components/ui/button";
+import React from "react"; // Explicitly import React for the FC type
 
 // Brand Color Classes
-// Fuchsia for primary accents, Indigo/Gray for depth
 const BRAND_ACCENT = "text-fuchsia-500";
-const SIDEBAR_BG = "bg-gray-50 dark:bg-gray-900"; // Lighter background for better contrast with content
+const SIDEBAR_BG = "bg-gray-50 dark:bg-gray-900";
 const SIDEBAR_TEXT = "text-gray-700 dark:text-gray-300";
-const ACTIVE_HOVER_BG = "hover:bg-fuchsia-50 dark:hover:bg-gray-800"; // Subtle hover
-const ACTIVE_BG = "bg-fuchsia-100/70 dark:bg-fuchsia-950/40"; // Light fuchsia active background
+const ACTIVE_HOVER_BG = "hover:bg-fuchsia-50 dark:hover:bg-gray-800";
+const ACTIVE_BG = "bg-fuchsia-100/70 dark:bg-fuchsia-950/40";
+
+// ✅ FIX: Define the props interface to resolve the 7031 errors
+interface SidebarLinkProps {
+    to: string;
+    icon: React.ElementType; // Use React.ElementType for the Lucide icon component
+    children: React.ReactNode;
+}
 
 // --- Sidebar Link Component (Encapsulates Shadcn Button style) ---
-const SidebarLink = ({ to, icon: Icon, children }) => {
+// ✅ FIX: Apply the explicit type to the functional component
+const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon: Icon, children }) => {
     const location = useLocation();
+    // Logic for setting the 'active' state
     const isActive = location.pathname === to || (to !== "/admin" && location.pathname.startsWith(to));
 
     return (
