@@ -27,7 +27,7 @@ export async function embedText(text: string): Promise<number[]> {
 
 // FIX 3: Explicitly typed the 'doc' parameter using RagDocumentPayload (Error 7006)
 export async function saveDoc(doc: RagDocumentPayload) {
-    return db.ragDoc.create({
+    return db.Doc.create({
         data: {
             title: doc.title,
             // Assuming the field is 'content' based on the database access pattern
