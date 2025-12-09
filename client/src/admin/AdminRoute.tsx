@@ -9,7 +9,7 @@ export default function AdminRoute() {
   return (
     <Routes>
       {/* Parent path: /admin */}
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route path="" element={<AdminLayout />}>
         {/* FIX: Removed leading slash (/) from nested paths */}
         <Route path="rag" element={<RAGUploader />} />
         <Route path="queries" element={<QueriesTable />} />
