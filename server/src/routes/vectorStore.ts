@@ -2,8 +2,8 @@
 // or from specialized sub-packages (e.g., '@langchain/openai')
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { OpenAIEmbeddings } from "@langchain/openai"; 
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
-// ^ NOTE: The MemoryVectorStore import path often remains similar, but the others are updated.
+// ✅ FIX 2: Corrected the import path for MemoryVectorStore
+import { MemoryVectorStore } from "@langchain/community/vectorstores/memory"; 
 
 // --- Initialization ---
 
