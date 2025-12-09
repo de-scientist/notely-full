@@ -1,5 +1,6 @@
 // AdminRoute.tsx
 import AdminLayout from "./components/AdminLayout";
+import { AdminDashboard } from "./components/AdminDashboardIndex";
 import RAGUploader from "./components/RAGUploader";
 import QueriesTable from "./components/QueriesTable";
 import MessagesInbox from "./components/MessagesInbox";
@@ -26,7 +27,7 @@ export default function AdminRoute() {
         <Route path="messages" element={<MessagesInbox />} />
         
         {/* Index route uses the new placeholder component */}
-        <Route index element={<AdminDashboardIndex />} />
+        <Route index element={<AdminDashboard />} />
       </Route>
     </Routes>
   );

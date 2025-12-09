@@ -45,7 +45,7 @@ const useRecentActivity = (): { data: Activity[] } => ({
 
 // --- Dashboard Component ---
 
-export const AdminDashboardIndex = () => {
+export const AdminDashboard = () => {
     const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
     const { data: recentActivity } = useRecentActivity();
 
