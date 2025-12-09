@@ -9,6 +9,7 @@ import authRouter from './routes/auth.ts';
 import entriesRouter from './routes/entries.ts';
 import categoriesRouter from './routes/categories.ts';
 import userRouter from './routes/user.ts';
+import { chatRoutes } from "./routes/chat.ts";
 
 // Import new routes
 import publicEntriesRouter from './routes/publicRoutes.ts';
