@@ -112,3 +112,15 @@ model ChatLog {
 
   @@map("ChatLogs")
 }
+
+model Doc {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  // We'll store embeddings as Json for now (array of floats).
+  embedding String?
+  source    String?  // optional: "help-center", "faq", "ui-text"
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
