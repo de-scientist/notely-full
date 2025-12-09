@@ -38,6 +38,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/entries', entriesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
+app.use(chatRoutes());
 
 // New routes
 app.use('/api/public/entries', publicEntriesRouter);
