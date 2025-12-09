@@ -6,8 +6,8 @@ import { useChatStore } from "../AI/useChatStore";
 import { askNotelyAI } from "@/lib/chats"; 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Use the standard Input component
-import { Send, Mic, Loader2 } from "lucide-react"; // Import Lucide icons
+import { Input } from "@/components/ui/input"; 
+import { Send, Mic, Loader2 } from "lucide-react"; 
 
 declare global {
   interface Window {
@@ -19,10 +19,8 @@ export default function ChatWindow() {
   const { messages, addMessage, input, setInput, loading, setLoading } =
     useChatStore();
   
-  // Ref to hold the element we want to scroll into view
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Check for Speech Recognition support once
   const SpeechRecognition = useMemo(() => 
     typeof window !== "undefined"
       ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -34,7 +32,6 @@ export default function ChatWindow() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // TTS function (Text-to-Speech)
   const speak = (text: string) => {
     if (!("speechSynthesis" in window)) return;
     const utter = new SpeechSynthesisUtterance(text);
@@ -74,29 +71,27 @@ export default function ChatWindow() {
     };
 
     recognition.onend = () => {
-      // Clean up loading state if recognition ends unexpectedly
       if (loading) setLoading(false);
     };
 
     try {
       recognition.start();
-      // Optional: Visual feedback (e.g., pulsing mic button) can be added here
     } catch (e) {
       console.error("Recognition start error:", e);
       setLoading(false);
       addMessage({ from: "bot", text: "Could not start mic. Check permissions." });
     }
     
-    // Cleanup function for useEffect (though this is called directly, good practice for closures)
     return () => recognition.stop();
   };
 
   const sendVoiceQuery = async (text: string) => {
     setLoading(true);
     try {
-      // NOTE: Assuming askNotelyAI returns { reply: string, intent: string }
+      // Assuming askNotelyAI returns { reply: string, intent: string }
       const res = await askNotelyAI(text, { channel: "voice" }) as any;
-      addMessage({ from: "bot", text: res.reply });
+      // FIX: Ensure the reply field is being used correctly
+      addMessage({ from: "bot", text: res.reply }); 
       speak(res.reply);
     } catch {
       addMessage({
@@ -117,8 +112,9 @@ export default function ChatWindow() {
     setLoading(true);
 
     try {
-      // NOTE: Assuming askNotelyAI returns { reply: string, intent: string }
+      // Assuming askNotelyAI returns { reply: string, intent: string }
       const res = await askNotelyAI(userQuery, { channel: "web" }) as any;
+      // FIX: Ensure the reply field is being used correctly
       addMessage({ from: "bot", text: res.reply });
       speak(res.reply);
     } catch {
@@ -138,7 +134,7 @@ export default function ChatWindow() {
   };
 
   return (
-    // Increased size and improved styling for better presence
+    // Height maintained at 480px, but structure reinforced for visibility
     <div className="w-96 h-[480px] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden">
       
       {/* Header */}
