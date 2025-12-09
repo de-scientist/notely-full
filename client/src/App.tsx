@@ -26,6 +26,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 // ⭐ REQUIRED IMPORT FOR SHARED ROUTE
 import { SharedNotePage } from './pages/SharedNotePage';
 import AdminRoute from './admin/AdminRoute';
+import AdminApp from './admin2/AdminApp';
 
 // Shadcn imports for User Dropdown (Assuming basic components)
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./components/ui/dropdown-menu";
