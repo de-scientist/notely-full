@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import dotenv from 'dotenv'; // Import dotenv
 import OpenAI from "openai";
 import { PrismaClient } from "@prisma/client";
 
@@ -10,6 +11,8 @@ const prisma = new PrismaClient();
  */
 export function chatRoutes() {
   const router = Router();
+  
+  dotenv.config(); // Load environment variables (API Key)
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   // --- POST /api/chat (Main Chat Logic) ---
@@ -30,14 +33,29 @@ export function chatRoutes() {
         messages: [
           {
             role: "system",
-            content: `You are Notely AI Assistant. Keep replies short, actionable, and specific to the Notely app features (create, edit, delete, bookmark, search, navigate). If user asks unrelated questions, redirect to app support.`,
+            // Integrated the more detailed and robust system prompt from the first snippet
+            content: `
+You are Notely AI Assistant. 
+Your job is to guide users on how to use the Notely application.
+
+Keep responses short, clear, and helpful.
+Only explain Notely features such as:
+- creating notes
+- editing notes
+- bookmarking notes
+- deleting notes
+- searching notes
+- navigating the UI
+
+If user asks unrelated questions, politely redirect them back to app support.`,
           },
           { role: "user", content: message },
         ],
         max_tokens: 300,
       });
 
-      const answer = completion.choices?.[0]?.message?.content ?? "Sorry, I couldn't answer that.";
+      // Safely access the message content
+      const answer = completion.choices?.[0]?.message?.content ?? "AI Assistant failed to generate a reply.";
 
       // Optional: lightweight intent guessing using keywords (fast)
       const lower = message.toLowerCase();
@@ -54,7 +72,6 @@ export function chatRoutes() {
       const dbChannel = channel ?? "web";
       const dbMetadata = metadata ? JSON.stringify(metadata) : null;
 
-      // NOTE: This call uses Prisma's client, which knows the table name, so no raw SQL change needed here.
       await prisma.chatLog.create({
         data: {
           userId: dbUserId,
@@ -67,6 +84,7 @@ export function chatRoutes() {
       });
       // --- END Database Logging ---
 
+      // Return both the reply and the intent
       return res.send({ reply: answer, intent });
     } catch (err) {
       console.error(err);
@@ -77,7 +95,6 @@ export function chatRoutes() {
   // --- GET /api/analytics/top-queries (SQL Server FIX) ---
   router.get("/api/analytics/top-queries", async (req: Request, res: Response) => {
     try {
-      // FIX: Changed table name from ChatLog to [ChatLogs] and used safe brackets
       const top = await prisma.$queryRawUnsafe(`
         SELECT TOP 30 [query], COUNT(*) AS [count]
         FROM [ChatLogs]
@@ -87,14 +104,13 @@ export function chatRoutes() {
       return res.send({ top });
     } catch (e) {
       console.error("Error fetching top queries:", e);
-      return res.status(500).send({ error: "Database error fetching top queries. Check table name: ChatLogs." });
+      return res.status(500).send({ error: "Database error fetching top queries." });
     }
   });
 
   // --- GET /api/analytics/intents (SQL Server FIX) ---
   router.get("/api/analytics/intents", async (req: Request, res: Response) => {
     try {
-      // FIX: Changed table name from ChatLog to [ChatLogs] and used safe brackets
       const intents = await prisma.$queryRawUnsafe(`
         SELECT [intent], COUNT(*) AS [count]
         FROM [ChatLogs]
@@ -104,14 +120,13 @@ export function chatRoutes() {
       return res.send({ intents });
     } catch (e) {
       console.error("Error fetching intents:", e);
-      return res.status(500).send({ error: "Database error fetching intents. Check table name: ChatLogs." });
+      return res.status(500).send({ error: "Database error fetching intents." });
     }
   });
 
   // --- GET /api/analytics/hourly (SQL Server FIX) ---
   router.get("/api/analytics/hourly", async (req: Request, res: Response) => {
     try {
-      // FIX: Changed table name from ChatLog to [ChatLogs] and used safe brackets
       const hourly = await prisma.$queryRawUnsafe(`
         SELECT 
           DATEADD(hour, DATEDIFF(hour, 0, [createdAt]), 0) as [hour], 
@@ -123,8 +138,8 @@ export function chatRoutes() {
       `);
       return res.send({ hourly });
     } catch (e) {
-      console.error("Error fetching hourly data (SQL Server syntax may still be failing):", e);
-      return res.status(500).send({ error: "Database error fetching hourly data. Check table name and SQL Server syntax." });
+      console.error("Error fetching hourly data:", e);
+      return res.status(500).send({ error: "Database error fetching hourly data." });
     }
   });
 
