@@ -1,4 +1,4 @@
-import ChatWindow from "./ChatWindow";
+import ChatWindow from "../voiceAI/ChatWindow";
 import { useChatStore } from "./useChatStore";
 import { motion, AnimatePresence } from "framer-motion";
 
