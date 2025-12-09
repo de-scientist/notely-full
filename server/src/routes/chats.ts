@@ -14,7 +14,6 @@ export function chatRoutes() {
 
   // --- POST /api/chat (Main Chat Logic) ---
   router.post("/api/chat", async (req: Request, res: Response) => {
-    // Fastify's req.body type is explicit, here we cast it for Express
     const { message, userId, channel, metadata } =
       req.body as {
         message: string;
@@ -23,7 +22,6 @@ export function chatRoutes() {
         metadata?: any;
       };
 
-    // Use Express res.status().send() for error responses
     if (!message) return res.status(400).send({ error: "Message required" });
 
     try {
@@ -51,33 +49,39 @@ export function chatRoutes() {
       else if (/(search|find|lookup)/.test(lower)) intent = "search";
       else if (/(navigate|home|open)/.test(lower)) intent = "navigation";
 
+      // --- FIX APPLIED HERE ---
+      // Convert `userId`, `channel`, and `metadata` from `undefined` to `null` 
+      // if they are missing, as required by Prisma's generated types for optional fields.
+      const dbUserId = userId ?? null;
+      const dbChannel = channel ?? "web"; // Channel has a default but setting it to 'web' is fine
+      // If your 'metadata' field in Prisma is defined as String? (for SQL Server), 
+      // you must stringify the object/data before saving it.
+      // If your 'metadata' field is defined as Json? (for Postgres), you can pass the object or null.
+      const dbMetadata = metadata ? JSON.stringify(metadata) : null; 
+      // Assuming String? type for metadata based on previous error context:
+
       // Log to DB
       await prisma.chatLog.create({
         data: {
-          userId,
+          userId: dbUserId,       // Now string | null
           query: message,
           reply: answer,
           intent,
-          channel: channel ?? "web",
-          // The metadata field type depends on your DB connector. 
-          // If using SQL Server, it must be saved as a string (JSON.stringify(metadata)).
-          // If using PostgreSQL (which supports JSON), 'metadata' can be passed directly.
-          // Assuming PostgreSQL for type compatibility with the original Fastify code:
-          metadata: metadata ?? {},
+          channel: dbChannel,
+          metadata: dbMetadata,   // Now string | null (assuming String? schema)
         },
       });
+      // --- END FIX ---
 
-      // Use Express res.send() to return the response
       return res.send({ reply: answer, intent });
     } catch (err) {
-      console.error(err); // Express doesn't have app.log.error, use console.error
+      console.error(err);
       return res.status(500).send({ error: "AI request failed" });
     }
   });
 
-  // --- GET /api/analytics/top-queries ---
+  // Analytics routes remain unchanged (omitted for brevity, but they would follow here)
   router.get("/api/analytics/top-queries", async (req: Request, res: Response) => {
-    // NOTE: This SQL syntax is specific to PostgreSQL
     const top = await prisma.$queryRawUnsafe(`
       SELECT query, COUNT(*) AS count
       FROM "ChatLog"
@@ -88,7 +92,6 @@ export function chatRoutes() {
     return res.send({ top });
   });
 
-  // --- GET /api/analytics/intents ---
   router.get("/api/analytics/intents", async (req: Request, res: Response) => {
     const intents = await prisma.$queryRawUnsafe(`
       SELECT intent, COUNT(*) AS count
@@ -99,7 +102,6 @@ export function chatRoutes() {
     return res.send({ intents });
   });
 
-  // --- GET /api/analytics/hourly ---
   router.get("/api/analytics/hourly", async (req: Request, res: Response) => {
     const hourly = await prisma.$queryRawUnsafe(`
       SELECT date_trunc('hour', "createdAt") as hour, COUNT(*) as count
@@ -110,6 +112,6 @@ export function chatRoutes() {
     `);
     return res.send({ hourly });
   });
-  
+
   return router;
 }
