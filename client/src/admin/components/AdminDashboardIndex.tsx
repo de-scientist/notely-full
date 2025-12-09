@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Mail, ListChecks, Upload, Loader2, TrendingUp, Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import React from 'react'; // Import React for React.ElementType
 
 // --- Placeholder Hooks (Replace with actual TanStack Query hooks) ---
 
@@ -31,7 +32,7 @@ const useDashboardMetrics = (): { data: Metrics, isLoading: boolean } => ({
         ragDocsCount: 42,
         queriesLast7Days: 120,
     },
-    isLoading: false, // Set to true to test loading state
+    isLoading: false,
 });
 
 // Mock function to simulate fetching recent activity
@@ -47,15 +48,18 @@ const useRecentActivity = (): { data: Activity[] } => ({
 
 export const AdminDashboard = () => {
     const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
-    const { data: recentActivity } = useRecentActivity();
+    // ✅ FIX: Use data destructuring for recentActivity to avoid potential undefined issues
+    const { data: recentActivity = [] } = useRecentActivity(); 
 
-    const renderMetricCard = (title: string, value: number | string, icon: React.ElementType, link: string, colorClass: string) => (
+    // ✅ FIX: Changed 'icon' to 'Icon' in the parameter list. (L.52)
+    // This allows it to be used directly as a React Component <Icon /> (L.58).
+    const renderMetricCard = (title: string, value: number | string, Icon: React.ElementType, link: string, colorClass: string) => (
         <Card className="hover:shadow-lg transition-shadow duration-300 dark:hover:border-fuchsia-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     {title}
                 </CardTitle>
-                <Icon className={`h-5 w-5 ${colorClass}`} />
+                <Icon className={`h-5 w-5 ${colorClass}`} /> {/* Now correctly references 'Icon' */}
             </CardHeader>
             <CardContent>
                 <div className="text-3xl font-bold mb-1">
