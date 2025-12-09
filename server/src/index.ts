@@ -43,6 +43,13 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
 app.use(chatRoutes());
 
+app.use("/", chatRoutes1()); 
+app.use("/", analyticsRoutes()); 
+
+// 5. Mount the RAG (Retrieval-Augmented Generation) routes
+// Routes inside use paths like "/api/rag/upload"
+app.use("/", ragRoutes());
+
 // New routes
 app.use('/api/public/entries', publicEntriesRouter);
 //app.use('/api/categories/suggest', smartCategoryRouter);
