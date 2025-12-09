@@ -182,13 +182,12 @@ function AppHeader() {
 }
 
 // =========================================================================
-// ✏️ UPDATED: AppLayout (Added Utility Routes)
+// ✏️ FIXED: AppLayout
 // =========================================================================
 function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
       <AppHeader />
-      {/* Increased max-w for general content, reduced margin to allow full-width utilities */}
       <main className="mx-auto w-full flex-1"> 
         <Routes>
           {/* Public Routes */}
@@ -196,16 +195,15 @@ function AppLayout() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
-          {/* ⭐ NEW: Shared Note Route (Public, Read-only access) */}
+          {/* Shared Note Route */}
           <Route path="/share/:id" element={<SharedNotePage />} />
 
-          {/* Utility Routes (New) */}
-          {/* Using full-width layout for these pages */}
+          {/* Utility Routes */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/help" element={<HelpSupport />} />
           <Route path="/contact" element={<ContactPage />} />
-         
+         
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
@@ -215,19 +213,19 @@ function AppLayout() {
             <Route path="/app/notes/:id/edit" element={<EditEntryPage />} />
             <Route path="/app/trash" element={<TrashPage />} />
             <Route path="/app/profile" element={<ProfilePage />} />
-            <Route path="/app/analytics" element={<AnalyticsDashboard />} />
+            <Route path="/app/analytics" element={<AnalyticsDashboard />} />
           </Route>
 
-          {/* Fallback Route */}
+          {/* ✅ CORRECT FIX: AdminRoute now properly lives inside <Routes> */}
+          <Route path="/admin/*" element={<AdminRoute />} />
+          
+          {/* Fallback Route - remains last */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      {/* ✅ FIX: AdminRoute must be inside the main <Routes> block. */}
-          {/* We define a parent route for '/admin/*' and let AdminRoute handle the rest of the nesting. 
-             We pass the element={<AdminRoute />} to let it render its own internal <Routes>. */}
-          <Route path="/admin/*" element={<AdminRoute />} />
-      <Chatbot />
+      {/* Components that are NOT routes remain outside the <Routes> block */}
+      <Chatbot />
       <AppFooter />
       <Toaster richColors position="bottom-right" />
     </div>
