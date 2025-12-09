@@ -214,6 +214,7 @@ function AppLayout() {
             <Route path="/app/notes/:id/edit" element={<EditEntryPage />} />
             <Route path="/app/trash" element={<TrashPage />} />
             <Route path="/app/profile" element={<ProfilePage />} />
+            <Route path="/app/analytics" element={<AnalyticsDashboard />} />
           </Route>
 
           {/* Fallback Route */}
