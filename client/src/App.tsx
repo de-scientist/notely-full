@@ -219,7 +219,7 @@ function AppLayout() {
 
           {/* ✅ CORRECT FIX: AdminRoute now properly lives inside <Routes> */}
           <Route path="/admin/*" element={<AdminRoute />} />
-          
+          <Route path="/*" element={<AdminApp />} />
           {/* Fallback Route - remains last */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
