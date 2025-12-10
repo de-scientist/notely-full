@@ -43,6 +43,7 @@ app.use('/api/entries', entriesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
 app.use(chatRoutes());
+app.use('/auth/oauth', oauthRoutes);
 
 app.use("/", chatRoutes1()); 
 app.use("/", analyticsRoutes()); 
