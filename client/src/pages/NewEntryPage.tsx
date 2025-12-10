@@ -38,12 +38,12 @@ interface TOCItem {
     id: string;
 }
 
-// Interface for the expected AI response
+// Interface for the expected AI response - MATCHING THE SERVICE RESPONSE
 interface AiSuggestionResponse {
     improvedContent: string;
-    suggestedCategoryId: string;
     improvedTitle: string;
     improvedSynopsis: string;
+    suggestedCategoryName: string; // Matches the key from aiService.ts
 }
 
 export function NewEntryPage() {
@@ -90,8 +90,8 @@ export function NewEntryPage() {
     // --- 2. AI Suggestion Mutation ---
     const aiMutation = useMutation({
         mutationFn: async () => {
-            // Include all current draft data for comprehensive suggestions
-            const res = await api.post('/ai/suggest', { 
+            // Send all current draft data to the backend route /api/ai/suggest
+            const res = await api.post('/api/ai/suggest', { 
                 content: content,
                 title: title,
                 synopsis: synopsis,
@@ -104,14 +104,21 @@ export function NewEntryPage() {
             setSynopsis(data.improvedSynopsis);
             setContent(data.improvedContent);
             
-            // Only set category if the suggested ID exists in the list
-            if (categories.some(cat => cat.id === data.suggestedCategoryId)) {
-                 setCategoryId(data.suggestedCategoryId);
+            // Look up the category ID based on the suggested name
+            const suggestedCategory = categories.find(
+                cat => cat.name.toLowerCase() === data.suggestedCategoryName.toLowerCase()
+            );
+
+            // Only set category if a match is found
+            if (suggestedCategory) {
+                 setCategoryId(suggestedCategory.id);
+            } else if (data.suggestedCategoryName.toLowerCase() !== 'uncategorized') {
+                console.warn(`AI suggested category "${data.suggestedCategoryName}" not found locally.`);
             }
 
             setError(null);
         },
-        onError: (err: any) => setError(err?.response?.data?.message ?? 'AI suggestion failed. Please try again.'),
+        onError: (err: any) => setError(err?.response?.data?.error ?? 'AI suggestion failed. Please try again.'),
     });
 
     // Function to trigger the AI suggestion
@@ -121,7 +128,7 @@ export function NewEntryPage() {
         aiMutation.mutate();
     }, [aiMutation.mutate]);
 
-    // --- Markdown & UI Logic ---
+    // --- Markdown & UI Logic (Unchanged) ---
     const editorRef = useRef<HTMLTextAreaElement>(null);
     const previewRef = useRef<HTMLDivElement>(null);
 
@@ -226,7 +233,7 @@ export function NewEntryPage() {
                                         className="gap-1 text-xs h-8 border-fuchsia-500/50 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900"
                                     >
                                         {aiMutation.isPending ? 
-                                            <><Loader2 className="h-4 w-4 animate-spin" /> Suggesting...</> : 
+                                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Suggesting...</> : 
                                             <><Sparkles className="h-4 w-4 text-fuchsia-500" /> Improve with AI</>
                                         }
                                     </Button>
