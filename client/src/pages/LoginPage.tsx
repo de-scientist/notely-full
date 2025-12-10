@@ -19,9 +19,6 @@ import { Input } from "../components/ui/input";
 import { Label } from '../components/ui/label';
 import { Loader2, Lock, User } from 'lucide-react';
 
-// NOTE: Assuming '/google-icon.svg' and '/github-icon.svg' are available for social buttons
-// I will simulate the images with a simple placeholder div if the icons are not directly available.
-
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
 
@@ -41,13 +38,12 @@ const OrSeparator = () => (
     </div>
 );
 
-// Component for Social Login Buttons (Using the existing external functions)
-// Note: You must ensure 'google-icon.svg' and 'github-icon.svg' are correctly served.
+// Component for Social Login Buttons (Updated for Absolute URLs)
 const SocialLoginButtons = () => (
     <div className="flex flex-col gap-3">
-        {/* Google Button */}
+        {/* Google Button - UPDATED URL */}
         <Button
-            onClick={() => window.location.href = '/auth/oauth/google'}
+            onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/google'}
             className="w-full flex justify-center items-center gap-3 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
         >
             {/* Image/Icon Placeholder for Google */}
@@ -57,9 +53,9 @@ const SocialLoginButtons = () => (
             Sign in with Google
         </Button>
 
-        {/* GitHub Button */}
+        {/* GitHub Button - UPDATED URL */}
         <Button
-            onClick={() => window.location.href = '/auth/oauth/github'}
+            onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/github'}
             className="w-full flex justify-center items-center gap-3 bg-gray-800 hover:bg-gray-900 text-white dark:bg-gray-900 dark:hover:bg-black transition-colors"
         >
             {/* Image/Icon Placeholder for GitHub */}
