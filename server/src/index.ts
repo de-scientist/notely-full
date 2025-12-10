@@ -45,7 +45,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/user', userRouter);
 app.use(chatRoutes());
 app.use('/auth/oauth', oauthRoutes);
-
+app.use("/api/ai", aiRoutes);
 app.use("/", chatRoutes1()); 
 app.use("/", analyticsRoutes()); 
 app.use("/", ragRoutes());
