@@ -85,7 +85,7 @@ export function NewEntryPage() {
     const aiMutation = useMutation({
         mutationFn: async () => {
             // Send all current draft data to the backend route /api/ai/suggest
-            const res = await api.post('/api/ai/suggest', { 
+            const res = await api.post('/ai/suggest', { 
                 content: content,
                 title: title,
                 synopsis: synopsis,
