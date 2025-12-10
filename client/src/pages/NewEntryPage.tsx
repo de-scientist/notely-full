@@ -14,7 +14,6 @@ import { Textarea } from "../components/ui/textarea";
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Separator } from '../components/ui/separator';
-// Added icons for new feature
 import { Loader2, FilePlus2, BookOpen, PenTool, FolderOpen, ListOrdered, Sparkles, AlertTriangle, Zap } from 'lucide-react'; 
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
@@ -217,7 +216,6 @@ export function NewEntryPage() {
     const readingTime = Math.ceil(wordCount / 200);
 
     const toc: TOCItem[] = useMemo(() => {
-        // ... TOC generation logic remains the same ...
         const lines = safeContent.split('\n');
         const headers: TOCItem[] = [];
         lines.forEach(line => {
@@ -387,17 +385,25 @@ export function NewEntryPage() {
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
+                                    {/* --- FIX START: Wrap input in Label for Axe/Forms compliance --- */}
                                     <div className="flex items-center space-x-2">
-                                        <input 
-                                            type="checkbox" 
-                                            id="saveToDb" 
-                                            checked={aiSaveToDb} 
-                                            onChange={e => setAiSaveToDb(e.target.checked)} 
-                                            disabled={isAnyLoading}
-                                            className="h-4 w-4 text-fuchsia-600 border-gray-300 rounded focus:ring-fuchsia-500"
-                                        />
-                                        <Label htmlFor="saveToDb" className="text-sm font-medium">Save generated note to DB directly</Label>
+                                        <Label 
+                                            htmlFor="saveToDb" 
+                                            className="flex items-center space-x-2 text-sm font-medium cursor-pointer" // Styling moved to Label
+                                        >
+                                            <input 
+                                                type="checkbox" 
+                                                id="saveToDb" 
+                                                checked={aiSaveToDb} 
+                                                title='save'
+                                                onChange={e => setAiSaveToDb(e.target.checked)} 
+                                                disabled={isAnyLoading}
+                                                className="h-4 w-4 text-fuchsia-600 border-gray-300 rounded focus:ring-fuchsia-500"
+                                            />
+                                            <span>Save generated note to DB directly</span>
+                                        </Label>
                                     </div>
+                                    {/* --- FIX END --- */}
 
                                     <Button 
                                         type="button" 
@@ -431,7 +437,6 @@ export function NewEntryPage() {
                 </Card>
 
                 {/* --- 2. LIVE PREVIEW & TOC (Right Column - STICKY) --- */}
-                {/* ... (Preview and TOC structure remains identical) ... */}
                 <div className="flex flex-col gap-6 lg:sticky lg:top-8 self-start">
                     
                     {/* LIVE PREVIEW CARD */}
@@ -514,9 +519,9 @@ export function NewEntryPage() {
                                             key={index}
                                             onClick={() => scrollToHeader(item.id)}
                                             className={`cursor-pointer hover:text-fuchsia-600 dark:hover:text-fuchsia-400 transition-colors text-sm truncate 
+                                                ${item.level === 1 ? 'ml-0' : item.level === 2 ? 'ml-3' : 'ml-6'} 
                                                 ${item.level === 2 ? 'pl-2 text-gray-700 dark:text-gray-300' : ''}
                                                 ${item.level === 3 ? 'pl-4 text-gray-500 dark:text-gray-400' : ''}`}
-                                            style={{ marginLeft: `${(item.level - 1) * 10}px` }}
                                         >
                                             {item.text}
                                         </div>
