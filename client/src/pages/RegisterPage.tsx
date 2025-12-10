@@ -24,7 +24,7 @@ const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 const INPUT_RING_CLASS = "focus:ring-fuchsia-500 focus:border-fuchsia-600 dark:focus:ring-fuchsia-500/50";
 
-// FIX: Changed type from JSX.Element to React.ReactElement to resolve TS2503 error.
+// FIX: Changed type from JSX.Element to React.ReactElement to resolve TS2503 error (from previous fix).
 const icons: Record<string, React.ReactElement> = {
     firstName: <User className="h-5 w-5" />,
     lastName: <User className="h-5 w-5" />,
@@ -203,6 +203,25 @@ export function RegisterPage() {
                                     const isUsername = field === 'username';
                                     const isEmail = field === 'email';
                                     
+                                    // FIX: Determine the autocomplete value based on the field
+                                    const getAutocompleteValue = (fieldName: string) => {
+                                        switch (fieldName) {
+                                            case 'firstName':
+                                                return 'given-name';
+                                            case 'lastName':
+                                                return 'family-name';
+                                            case 'username':
+                                                return 'username';
+                                            case 'email':
+                                                return 'email';
+                                            case 'password':
+                                            case 'confirmPassword':
+                                                return 'new-password'; 
+                                            default:
+                                                return 'off';
+                                        }
+                                    };
+                                    
                                     let validationIcon = null;
                                     let validationColor = '';
 
@@ -239,6 +258,8 @@ export function RegisterPage() {
                                                 onChange={e => setter(e.target.value)}
                                                 required
                                                 placeholder=" "
+                                                // FIX: Added the autocomplete attribute
+                                                autoComplete={getAutocompleteValue(field)} 
                                                 className={`
                                                     peer pl-10 pr-10 rounded-lg shadow-sm transition h-11 text-base
                                                     ${INPUT_RING_CLASS}
