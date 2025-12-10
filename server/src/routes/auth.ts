@@ -10,99 +10,99 @@ const prisma = new PrismaClient();
 const router = Router();
 const TOKEN_COOKIE_NAME = 'token';
 
+// ------------------- REGISTER -------------------
 router.post('/register', async (req, res, next) => {
   try {
     const { firstName, lastName, username, email, password } = req.body;
 
-    if (!firstName || !lastName || !username || !email || !password) {
+    if (!firstName || !lastName || !username || !email || !password)
       return res.status(400).json({ message: 'All fields are required.' });
-    }
 
-    if (!isPasswordStrong(password)) {
+    if (!isPasswordStrong(password))
       return res.status(400).json({ message: 'Password is too weak.' });
-    }
 
     const existingByEmail = await prisma.user.findUnique({ where: { email } });
-    if (existingByEmail) {
-      return res.status(400).json({ message: 'Email already in use.' });
-    }
+    if (existingByEmail) return res.status(400).json({ message: 'Email already in use.' });
 
     const existingByUsername = await prisma.user.findUnique({ where: { username } });
-    if (existingByUsername) {
-      return res.status(400).json({ message: 'Username already in use.' });
-    }
+    if (existingByUsername) return res.status(400).json({ message: 'Username already in use.' });
 
     const passwordHash = await hashPassword(password);
-
     const user = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        username,
-        email,
-        password: passwordHash,
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        username: true,
-        email: true,
-        avatar: true,
-        dateJoined: true,
-      },
+      data: { firstName, lastName, username, email, password: passwordHash, provider: 'email' },
     });
 
-    return res.status(201).json({ user });
+    const token = nanoid(32);
+    await prisma.emailVerification.create({
+      data: { userId: user.id, token, expiresAt: new Date(Date.now() + 3600_000) },
+    });
+
+    await sendVerificationEmail(email, token); // send email link
+
+    return res.status(201).json({ user, message: 'Check your email to verify account.' });
   } catch (err) {
     next(err);
   }
 });
 
+// ------------------- VERIFY EMAIL -------------------
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query as { token: string };
+    const record = await prisma.emailVerification.findUnique({ where: { token } });
+
+    if (!record || record.expiresAt < new Date())
+      return res.status(400).json({ message: 'Invalid or expired token.' });
+
+    await prisma.user.update({ where: { id: record.userId }, data: { emailVerified: true } });
+    await prisma.emailVerification.delete({ where: { token } });
+
+    res.json({ message: 'Email verified successfully. You can now log in.' });
+  } catch (err) { res.status(500).json({ message: 'Server error.' }); }
+});
+
+// ------------------- LOGIN -------------------
 router.post('/login', async (req, res, next) => {
   try {
     const { identifier, password } = req.body;
-    if (!identifier || !password) {
-      return res.status(400).json({ message: 'Identifier and password are required.' });
-    }
+    if (!identifier || !password) return res.status(400).json({ message: 'Identifier and password are required.' });
 
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: identifier }, { username: identifier }],
-      },
-    });
+    const user = await prisma.user.findFirst({ where: { OR: [{ email: identifier }, { username: identifier }] } });
+    if (!user) return res.status(400).json({ message: 'Invalid credentials.' });
+
+    if (user.provider === 'email' && !user.emailVerified)
+      return res.status(400).json({ message: 'Please verify your email before logging in.' });
+
+    const valid = user.password ? await verifyPassword(password, user.password) : false;
+    if (!valid) return res.status(400).json({ message: 'Invalid credentials.' });
+
+    const token = signToken({ userId: user.id });
+    res.cookie(TOKEN_COOKIE_NAME, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+    return res.json({ user: { id: user.id, firstName: user.firstName, lastName: user.lastName, username: user.username, email: user.email, avatar: user.avatar } });
+  } catch (err) { next(err); }
+});
+
+// ------------------- SOCIAL LOGIN -------------------
+router.post('/oauth-login', async (req, res) => {
+  try {
+    const { email, firstName, lastName, provider, providerId } = req.body;
+
+    if (!email || !provider || !providerId) return res.status(400).json({ message: 'Missing OAuth data.' });
+
+    let user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials.' });
-    }
-
-    const valid = await verifyPassword(password, user.password);
-    if (!valid) {
-      return res.status(400).json({ message: 'Invalid credentials.' });
+      user = await prisma.user.create({
+        data: { email, firstName, lastName, provider, providerId, emailVerified: true },
+      });
     }
 
     const token = signToken({ userId: user.id });
+    res.cookie(TOKEN_COOKIE_NAME, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
-    res.cookie(TOKEN_COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    const safeUser = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      username: user.username,
-      email: user.email,
-      avatar: user.avatar,
-    };
-
-    return res.json({ user: safeUser });
-  } catch (err) {
-    next(err);
-  }
+    return res.json({ user: { id: user.id, firstName: user.firstName, lastName: user.lastName, username: user.username, email: user.email, avatar: user.avatar } });
+  } catch (err) { res.status(500).json({ message: 'OAuth login failed.' }); }
 });
 
 router.post('/logout', (req, res) => {
