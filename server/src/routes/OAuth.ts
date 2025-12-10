@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { signToken } from '../utils/jwt.ts';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const prisma = new PrismaClient();
 const router = Router();
