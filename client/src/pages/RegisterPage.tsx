@@ -202,6 +202,34 @@ export function RegisterPage() {
                     </p>
                 </CardFooter>
             </Card>
+            // Add OAuth buttons below existing form in CardContent
+<div className="mt-4 flex flex-col gap-2">
+  <Button onClick={() => handleOAuthLogin('google')} className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-2">
+    <img src="/google-icon.svg" alt="Google" className="h-5 w-5"/> Sign up with Google
+  </Button>
+  <Button onClick={() => handleOAuthLogin('github')} className="bg-gray-800 hover:bg-gray-900 text-white w-full flex justify-center items-center gap-2">
+    <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> Sign up with GitHub
+  </Button>
+</div>
+
+<script lang="ts">
+const handleOAuthLogin = async (provider: 'google' | 'github') => {
+  try {
+    // Example flow: call your backend endpoint that exchanges OAuth token
+    const res = await api.post('/auth/oauth-login', {
+      provider
+      // providerId, email, firstName, lastName come from OAuth flow
+    });
+    // Set user and navigate
+    setUser(res.data.user);
+    navigate('/app/notes');
+    toast.success(`Welcome ${res.data.user.firstName}!`);
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message ?? 'OAuth login failed.');
+  }
+};
+</script>
+
         </div>
     );
 }
