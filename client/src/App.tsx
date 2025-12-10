@@ -27,6 +27,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import { SharedNotePage } from './pages/SharedNotePage';
 //import AdminRoute from './admin/AdminRoute';
 import AdminApp from './admin3/AdminApp';
+import ProtectedAdminRoute from './admin3/ProtectedAdminRoute';
 
 // Shadcn imports for User Dropdown (Assuming basic components)
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./components/ui/dropdown-menu";
