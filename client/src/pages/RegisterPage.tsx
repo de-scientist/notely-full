@@ -201,9 +201,7 @@ export function RegisterPage() {
                         <Link to="/login" className={`font-semibold ${PRIMARY_COLOR_CLASS} hover:text-fuchsia-700/80 dark:hover:text-fuchsia-500/80 transition-colors`}>Log in</Link>
                     </p>
                 </CardFooter>
-            </Card>
-            {/* // Add OAuth buttons below existing form in CardContent */}
-<div className="mt-4 flex flex-col gap-2">
+                <div className="mt-4 flex flex-col gap-2">
   <Button onClick={() => window.location.href = '/auth/oauth/google'} className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-2">
     <img src="/google-icon.svg" alt="Google" className="h-5 w-5"/> Sign in with Google
   </Button>
@@ -211,6 +209,9 @@ export function RegisterPage() {
     <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> Sign in with GitHub
   </Button>
 </div>
+            </Card>
+            {/* // Add OAuth buttons below existing form in CardContent */}
+
         </div>
     );
 }
