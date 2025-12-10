@@ -73,7 +73,9 @@ router.post('/login', async (req, res, next) => {
     if (user.provider === 'email' && !user.emailVerified)
       return res.status(400).json({ message: 'Please verify your email before logging in.' });
 
-    const valid = user.password ? await verifyPassword(password, user.password) : false;
+    // The login flow already ensures 'password' exists for 'email' provider
+    // Social login users won't hit this path as they don't have a password set
+    const valid = user.password ? await verifyPassword(password, user.password) : false; 
     if (!valid) return res.status(400).json({ message: 'Invalid credentials.' });
 
     const token = signToken({ userId: user.id });
@@ -93,8 +95,19 @@ router.post('/oauth-login', async (req, res) => {
     let user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
+      // FIX 1: Add a generated, unique 'username' to satisfy the UserCreateInput type.
+      const generatedUsername = `${provider}_${providerId}_${nanoid(4)}`;
+
       user = await prisma.user.create({
-        data: { email, firstName, lastName, provider, providerId, emailVerified: true },
+        data: { 
+          email, 
+          firstName, 
+          lastName, 
+          provider, 
+          providerId, 
+          emailVerified: true, 
+          username: generatedUsername // Required field
+        },
       });
     }
 
@@ -132,12 +145,21 @@ router.post('/password', requireAuth, async (req, res, next) => {
 
     const userId = req.user!.id;
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+    // Must select 'password' field to verify current password
+    const user = await prisma.user.findUnique({ 
+      where: { id: userId },
+      select: { password: true, provider: true } // Only need password and provider here
+    });
+    
+    // Check for user existence and ensure they used 'email' login (i.e., have a password)
+    if (!user || user.provider !== 'email' || !user.password) {
+      // Return a generic error for security, or a specific one if appropriate
+      return res.status(400).json({ message: 'Cannot change password. Check user details or login method.' });
     }
 
-    const valid = await verifyPassword(currentPassword, user.password);
+    // FIX 2: Use non-null assertion on user.password because the check above guarantees it's not null.
+    // Error: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+    const valid = await verifyPassword(currentPassword, user.password!); 
     if (!valid) {
       return res.status(400).json({ message: 'Current password is incorrect.' });
     }
