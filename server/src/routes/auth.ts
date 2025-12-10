@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import { hashPassword, verifyPassword, isPasswordStrong } from '../utils/password.ts';
 import { signToken } from '../utils/jwt.ts';
 import { requireAuth } from '../middleware/auth.ts';
+import { nanoid } from 'nanoid';
+import { sendVerificationEmail } from '../utils/mailer.ts';
 
 const prisma = new PrismaClient();
 const router = Router();
