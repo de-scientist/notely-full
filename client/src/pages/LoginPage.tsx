@@ -171,25 +171,6 @@ export function LoginPage() {
     <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> Sign in with GitHub
   </Button>
 </div>
-
-
-<script lang="ts">
-const handleOAuthLogin = async (provider: 'google' | 'github') => {
-  try {
-    // Example flow: call your backend endpoint that exchanges OAuth token
-    const res = await api.post('/auth/oauth-login', {
-      provider
-      // providerId, email, firstName, lastName come from OAuth flow
-    });
-    setUser(res.data.user);
-    navigate('/app/notes');
-    toast.success(`Welcome ${res.data.user.firstName}!`);
-  } catch (err: any) {
-    toast.error(err?.response?.data?.message ?? 'OAuth login failed.');
-  }
-};
-</script>
-
     </div>
   );
 }
