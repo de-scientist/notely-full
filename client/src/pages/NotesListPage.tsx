@@ -19,7 +19,8 @@ import {
     Share2,
     Bookmark,
     Lock,
-    NotebookPen
+    NotebookPen,
+    ThumbsUp,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useEffect, useMemo } from 'react'; 
@@ -35,7 +36,7 @@ interface Entry {
     content: string;
     isDeleted: boolean;
     pinned: boolean;
-    bookmarked?: boolean;
+    bookmarked?: boolean; // Ensure this is consistently handled by the backend API response
     isPublic?: boolean;
     dateCreated: string;
     lastUpdated: string;
@@ -43,12 +44,18 @@ interface Entry {
 }
 
 /**
- * Helper function to format a date string into a relative time string (e.g., "5 minutes ago").
- * Uses the built-in Intl.RelativeTimeFormat for modern browsers.
+ * Helper function to format a date string into a relative time string.
  */
 function formatRelativeTime(dateString: string): string {
+    // FIX: Using Date.parse() or new Date(string) is usually sufficient if the string is ISO 8601 compliant.
+    // The previous implementation was likely correct, but checking the validity is safer.
     const date = new Date(dateString);
     const now = new Date();
+    
+    if (isNaN(date.getTime())) {
+        return "Invalid Date";
+    }
+
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
@@ -72,7 +79,6 @@ function formatRelativeTime(dateString: string): string {
         return formatter.format(-days, 'day');
     }
     
-    // For longer periods, fall back to a simple date
     return `on ${date.toLocaleDateString()}`;
 }
 
@@ -108,7 +114,6 @@ function NoteCard({
     const isBookmarked = !!entry.bookmarked;
     const isPublic = !!entry.isPublic;
     
-    // --- UPDATED DATE DISPLAY ---
     const relativeTime = formatRelativeTime(entry.lastUpdated);
 
     return (
@@ -119,17 +124,28 @@ function NoteCard({
             className={`
                 relative group flex flex-col justify-between shadow-lg dark:bg-gray-800 transition-all duration-200
                 ${isDragging ? 'scale-[1.03] shadow-xl z-10 border-fuchsia-500' : 'hover:scale-[1.01]'}
-                ${isPinned && !simple ? 'border-2 border-fuchsia-500' : 'border border-gray-200 dark:border-gray-700'}
+                ${isPinned && !simple ? 'border-2 border-fuchsia-500 ring-4 ring-fuchsia-200 dark:ring-fuchsia-900' : 'border border-gray-200 dark:border-gray-700'}
                 ${simple ? 'w-64 flex-shrink-0' : ''}
             `}
         >
+            {/* PINNED LABEL */}
+            {isPinned && !simple && (
+                <div className="absolute top-0 right-0 transform translate-y-[-50%] translate-x-[20%] rotate-3 px-3 py-1 text-xs font-bold bg-yellow-500 text-white rounded-full shadow-lg">
+                    PINNED
+                </div>
+            )}
+
             <CardHeader className={`pb-2 ${simple ? 'p-3' : 'p-4'}`}>
                 <div className="flex justify-between items-start gap-3">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                            {/* Bookmark Icon Button */}
+                            {/* Bookmark Icon Button (FIX: Ensure onClick is correct) */}
                             <button
-                                onClick={() => onToggleBookmark(entry.id, !isBookmarked)}
+                                // The toggle function is correct: use the current bookmarked state's inverse
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent card read link if this was a wrapper
+                                    onToggleBookmark(entry.id, !isBookmarked);
+                                }}
                                 title={isBookmarked ? "Remove from Saved" : "Save for later"}
                                 className={`
                                     p-1 rounded-full hover:scale-105 transform transition-all duration-150
@@ -143,7 +159,7 @@ function NoteCard({
                             </CardTitle>
                         </div>
                         
-                        <div className="mt-2 flex items-center gap-2">
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
                             <Badge
                                 variant="secondary"
                                 className={`w-fit text-xs ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900/30`}
@@ -152,13 +168,13 @@ function NoteCard({
                             </Badge>
                             {/* Public Status Badge */}
                             {isPublic && (
-                                <span className="text-xs rounded px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700">
+                                <span className="text-xs rounded px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700 font-medium">
                                     Public
                                 </span>
                             )}
                             {/* Saved Badge */}
                             {isBookmarked && (
-                                <span className="text-xs rounded px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700">
+                                <span className="text-xs rounded px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 font-medium">
                                     Saved
                                 </span>
                             )}
@@ -171,8 +187,11 @@ function NoteCard({
                             size="sm"
                             variant="ghost"
                             title={isPinned ? "Unpin Note" : "Pin Note"}
-                            onClick={() => onTogglePin(entry.id, !isPinned)}
-                            className={`p-1 h-8 w-8 ${isPinned ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500 hover:text-yellow-500'}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onTogglePin(entry.id, !isPinned);
+                            }}
+                            className={`p-1 h-8 w-8 ${isPinned ? 'text-yellow-500 hover:bg-yellow-100/30 dark:hover:bg-yellow-900/50' : 'text-gray-400 dark:text-gray-500 hover:text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}
                         >
                             {isPinned ? <Star className="h-5 w-5" fill="currentColor" /> : <StarOff className="h-5 w-5" />}
                         </Button>
@@ -188,7 +207,6 @@ function NoteCard({
 
             <CardFooter className={`flex items-center justify-between pt-4 border-t dark:border-gray-700 ${simple ? 'p-3' : 'p-4'}`}>
                 <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
-                    {/* --- UPDATED LINE --- */}
                     Updated {relativeTime}
                 </span>
 
@@ -200,9 +218,12 @@ function NoteCard({
                             size="sm"
                             variant="ghost"
                             title={isPublic ? "Make Private" : "Make Public"}
-                            onClick={() => onTogglePublic(entry.id, !isPublic)}
-                            className={`p-2 h-8 w-8 transition-colors duration-150 ${
-                                isPublic ? 'text-green-500 hover:text-green-600' : 'text-gray-400 dark:text-gray-500 hover:text-green-500'
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onTogglePublic(entry.id, !isPublic);
+                            }}
+                            className={`p-2 h-8 w-8 transition-colors duration-150 rounded-full ${
+                                isPublic ? 'text-green-500 hover:bg-green-100/30 dark:hover:bg-green-900/50' : 'text-gray-400 dark:text-gray-500 hover:text-green-500 hover:bg-gray-100 dark:hover:bg-gray-700/50'
                             }`}
                         >
                             {isPublic ? (
@@ -214,20 +235,23 @@ function NoteCard({
                     )}
 
                     {/* Edit */}
-                    <Link to={`/app/notes/${entry.id}/edit`} title="Edit">
-                        <Button size="sm" variant="outline" className="p-2 h-8 w-8">
+                    <Link to={`/app/notes/${entry.id}/edit`} title="Edit" onClick={e => e.stopPropagation()}>
+                        <Button size="sm" variant="outline" className="p-2 h-8 w-8 rounded-full hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/20 border-fuchsia-200 dark:border-fuchsia-700 text-fuchsia-600 dark:text-fuchsia-500">
                             <Edit className="h-4 w-4" />
                         </Button>
                     </Link>
 
-                    {/* Share - copies link if public, disabled if private */}
+                    {/* Share Button (Calls handleShare for Web Share API) */}
                     <Button
                         size="sm"
                         variant="ghost"
-                        title={isPublic ? "Copy share link" : "Note is private. Make public to share."}
-                        onClick={() => onShare(entry)}
+                        title={isPublic ? "Share Note (via Web Share API)" : "Note is private. Make public to share."}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onShare(entry);
+                        }}
                         disabled={!isPublic}
-                        className={`p-2 h-8 w-8 transition-colors duration-150 ${
+                        className={`p-2 h-8 w-8 rounded-full transition-colors duration-150 ${
                             isPublic 
                                 ? 'text-fuchsia-600 dark:text-fuchsia-500 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/30' 
                                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
@@ -241,15 +265,18 @@ function NoteCard({
                         size="sm"
                         variant="destructive"
                         title="Delete"
-                        onClick={() => onDelete(entry.id)}
-                        className="p-2 h-8 w-8"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(entry.id);
+                        }}
+                        className="p-2 h-8 w-8 rounded-full"
                     >
                         <Trash2 className="h-4 w-4" />
                     </Button>
 
                     {/* Read */}
-                    <Link to={`/app/notes/${entry.id}`}>
-                        <Button size="sm" className={`${SOLID_BUTTON_CLASS} p-2 h-8 w-8`} title="Read full note">
+                    <Link to={`/app/notes/${entry.id}`} onClick={e => e.stopPropagation()}>
+                        <Button size="sm" className={`${SOLID_BUTTON_CLASS} p-2 h-8 w-8 rounded-full`} title="Read full note">
                             <ArrowRight className="h-4 w-4" />
                         </Button>
                     </Link>
@@ -274,15 +301,21 @@ export function NotesListPage() {
     const [entries, setEntries] = useState<Entry[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [sortOption, setSortOption] = useState('recent');
+    const [sortOption, setSortOption] = useState('recent'); // Default to recent
     const [showSavedOnly, setShowSavedOnly] = useState(false);
 
     // 3. EFFECT HOOK
     useEffect(() => {
-        // Initial sorting when data is fetched
+        // Initial sorting when data is fetched: Sort by Pinned then by lastUpdated
         if (data?.entries) {
             setEntries(
-                [...data.entries].sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
+                [...data.entries].sort((a, b) => {
+                    // Pinned notes first
+                    if (a.pinned && !b.pinned) return -1;
+                    if (!a.pinned && b.pinned) return 1;
+                    // Then by recent update
+                    return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+                })
             );
         }
     }, [data]);
@@ -307,16 +340,20 @@ export function NotesListPage() {
         onError: () => toast.error("Failed to toggle pin status."),
     });
 
+    // FIX: This mutation logic looks correct. It hits a dedicated endpoint for bookmarking.
     const toggleBookmarkMutation = useMutation({
         mutationFn: async ({ id, bookmarked }: { id: string; bookmarked: boolean }) => {
             if (bookmarked) {
+                // To bookmark/save
                 return await api.post(`/entries/${id}/bookmark`);
             } else {
+                // To unbookmark/remove from saved
                 return await api.delete(`/entries/${id}/bookmark`);
             }
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['entries'] });
+            // Invalidate to force refetch and update the bookmark icon/filter status
+            queryClient.invalidateQueries({ queryKey: ['entries'] }); 
             toast.success(variables.bookmarked ? "Note saved successfully!" : "Note removed from saved.");
         },
         onError: () => toast.error("Failed to toggle bookmark status."),
@@ -332,29 +369,29 @@ export function NotesListPage() {
         onError: () => toast.error("Failed to change sharing status."),
     });
 
-    // --- NON-HOOK FUNCTION (Safe to be placed anywhere) ---
+    // --- NON-HOOK FUNCTION ---
     const onDragEnd = (result: DropResult) => {
+        // Only allow drag-and-drop when sorting by 'recent' (or default)
         if (!result.destination || sortOption !== 'recent') return; 
+        
         const updated = Array.from(entries);
         const [moved] = updated.splice(result.source.index, 1);
         updated.splice(result.destination.index, 0, moved);
         setEntries(updated);
+        // NOTE: A real app would send a mutation here to save the new order.
     };
 
-    // --- DERIVED STATE (useMemo for calculations) ---
-    // This runs before the conditional 'isLoading' return.
-
+    // --- DERIVED STATE ---
     const allBookmarkedNotes = useMemo(() => entries.filter(e => e.bookmarked), [entries]);
     
     const filteredEntries = useMemo(() => {
         let filtered = entries.filter(entry => {
-            // Apply Saved Only filter
+            if (entry.isDeleted) return false;
+            // Filter by Saved Only
             if (showSavedOnly && !entry.bookmarked) return false;
-            
-            // Apply category filter
+            // Filter by Category
             if (selectedCategory !== 'All' && entry.category.name !== selectedCategory) return false;
-            
-            // Apply search query filter
+            // Filter by Search Query
             const q = searchQuery.trim().toLowerCase();
             if (!q) return true;
             
@@ -368,42 +405,23 @@ export function NotesListPage() {
 
         // Apply sorting
         filtered = filtered.sort((a, b) => {
-            // Only apply custom sort if not 'recent' or drag-and-drop is not intended
-            if (sortOption === 'alphabetical') return a.title.localeCompare(b.title);
-            
-            // Default sort (recent) or 'pinned' will use the following logic
-            // 1. Pinned notes must come first, regardless of the primary sort if not 'recent'
-            if (sortOption === 'pinned' || sortOption === 'recent') {
-                if (a.pinned && !b.pinned) return -1;
-                if (!a.pinned && b.pinned) return 1;
+            if (sortOption === 'alphabetical') {
+                return a.title.localeCompare(b.title);
             }
-
-            // 2. Secondary sort: recently updated
+            
+            // Default/Recent sort: Pinned first, then by Last Updated
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            
             return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
         });
 
         return filtered;
     }, [entries, showSavedOnly, selectedCategory, searchQuery, sortOption]);
 
-
-    // Correctly determine displayNotes based on filtering and pinning preference
-    const displayNotes = useMemo(() => {
-        // If "Show Saved Only" is checked, just use the already filtered and sorted list.
-        if (showSavedOnly) {
-            return filteredEntries;
-        }
-
-        // If not showing saved only, separate by pin status for display.
-        const pinned = filteredEntries.filter(e => e.pinned);
-        const regular = filteredEntries.filter(e => !e.pinned);
-
-        // This list will display pinned notes first, then regular notes,
-        // all while maintaining the sort order within those groups.
-        return [...pinned, ...regular];
-    }, [filteredEntries, showSavedOnly]);
+    const displayNotes = filteredEntries;
     
     const recentNotes = useMemo(() => 
-        // Filter out deleted notes before sorting for recents
         [...entries].filter(e => !e.isDeleted).sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()).slice(0, 3)
     , [entries]);
 
@@ -417,7 +435,7 @@ export function NotesListPage() {
     );
     // --- CONDITIONAL RENDER END ---
 
-    // Share function logic
+    // FIX: Enhanced Share function logic using Web Share API
     const handleShare = async (entry: Entry) => {
         if (!entry.isPublic) {
             toast.info("Note must be public to share. Please use the lock icon to make it public first.");
@@ -426,16 +444,31 @@ export function NotesListPage() {
 
         try {
             const shareUrl = `${window.location.origin}/share/${entry.id}`;
+            const shareData: ShareData = {
+                title: entry.title,
+                text: entry.synopsis || `Check out this note: ${entry.title}`,
+                url: shareUrl,
+            };
             
-            if (navigator.clipboard && navigator.clipboard.writeText) {
+            // Attempt to use the Web Share API (gives WhatsApp, FB, IG options etc.)
+            if (navigator.share) {
+                await navigator.share(shareData);
+                toast.success('Note shared successfully via native menu!');
+            } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                // Fallback to clipboard copy
                 await navigator.clipboard.writeText(shareUrl);
                 toast.success('Share link copied to clipboard!');
             } else {
+                // Last resort: prompt
                 window.prompt('Copy this share link', shareUrl);
             }
         } catch (err) {
-            toast.error('Unable to copy share link.');
-            console.error(err);
+            if (err instanceof Error && err.name === 'AbortError') {
+                 // User dismissed the share dialog
+                return;
+            }
+            toast.error('Unable to share or copy link.');
+            console.error('Share error:', err);
         }
     };
 
@@ -449,31 +482,33 @@ export function NotesListPage() {
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h1 className="text-3xl font-bold dark:text-white">📝 My Notes</h1>
+                <h1 className="text-3xl font-bold dark:text-white flex items-center gap-2">
+                    <NotebookPen className={`h-8 w-8 ${PRIMARY_TEXT_CLASS}`} /> My Notes
+                </h1>
                 <Button className={`${CTA_BUTTON_CLASS} flex items-center gap-2`} onClick={() => navigate('/app/notes/new')}>
                     <PlusCircle className="h-5 w-5" /> Create New Note
                 </Button>
             </div>
 
             {/* Stats */}
-            <div className="flex gap-4 p-4 border border-fuchsia-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50 flex-wrap">
-                <div className="px-4 py-2 rounded-md shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20">
+            <div className="flex gap-4 p-4 border border-fuchsia-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex-wrap shadow-inner">
+                <div className="px-4 py-2 rounded-lg shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20 flex-1 min-w-[120px]">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Total Notes</p>
                     <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{entries.length}</p>
                 </div>
-                <div className="px-4 py-2 rounded-md shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20">
+                <div className="px-4 py-2 rounded-lg shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20 flex-1 min-w-[120px]">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Pinned Notes</p>
                     <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{entries.filter(e => e.pinned).length}</p>
                 </div>
-                <div className="px-4 py-2 rounded-md shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20">
+                <div className="px-4 py-2 rounded-lg shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20 flex-1 min-w-[120px]">
                     <p className="text-sm text-gray-600 dark:text-gray-300">Saved</p>
                     <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{allBookmarkedNotes.length}</p> 
                 </div>
             </div>
 
             {/* Search & Filters */}
-            <div className="flex flex-col md:flex-row gap-3 items-center w-full">
-                <div className="relative flex-1 min-w-40 max-w-lg">
+            <div className="flex flex-col md:flex-row gap-3 items-center w-full p-4 border border-fuchsia-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                <div className="relative flex-1 min-w-40 max-w-lg w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                     <input
                         type="text"
@@ -500,11 +535,10 @@ export function NotesListPage() {
                     onChange={(e) => setSortOption(e.target.value)}
                 >
                     <option value="recent">Recently Updated</option>
-                    <option value="pinned">Pinned First</option>
                     <option value="alphabetical">A-Z</option>
                 </select>
 
-                <label className="inline-flex items-center gap-2 text-sm md:ml-auto">
+                <label className="inline-flex items-center gap-2 text-sm md:ml-auto whitespace-nowrap">
                     <input
                         type="checkbox"
                         checked={showSavedOnly}
@@ -518,9 +552,11 @@ export function NotesListPage() {
             <hr className="border-fuchsia-300/50 dark:border-fuchsia-900/50" />
 
             {/* Recently Updated (top 3) */}
-            <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900 shadow-inner">
-                <h2 className="text-xl font-semibold dark:text-white mb-3 border-b pb-2 border-fuchsia-500/50">🔥 Recent Activity</h2>
-                <div className="flex gap-6 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-fuchsia-400/50 scrollbar-track-gray-200/50">
+            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 shadow-inner">
+                <h2 className="text-xl font-semibold dark:text-white mb-3 border-b pb-2 border-fuchsia-500/50 flex items-center gap-2">
+                    <ThumbsUp className='h-5 w-5 text-fuchsia-500' /> Recent Activity
+                </h2>
+                <div className="flex gap-6 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin scrollbar-thumb-fuchsia-400/50 scrollbar-track-gray-200/50">
                     {recentNotes.map(note => (
                         <NoteCard
                             key={note.id}
@@ -543,7 +579,7 @@ export function NotesListPage() {
 
             {/* Main Note Grid */}
             <h2 className="text-xl font-semibold dark:text-white mb-4">
-                {showSavedOnly ? `💾 Saved Notes (${filteredEntries.length})` : `All Notes (${displayNotes.length})`}
+                {showSavedOnly ? `💾 Saved Notes (${displayNotes.length})` : `All Notes (${displayNotes.length})`}
             </h2>
 
             {!displayNotes.length ? (
@@ -560,13 +596,20 @@ export function NotesListPage() {
                                 ref={provided.innerRef}
                             >
                                 {displayNotes.map((entry, index) => (
-                                    <Draggable key={entry.id} draggableId={entry.id} index={index}>
+                                    // Disable Draggable if not sorting by 'recent'
+                                    <Draggable 
+                                        key={entry.id} 
+                                        draggableId={entry.id} 
+                                        index={index} 
+                                        isDragDisabled={sortOption !== 'recent'}
+                                    >
                                         {(provided, snapshot) => (
                                             <NoteCard
                                                 entry={entry}
                                                 isDragging={snapshot.isDragging}
                                                 draggableProps={provided.draggableProps}
-                                                dragHandleProps={provided.dragHandleProps}
+                                                // Only provide drag handle props if dragging is enabled (sort is 'recent')
+                                                dragHandleProps={sortOption === 'recent' ? provided.dragHandleProps : null} 
                                                 innerRef={provided.innerRef}
                                                 onDelete={(id) => deleteMutation.mutate(id)}
                                                 onTogglePin={(id, pinned) => togglePinMutation.mutate({ id, pinned })}
