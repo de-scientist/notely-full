@@ -195,7 +195,10 @@ function AppLayout() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/admin/*" element={<AdminApp />} />
+          <Route element={<ProtectedAdminRoute />}>
+  <Route path="/admin/*" element={<AdminApp />} />
+</Route>
+
           
           {/* Shared Note Route */}
           <Route path="/share/:id" element={<SharedNotePage />} />
