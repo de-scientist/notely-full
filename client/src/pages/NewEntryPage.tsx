@@ -120,8 +120,7 @@ export function NewEntryPage() {
     });
     
     // Determine if we have enough content to justify calling the AI
-    // FIX: Add nullish coalescing operator (?? '') to ensure .trim() is called on a string.
-    // This is defensive against any edge case where the persistent state hook fails to init.
+    // FIX APPLIED HERE: Using (state ?? '') to ensure .trim() is called on a string, preventing the 404 error from the previous step.
     const hasSufficientContent = 
         (title ?? '').trim().length > 5 || 
         (synopsis ?? '').trim().length > 10 || 
@@ -173,7 +172,7 @@ export function NewEntryPage() {
     };
 
     // Word, character count & reading time
-    // FIX: Add nullish coalescing operator (?? '') to ensure .trim() is called on a string.
+    // FIX APPLIED HERE: Ensure content is a string before processing.
     const safeContent = content ?? ''; 
     const wordCount = safeContent.trim().split(/\s+/).filter(Boolean).length;
     const charCount = safeContent.length;
@@ -242,7 +241,14 @@ export function NewEntryPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="title" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Title</Label>
-                                    <Input id="title" placeholder="Catchy title" value={title} onChange={e => setTitle(e.target.value)} required disabled={isAnyLoading} />
+                                    <Input 
+                                        id="title" 
+                                        placeholder="Catchy title" 
+                                        value={title ?? ''} // FIX: Ensures controlled input always has a string value
+                                        onChange={e => setTitle(e.target.value)} 
+                                        required 
+                                        disabled={isAnyLoading} 
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="category" className="flex items-center gap-2"><FolderOpen className="h-4 w-4" />Category</Label>
@@ -259,18 +265,24 @@ export function NewEntryPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="synopsis">Synopsis</Label>
-                                <Input id="synopsis" placeholder="Short summary" value={synopsis} onChange={e => setSynopsis(e.target.value)} required disabled={isAnyLoading} />
+                                <Input 
+                                    id="synopsis" 
+                                    placeholder="Short summary" 
+                                    value={synopsis ?? ''} // FIX: Ensures controlled input always has a string value
+                                    onChange={e => setSynopsis(e.target.value)} 
+                                    required 
+                                    disabled={isAnyLoading} 
+                                />
                             </div>
 
                             <div className="space-y-2">
                                 <div className='flex justify-between items-end mb-2'>
                                     <Label htmlFor="content">Content (Markdown Editor)</Label>
                                     
-                                    {/* AI FUNCTIONALITY BUTTON - FIXED LOGIC & STYLES */}
+                                    {/* AI FUNCTIONALITY BUTTON */}
                                     <Button 
                                         type="button" 
                                         onClick={suggestWithAI} 
-                                        // Use the consolidated disabled state variable
                                         disabled={isAiButtonDisabled} 
                                         variant="outline"
                                         size="sm"
@@ -288,7 +300,7 @@ export function NewEntryPage() {
                                     id="content" 
                                     rows={20}
                                     placeholder="Start writing using Markdown, e.g., # Main Title, ## Section, *bold*." 
-                                    value={content} 
+                                    value={content ?? ''} // FIX: Ensures controlled input always has a string value
                                     onChange={e => setContent(e.target.value)} 
                                     ref={editorRef} 
                                     onScroll={handleScroll} 
