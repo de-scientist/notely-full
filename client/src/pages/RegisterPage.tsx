@@ -202,7 +202,7 @@ export function RegisterPage() {
                     </p>
                 </CardFooter>
             </Card>
-            // Add OAuth buttons below existing form in CardContent
+            {/* // Add OAuth buttons below existing form in CardContent */}
 <div className="mt-4 flex flex-col gap-2">
   <Button onClick={() => window.location.href = '/auth/oauth/google'} className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-2">
     <img src="/google-icon.svg" alt="Google" className="h-5 w-5"/> Sign in with Google
