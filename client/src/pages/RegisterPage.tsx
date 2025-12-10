@@ -16,13 +16,20 @@ import { Separator } from "../components/ui/separator";
 
 import { 
     Loader2, UserPlus, AlertTriangle, CheckCircle, 
-    User, Mail, Lock, Eye, EyeOff, X, Check 
+    User, Mail, Lock, Eye, EyeOff, X, Check,
+    // Note: Lucide does not include Google/GitHub brand icons.
+    // We will continue to use the SVG images for brand icons as is best practice.
 } from 'lucide-react';
 
 // 💜 OneNote-inspired palette
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 const INPUT_RING_CLASS = "focus:ring-fuchsia-500 focus:border-fuchsia-600 dark:focus:ring-fuchsia-500/50";
+
+// --- NEW BRAND COLORS (TAILWIND CLASSES) ---
+const GOOGLE_BUTTON_CLASS = "bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-gray-300 border border-gray-300 hover:border-gray-400 transition-all duration-300 transform hover:scale-[1.03] shadow-md shadow-gray-300/50";
+const GITHUB_BUTTON_CLASS = "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-[1.03] shadow-lg shadow-gray-900/50";
+// -------------------------------------------
 
 // FIX: Changed type from JSX.Element to React.ReactElement to resolve TS2503 error (from previous fix).
 const icons: Record<string, React.ReactElement> = {
@@ -173,35 +180,27 @@ export function RegisterPage() {
 
                 <CardContent className="pt-6">
                     <div className="flex flex-col gap-4 mb-6">
-                        {/* --- START: UPDATED GOOGLE BUTTON STYLING ---
-                            Using a modified GRADIENT_CLASS to maintain the gradient look but with a lighter color 
-                            to represent Google's main color, or alternatively, a more generic one with white text.
-                            I've opted to use the primary style to match the rest, but with a slight adjustment for the icon.
-                        */}
+                        {/* 🚀 START: UPDATED GOOGLE BUTTON WITH BRAND COLOR */}
                         <Button 
                             onClick={() => window.location.href = '/auth/oauth/google'} 
-                            // Applying the main button styling to align with the rest of the page
-                            className={`w-full text-lg font-semibold ${GRADIENT_CLASS} flex items-center justify-center gap-2 h-12 transition-transform active:scale-[0.97] rounded-lg`}
+                            // Using GOOGLE_BUTTON_CLASS for brand-appropriate styling
+                            className={`w-full text-lg font-semibold ${GOOGLE_BUTTON_CLASS} flex items-center justify-center gap-2 h-12 active:scale-[0.97] rounded-lg`}
                         >
-                            <img src="/google-icon.svg" alt="Google" className="h-5 w-5 bg-white rounded-full p-0.5"/> 
+                            <img src="/google-icon.svg" alt="Google Icon" className="h-5 w-5"/> 
                             Sign up with Google
                         </Button>
-                        {/* --- END: UPDATED GOOGLE BUTTON STYLING ---
-                            
-                            --- START: UPDATED GITHUB BUTTON STYLING ---
-                            Using a dark background for GitHub (consistent with its branding) but 
-                            applying the general style properties (like height, font, and transform) to match the other buttons.
-                        */}
+                        {/* 🚀 END: UPDATED GOOGLE BUTTON WITH BRAND COLOR */}
+                        
+                        {/* 🚀 START: UPDATED GITHUB BUTTON WITH BRAND COLOR */}
                         <Button 
                             onClick={() => window.location.href = '/auth/oauth/github'} 
-                            // Using GitHub's dark color, but with consistent size, font, and transition/scale effects.
-                            className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 text-white w-full text-lg font-semibold flex items-center justify-center gap-2 h-12 transition-transform active:scale-[0.97] rounded-lg shadow-lg shadow-gray-500/50"
+                            // Using GITHUB_BUTTON_CLASS for brand-appropriate styling
+                            className={`w-full text-lg font-semibold ${GITHUB_BUTTON_CLASS} flex items-center justify-center gap-2 h-12 active:scale-[0.97] rounded-lg`}
                         >
-                            <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> 
+                            <img src="/github-icon.svg" alt="GitHub Icon" className="h-5 w-5"/> 
                             Sign up with GitHub
                         </Button>
-                        {/* --- END: UPDATED GITHUB BUTTON STYLING ---
-                        */}
+                        {/* 🚀 END: UPDATED GITHUB BUTTON WITH BRAND COLOR */}
                     </div>
 
                     <Separator className="my-6">
@@ -251,10 +250,10 @@ export function RegisterPage() {
                                             <X className="h-5 w-5 text-red-500" />;
                                         validationColor = emailValid ? 'border-green-500' : 'border-red-500';
                                     } else if (field === 'confirmPassword' && value) {
-                                         validationIcon = passwordsMismatch ? 
-                                             <X className="h-5 w-5 text-red-500" /> : 
-                                             <CheckCircle className="h-5 w-5 text-green-500" />;
-                                         validationColor = passwordsMismatch ? 'border-red-500' : 'border-green-500';
+                                           validationIcon = passwordsMismatch ? 
+                                               <X className="h-5 w-5 text-red-500" /> : 
+                                               <CheckCircle className="h-5 w-5 text-green-500" />;
+                                           validationColor = passwordsMismatch ? 'border-red-500' : 'border-green-500';
                                     }
 
 
