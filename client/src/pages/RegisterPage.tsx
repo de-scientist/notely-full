@@ -173,20 +173,35 @@ export function RegisterPage() {
 
                 <CardContent className="pt-6">
                     <div className="flex flex-col gap-4 mb-6">
+                        {/* --- START: UPDATED GOOGLE BUTTON STYLING ---
+                            Using a modified GRADIENT_CLASS to maintain the gradient look but with a lighter color 
+                            to represent Google's main color, or alternatively, a more generic one with white text.
+                            I've opted to use the primary style to match the rest, but with a slight adjustment for the icon.
+                        */}
                         <Button 
                             onClick={() => window.location.href = '/auth/oauth/google'} 
-                            className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-3 transition-transform active:scale-[0.99] h-11 text-base rounded-lg"
+                            // Applying the main button styling to align with the rest of the page
+                            className={`w-full text-lg font-semibold ${GRADIENT_CLASS} flex items-center justify-center gap-2 h-12 transition-transform active:scale-[0.97] rounded-lg`}
                         >
                             <img src="/google-icon.svg" alt="Google" className="h-5 w-5 bg-white rounded-full p-0.5"/> 
                             Sign up with Google
                         </Button>
+                        {/* --- END: UPDATED GOOGLE BUTTON STYLING ---
+                            
+                            --- START: UPDATED GITHUB BUTTON STYLING ---
+                            Using a dark background for GitHub (consistent with its branding) but 
+                            applying the general style properties (like height, font, and transform) to match the other buttons.
+                        */}
                         <Button 
                             onClick={() => window.location.href = '/auth/oauth/github'} 
-                            className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white w-full flex justify-center items-center gap-3 transition-transform active:scale-[0.99] h-11 text-base rounded-lg"
+                            // Using GitHub's dark color, but with consistent size, font, and transition/scale effects.
+                            className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 text-white w-full text-lg font-semibold flex items-center justify-center gap-2 h-12 transition-transform active:scale-[0.97] rounded-lg shadow-lg shadow-gray-500/50"
                         >
                             <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> 
                             Sign up with GitHub
                         </Button>
+                        {/* --- END: UPDATED GITHUB BUTTON STYLING ---
+                        */}
                     </div>
 
                     <Separator className="my-6">
@@ -237,9 +252,9 @@ export function RegisterPage() {
                                         validationColor = emailValid ? 'border-green-500' : 'border-red-500';
                                     } else if (field === 'confirmPassword' && value) {
                                          validationIcon = passwordsMismatch ? 
-                                            <X className="h-5 w-5 text-red-500" /> : 
-                                            <CheckCircle className="h-5 w-5 text-green-500" />;
-                                        validationColor = passwordsMismatch ? 'border-red-500' : 'border-green-500';
+                                             <X className="h-5 w-5 text-red-500" /> : 
+                                             <CheckCircle className="h-5 w-5 text-green-500" />;
+                                         validationColor = passwordsMismatch ? 'border-red-500' : 'border-green-500';
                                     }
 
 
