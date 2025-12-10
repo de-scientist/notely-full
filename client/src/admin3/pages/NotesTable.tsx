@@ -139,7 +139,6 @@ export default function NotesManagement() {
     );
   }
 
-  // Only show error if the hook determined it's a real API error
   if (isError) {
     return (
       <div className="p-6">
@@ -208,25 +207,31 @@ export default function NotesManagement() {
       
       {/* 3. Notes Grid */}
       <div className="pt-4">
-        {/* Check if notes is null or empty AFTER fetching/mocking */}
-        {filteredNotes.length === 0 && (notes === null || notes.length === 0) ? (
+        {/* ✅ FIX for Error 18048: 'notes' is possibly 'undefined'.
+          We can use the nullish coalescing operator (??) to treat notes as an empty array 
+          if it happens to be null/undefined when we reach this render state, or simply use 
+          the already computed filteredNotes.
+
+          Logic: 
+          1. If filteredNotes is empty AND the original notes array is also empty, show 'No notes in system'.
+          2. If filteredNotes is empty but the original notes array had data, show 'No results for filters'.
+          
+          Since we passed the isLoading/isError checks, 'notes' is guaranteed to be either MOCK_NOTES (array) 
+          or the API result (array). We can safely cast it as an array or use non-null assertion (!) 
+          or optional chaining. Using optional chaining below makes the code safer.
+        */}
+        {filteredNotes.length === 0 ? (
           <div className="text-center py-10">
             <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              No notes found
+              {/* Check the actual length of the fetched/mocked data */}
+              {notes?.length === 0 ? "No notes found" : "No results for current filters"}
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              There are no notes in the system yet.
-            </p>
-          </div>
-        ) : filteredNotes.length === 0 ? (
-           <div className="text-center py-10">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              No results for current filters
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              No notes match your current filter and search criteria: **"{searchTerm}"**
+              {notes?.length === 0 
+                ? "There are no notes in the system yet."
+                : `No notes match your current filter and search criteria: **"${searchTerm}"**`
+              }
             </p>
           </div>
         ) : (
