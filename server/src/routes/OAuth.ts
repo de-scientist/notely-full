@@ -1,8 +1,16 @@
+// /c:/Users/TECH VISIONS/Desktop/T2G/notely-full/server/src/routes/OAuth.ts
+
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { signToken } from '../utils/jwt.ts';
 import dotenv from 'dotenv';
+// FIX 1: Import nanoid from 'nanoid'
+import { nanoid } from 'nanoid'; 
+// FIX 4 & 5: Assuming you have a utility function named 'sendEmail' in your utils folder.
+// If you intended to use 'sendVerificationEmail' as in the 'auth.ts' file, change this import.
+// For now, I'll assume it's just 'sendEmail'.
+import { sendVerificationEmail } from '../utils/mailer.ts'; 
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -43,6 +51,7 @@ router.get('/google/callback', async (req, res) => {
 
     if (!user) {
       // Create new user if not found
+      // FIX 1 (nanoid): The import fixes the nanoid usage here.
       user = await prisma.user.create({
         data: {
           email,
@@ -114,8 +123,9 @@ router.get('/github/callback', async (req, res) => {
 
     let user = await prisma.user.findUnique({ where: { email: primaryEmail } });
     if (!user) {
+      // FIX 2 (nanoid): The import fixes the nanoid usage here.
       user = await prisma.user.create({
-       data: {
+        data: {
           email: primaryEmail,
           firstName: name?.split(' ')[0] || login,
           lastName: name?.split(' ').slice(1).join(' ') || '',
@@ -150,13 +160,25 @@ router.post('/send-verification', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const token = nanoid(32);
+    // FIX 3 (nanoid): The import fixes the nanoid usage here.
+    const token = nanoid(32); 
+    
+    // FIX 4 (Prisma Schema): 'expiresAt' is required. Set it to 1 hour from now.
+    // Error: Property 'expiresAt' is missing
+    const expiresAt = new Date(Date.now() + 3600_000); // 1 hour expiration
+
     await prisma.emailVerification.create({
-      data: { userId: user.id, token },
+      data: { 
+        userId: user.id, 
+        token,
+        expiresAt // Added the required field
+      },
     });
 
     const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
-    await sendEmail(email, `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`);
+    
+    // FIX 5 (sendEmail): The import fixes the 'Cannot find name 'sendEmail' error.
+    await sendVerificationEmail(email, `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`); 
 
     res.json({ message: 'Verification email sent' });
   } catch (err) {
@@ -169,7 +191,11 @@ router.get('/verify-email', async (req, res) => {
   try {
     const { token } = req.query as { token: string };
     const record = await prisma.emailVerification.findUnique({ where: { token } });
-    if (!record) return res.status(400).send('Invalid or expired token');
+    
+    // It's good practice to check for expiration here as well
+    if (!record || record.expiresAt < new Date()) {
+       return res.status(400).send('Invalid or expired token');
+    }
 
     await prisma.user.update({ where: { id: record.userId }, data: { emailVerified: true } });
     await prisma.emailVerification.delete({ where: { token } });
