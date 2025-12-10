@@ -1,5 +1,5 @@
-import type { FormEvent } from 'react';
-import { useState, useEffect } from 'react';
+import type { FormEvent, Dispatch, SetStateAction } from 'react';
+import React, { useState, useEffect } from 'react'; // Explicitly import React
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from '../components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
-import { Separator } from "../components/ui/separator"; // Assuming you have a Separator component
+import { Separator } from "../components/ui/separator"; 
 
 import { 
     Loader2, UserPlus, AlertTriangle, CheckCircle, 
@@ -23,6 +23,28 @@ import {
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 const INPUT_RING_CLASS = "focus:ring-fuchsia-500 focus:border-fuchsia-600 dark:focus:ring-fuchsia-500/50";
+
+// FIX: Changed type from JSX.Element to React.ReactElement to resolve TS2503 error.
+const icons: Record<string, React.ReactElement> = {
+    firstName: <User className="h-5 w-5" />,
+    lastName: <User className="h-5 w-5" />,
+    username: <User className="h-5 w-5" />,
+    email: <Mail className="h-5 w-5" />,
+    password: <Lock className="h-5 w-5" />,
+    confirmPassword: <Lock className="h-5 w-5" />,
+};
+
+// Define a type for field props
+type FieldProps = {
+    label: string;
+    value: string;
+    setter: Dispatch<SetStateAction<string>>;
+    field: string;
+    type?: string;
+    show?: boolean;
+    toggle?: Dispatch<SetStateAction<boolean>>;
+};
+
 
 export function RegisterPage() {
     const navigate = useNavigate();
@@ -43,8 +65,6 @@ export function RegisterPage() {
     const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
     const [emailValid, setEmailValid] = useState<boolean | null>(null);
     const [passwordStrength, setPasswordStrength] = useState(0);
-    // Removed focusedField to eliminate the disruptive tooltip
-    // const [focusedField, setFocusedField] = useState<string | null>(null);
     
     const passwordsMismatch = password && confirmPassword && password !== confirmPassword;
     
@@ -53,7 +73,7 @@ export function RegisterPage() {
         minLength: password.length >= 8,
         hasUppercase: /[A-Z]/.test(password),
         hasNumber: /[0-9]/.test(password),
-        hasSymbol: /[\W_]/.test(password), // Include underscore as symbol for common regex
+        hasSymbol: /[\W_]/.test(password), 
     };
 
     // Persist state
@@ -72,16 +92,13 @@ export function RegisterPage() {
         if (passwordCriteria.hasNumber) strength += 1;
         if (passwordCriteria.hasSymbol) strength += 1;
         setPasswordStrength(strength);
-    }, [password]); // Depend on password, not passwordCriteria, to avoid deep comparison
+    }, [password]); 
 
     // Username live validation 
     useEffect(() => {
         if (!username) return setUsernameAvailable(null);
 
-        // Simple client-side check for format
         const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
-        // NOTE: In a real app, you would add a debounced API call here to check server availability.
-        // For this frontend-only update, we just check the format.
         setUsernameAvailable(usernameRegex.test(username));
     }, [username]);
 
@@ -101,9 +118,8 @@ export function RegisterPage() {
         onSuccess: (user) => {
             setSuccess('Account created successfully. Redirecting to login...');
             setError(null);
-            // Added toast to show required email verification message
             toast.success(`Welcome, ${user.firstName}!`, { description: 'Check your email to verify your account before logging in.' });
-            setTimeout(() => { localStorage.clear(); navigate('/login'); }, 3000); // Increased delay for toast message
+            setTimeout(() => { localStorage.clear(); navigate('/login'); }, 3000); 
         },
         onError: (err: any) => {
             setError(err?.response?.data?.message ?? 'Unable to register.');
@@ -116,12 +132,11 @@ export function RegisterPage() {
         e.preventDefault();
         setError(null); setSuccess(null);
 
-        // Client-side validation checks
         if (!firstName || !lastName || !username || !email || !password || !confirmPassword) return setError('All fields are required.');
         if (passwordsMismatch) return setError('Passwords do not match.');
         if (usernameAvailable === false) return setError('Username is invalid or taken.');
         if (emailValid === false) return setError('Email is invalid.');
-        if (passwordStrength < 4) return setError('Password is too weak.'); // Check against full strength
+        if (passwordStrength < 4) return setError('Password is too weak.'); 
         
         mutation.mutate();
     };
@@ -129,7 +144,7 @@ export function RegisterPage() {
     const strengthColor = ['bg-red-500','bg-orange-500','bg-yellow-400','bg-green-500'];
     
     // Mapping for input fields including the new layout
-    const fields = [
+    const fields: FieldProps[][] = [
         // Name Row
         [{label:'First name', value:firstName,setter:setFirstName,field:'firstName'},
         {label:'Last name', value:lastName,setter:setLastName,field:'lastName'}],
@@ -162,7 +177,6 @@ export function RegisterPage() {
                             onClick={() => window.location.href = '/auth/oauth/google'} 
                             className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-3 transition-transform active:scale-[0.99] h-11 text-base rounded-lg"
                         >
-                            {/* NOTE: You need to ensure /google-icon.svg is accessible */}
                             <img src="/google-icon.svg" alt="Google" className="h-5 w-5 bg-white rounded-full p-0.5"/> 
                             Sign up with Google
                         </Button>
@@ -170,7 +184,6 @@ export function RegisterPage() {
                             onClick={() => window.location.href = '/auth/oauth/github'} 
                             className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white w-full flex justify-center items-center gap-3 transition-transform active:scale-[0.99] h-11 text-base rounded-lg"
                         >
-                            {/* NOTE: You need to ensure /github-icon.svg is accessible */}
                             <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> 
                             Sign up with GitHub
                         </Button>
@@ -183,12 +196,13 @@ export function RegisterPage() {
                     <form onSubmit={onSubmit} className="space-y-6">
                         {fields.map((row, rowIdx) => (
                             <div key={rowIdx} className={`flex gap-4 ${row.length > 1 ? '' : 'flex-col'}`}>
-                                {row.map(({label,value,setter,field,type,show,toggle}) => {
+                                {row.map((
+                                    {label,value,setter,field,type='text',show=false,toggle=()=>{}}
+                                ) => {
                                     const isPassword = type === 'password';
                                     const isUsername = field === 'username';
                                     const isEmail = field === 'email';
                                     
-                                    // Determine validation status icon
                                     let validationIcon = null;
                                     let validationColor = '';
 
@@ -230,7 +244,6 @@ export function RegisterPage() {
                                                     ${INPUT_RING_CLASS}
                                                     ${validationColor}
                                                 `}
-                                                // Removed onFocus and onBlur handlers to eliminate the old tooltip
                                             />
                                             
                                             {/* Floating Label */}
@@ -248,7 +261,7 @@ export function RegisterPage() {
                                             </Label>
                                             
                                             {/* Show/Hide Password Toggle */}
-                                            {isPassword && toggle && (
+                                            {isPassword && (
                                                 <div onClick={() => toggle(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:text-fuchsia-700 dark:hover:text-fuchsia-400 transition-transform active:scale-95 z-10">
                                                     {show ? <EyeOff className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400"/> : <Eye className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400"/>}
                                                 </div>
