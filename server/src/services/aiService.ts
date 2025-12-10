@@ -2,10 +2,10 @@
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 
+dotenv.config();
 
-dotenv.config();  // <- Load .env
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY!,
+  apiKey: process.env.GROQ_API_KEY ?? "",
 });
 
 export const analyzeNote = async (note: string) => {
@@ -29,27 +29,29 @@ Note:
 """${note}"""
 `;
 
-  const chat = await groq.chat.completions.create({
-    model: "llama-3.1-70b-versatile", // you can switch to Mixtral if cheaper
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
+  const response = await groq.chat.completions.create({
+    model: "llama-3.1-70b-versatile",
+    messages: [{ role: "user", content: prompt }],
     temperature: 0.2,
   });
 
-  const raw = chat.choices[0].message?.content;
+  // Safer: protect against undefined objects
+  const content =
+    response?.choices?.[0]?.message?.content ??
+    '{"improvedNote": "' +
+      note +
+      '", "category": "Uncategorized"}';
 
   try {
-    const json = JSON.parse(raw || "{}");
+    const json = JSON.parse(content);
+
     return {
-      improvedNote: json.improvedNote || note,
-      category: json.category || "Uncategorized",
+      improvedNote: json.improvedNote ?? note,
+      category: json.category ?? "Uncategorized",
     };
   } catch (err) {
-    console.log("AI JSON parse error:", err);
+    console.error("AI JSON parse error:", err);
+
     return {
       improvedNote: note,
       category: "Uncategorized",
