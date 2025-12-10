@@ -7,22 +7,20 @@ import { api } from '../lib/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-// UI
+// UI - Ensured all UI components are imported and used correctly
 import { Button } from "../components/ui/button";
-// Ensure all Card components are imported here:
-import { Card, CardHeader, CardContent, CardTitle, CardFooter } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Label } from '../components/ui/label';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "../components/ui/card"; // Re-import CardDescription
+import { Input } from "../components/ui/input"; // Re-import Input
+import { Textarea } from "../components/ui/textarea"; // Re-import Textarea
+import { Label } from '../components/ui/label'; // Re-import Label
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Separator } from '../components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Switch } from "../components/ui/switch";
-// New AI components
+import { Switch } from "../components/ui/switch"; // Re-import Switch
 import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
 import { ScrollArea } from "../components/ui/scroll-area";
 
-// Icons (Keep only the ones used in the file)
+// Icons - Ensured all Icons are imported
 import {
     Loader2, BookOpen, PenTool, FolderOpen, FilePenLine,
     Eye, Code, ArrowLeftCircle, Bold, Italic, Heading, Code2, Pin,
@@ -65,7 +63,11 @@ export function EditEntryPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    // Form state
+    // ----------------------------------------------------
+    // START: ALL HOOKS ARE DECLARED HERE UNCONDITIONALLY
+    // ----------------------------------------------------
+
+    // Form state (Hooks 14-22)
     const [title, setTitle] = useState('');
     const [synopsis, setSynopsis] = useState('');
     const [content, setContent] = useState('');
@@ -82,7 +84,7 @@ export function EditEntryPage() {
 
     const markDirty = () => setDirty(true);
 
-    // Fetch Entry
+    // Fetch Entry (useQuery)
     const { data: entryData, isLoading: isLoadingEntry } = useQuery<{ entry: Entry }>({
         queryKey: ['entry', id],
         queryFn: async () => {
@@ -93,11 +95,11 @@ export function EditEntryPage() {
         enabled: !!id,
     });
 
-    // Fetch categories
+    // Fetch categories (useQuery)
     const { data: categoriesData, isLoading: isLoadingCategories } = useCategoriesQuery();
     const categories = categoriesData?.categories ?? [];
 
-    // Load backend values
+    // Load backend values (useEffect)
     useEffect(() => {
         if (!entryData?.entry) return;
         const e = entryData.entry;
@@ -112,7 +114,7 @@ export function EditEntryPage() {
         setDirty(false);
     }, [entryData]);
 
-    // Leave warning if unsaved
+    // Leave warning if unsaved (useEffect)
     useEffect(() => {
         const beforeUnload = (e: BeforeUnloadEvent) => {
             if (isDirty) {
@@ -124,23 +126,18 @@ export function EditEntryPage() {
         return () => window.removeEventListener("beforeunload", beforeUnload);
     }, [isDirty]);
 
-    // Auto-save (every 10s)
+    // Auto-save (useEffect)
     useEffect(() => {
         if (!id) return;
         const auto = setInterval(() => {
             if (!isDirty) return;
-            // API call logic is fine as-is for auto-save
             api.patch(`/entries/${id}`, { title, synopsis, content, categoryId, pinned, isPublic });
             setDirty(false);
         }, 10000);
         return () => clearInterval(auto);
     }, [id, title, synopsis, content, categoryId, pinned, isPublic, isDirty]);
 
-    // ----------------------------------------------------
-    // AI SUGGESTION MUTATION (New Feature)
-    // ----------------------------------------------------
-
-    // Check if enough content exists to send to the AI
+    // AI SUGGESTION MUTATION (useMutation)
     const hasSufficientContent =
         title.trim().length > 5 ||
         synopsis.trim().length > 10 ||
@@ -159,7 +156,6 @@ export function EditEntryPage() {
         onSuccess: (data) => {
             setAiSuggestion(data.suggestion);
             setError(null);
-            // Optionally update title/synopsis if the AI returns suggestions for those fields too
             if (data.title && data.title.length > 0) setTitle(data.title);
             if (data.synopsis && data.synopsis.length > 0) setSynopsis(data.synopsis);
         },
@@ -175,10 +171,7 @@ export function EditEntryPage() {
         aiMutation.mutate();
     };
 
-    // ----------------------------------------------------
-    // SAVE MUTATION (Existing)
-    // ----------------------------------------------------
-
+    // SAVE MUTATION (useMutation)
     const mutation = useMutation({
         mutationFn: async () => {
             if (!id) throw new Error("Entry ID missing.");
@@ -200,6 +193,19 @@ export function EditEntryPage() {
         },
     });
 
+    // Markdown toolbar actions (useCallback)
+    const insertMarkdown = useCallback(
+        (syntax: string) => {
+            setContent((prev) => `${prev}${syntax}`);
+            markDirty();
+        },
+        []
+    );
+
+    // ----------------------------------------------------
+    // END: ALL HOOKS ARE DECLARED
+    // ----------------------------------------------------
+
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
         if (!categoryId) return setError("Select a category");
@@ -208,6 +214,7 @@ export function EditEntryPage() {
 
     const isLoading = isLoadingEntry || isLoadingCategories;
 
+    // Early Returns (must come after ALL HOOKS)
     if (isLoading)
         return (
             <div className="mt-16 flex justify-center">
@@ -227,18 +234,8 @@ export function EditEntryPage() {
         entryData.entry.category.name ??
         "N/A";
 
-    // Markdown toolbar actions
-    const insertMarkdown = useCallback(
-        (syntax: string) => {
-            setContent((prev) => `${prev}${syntax}`);
-            markDirty();
-        },
-        []
-    );
 
-    // ----------------------------------------------------
     // NEW COMPONENT: AI Suggestion Block
-    // ----------------------------------------------------
     const AISuggestionBlock = () => {
         if (!aiSuggestion) return null;
 
@@ -277,10 +274,6 @@ export function EditEntryPage() {
         );
     };
 
-    // ----------------------------------------------------
-    // Existing Components (Updated to include AI Block)
-    // ----------------------------------------------------
-
     // Live Preview
     const LivePreview = () => (
         <Card className="dark:bg-gray-900 shadow-xl scale-[1.02]">
@@ -288,13 +281,13 @@ export function EditEntryPage() {
                 <CardTitle className="text-2xl font-bold dark:text-white flex items-center gap-2">
                     <Eye className={`h-6 w-6 ${PRIMARY_TEXT_CLASS}`} /> Live Preview
                 </CardTitle>
-                <p className="dark:text-gray-400">
+                {/* Fixed usage of CardDescription */}
+                <CardDescription>
                     Real-time rendering of your thoughts.
-                </p>
+                </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-                {/* NEW: Insert AI Suggestion Block here */}
                 <AISuggestionBlock />
 
                 <h2 className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS}`}>
@@ -326,7 +319,8 @@ export function EditEntryPage() {
                     <FilePenLine className={`h-6 w-6 ${PRIMARY_TEXT_CLASS}`} />
                     Editing: {entryData!.entry.title}
                 </CardTitle>
-                <p>Refine. Expand. Upgrade.</p>
+                {/* Fixed usage of CardDescription */}
+                <CardDescription>Refine. Expand. Upgrade.</CardDescription>
             </CardHeader>
 
             <CardContent>
@@ -395,7 +389,6 @@ export function EditEntryPage() {
                                 )}
                             </Button>
                         </AlertDescription>
-                        {/* 🛑 FIX APPLIED HERE for "Unexpected token. Did you mean {'>'} or &gt;?" */}
                         {!hasSufficientContent && (
                             <p className="text-xs text-red-500 mt-2">
                                 Add more content (Title &gt; 5 chars OR Synopsis &gt; 10 chars OR Content &gt; 50 chars) to use the AI.
