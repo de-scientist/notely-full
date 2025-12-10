@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api"; // your axios/fetch wrapper
 import UserInboxCard from "../components/UserInboxCard";
@@ -8,23 +7,24 @@ import { AlertTriangle, Loader2, Mail } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 // ----------------------------------------------------
-// 💡 FIX 1: Define a basic type for the messages
-// This is crucial to fix the 'messages is of type unknown' errors (18046)
-// Adjust this interface to match your actual API response data
+// ✅ FIX 1: UPDATED Message Interface
+// Added missing properties (userName, email, createdAt) to match 
+// the expected 'Props' type in UserInboxCard.tsx (Error 2739).
 interface Message {
   id: string;
-  senderEmail: string;
+  // Properties required by UserInboxCard (based on error message):
+  userName: string; 
+  email: string; 
   subject: string;
   content: string;
-  // Add other relevant fields (e.g., createdAt, isRead)
+  createdAt: string; // Must match the format used by the consuming component
+  // Add other relevant fields if needed
 }
 // ----------------------------------------------------
 
 
 export default function UserInbox() {
-  // ----------------------------------------------------
-  // ✅ FIX 2: Correct useQuery structure and add typing (Error 2769)
-  // useQuery now takes an options object { queryKey, queryFn, ... }
+  
   const { 
     data: messages, 
     isLoading, 
@@ -33,8 +33,7 @@ export default function UserInbox() {
     queryKey: ["userMessages"], 
     queryFn: () => api.get("/admin/messages").then((res) => res.data),
   });
-  // ----------------------------------------------------
-
+  
   // ----------------------------------------------------
   // ⚙️ UI Improvement: Loading State
   if (isLoading) {
@@ -87,10 +86,8 @@ export default function UserInbox() {
       </div>
 
       <main className="px-6 pb-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {/* Check if messages is defined and is an array before checking length */}
         {messages && messages.length > 0 ? (
           messages.map((msg) => (
-            // The type is now correctly inferred as Message, removing the 'any' cast
             <UserInboxCard key={msg.id} message={msg} />
           ))
         ) : (
