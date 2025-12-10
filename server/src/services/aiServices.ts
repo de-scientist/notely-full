@@ -41,7 +41,7 @@ Requirements:
 `;
 
   const response = await client.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-4.1-mini",
     messages: [
       { role: "system", content: systemMessage },
       { role: "user", content: userPrompt },
