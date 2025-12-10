@@ -164,13 +164,14 @@ export function LoginPage() {
       </Card>
       // Add OAuth buttons below login form
 <div className="mt-4 flex flex-col gap-2">
-  <Button onClick={() => handleOAuthLogin('google')} className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-2">
+  <Button onClick={() => window.location.href = '/auth/oauth/google'} className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-2">
     <img src="/google-icon.svg" alt="Google" className="h-5 w-5"/> Sign in with Google
   </Button>
-  <Button onClick={() => handleOAuthLogin('github')} className="bg-gray-800 hover:bg-gray-900 text-white w-full flex justify-center items-center gap-2">
+  <Button onClick={() => window.location.href = '/auth/oauth/github'} className="bg-gray-800 hover:bg-gray-900 text-white w-full flex justify-center items-center gap-2">
     <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> Sign in with GitHub
   </Button>
 </div>
+
 
 <script lang="ts">
 const handleOAuthLogin = async (provider: 'google' | 'github') => {
