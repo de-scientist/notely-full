@@ -38,29 +38,25 @@ export function SidebarNavContent() {
 
     // Determine active link
     const getIsActive = (href: string) => {
+        // Correctly handle the dashboard root path
         if (href === "/admin") {
             return location.pathname === href || location.pathname === "/";
         }
+        // Correctly handle sub-paths for all other links
         return location.pathname.startsWith(`${href}`);
     };
 
     return (
-        <div
-            className="
-                h-[calc(100vh-128px)] 
-                overflow-y-auto 
-                px-2 
-                py-4 
-                space-y-6
-            "
-        >
+        // Removed custom height/overflow/padding. Using simple spacing.
+        <div className="space-y-6">
             {navSections.map((section) => (
                 <SidebarGroup key={section.title}>
-                    <SidebarGroupLabel className="text-gray-400">
+                    {/* Perfect Typography: Standardized text color for group labels */}
+                    <SidebarGroupLabel className="text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400 pl-3 mb-2">
                         {section.title}
                     </SidebarGroupLabel>
 
-                    <SidebarGroupContent>
+                    <SidebarGroupContent className="space-y-1">
                         <SidebarMenu>
                             {section.items.map((item) => {
                                 const isActive = getIsActive(item.href);
@@ -70,7 +66,8 @@ export function SidebarNavContent() {
                                         <SidebarMenuButton
                                             asChild
                                             isActive={isActive}
-                                            className="group/button"
+                                            // Enhanced hover state for perfect UX
+                                            className="group/button text-sm font-medium transition-colors"
                                         >
                                             <Link
                                                 to={item.href}
