@@ -1,6 +1,6 @@
 // server/src/routes/notes.ts
 import { Router } from "express";
-import { generateFullNote } from "../services/aiService";
+import { generateFullNote } from "../services/aiServices.ts";
 import { PrismaClient } from "@prisma/client";
 
 const router = Router();
@@ -20,7 +20,7 @@ router.post("/generate", async (req, res) => {
 
     let saved = null;
     if (save) {
-      saved = await prisma.note.create({
+      saved = await prisma.entry.create({
         data: {
           title: title ?? (synopsis?.slice(0, 60) ?? "Untitled"),
           synopsis: synopsis ?? "",
