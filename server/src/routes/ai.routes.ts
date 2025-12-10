@@ -1,18 +1,21 @@
-// src/routes/ai.routes.ts
 import { Router } from "express";
 import { analyzeNote } from "../services/aiService.ts";
 
 const router = Router();
 
+// Route now expects the full draft object: { title, synopsis, content }
 router.post("/suggest", async (req, res) => {
   try {
-    const { note } = req.body;
+    const data = req.body;
+    const { content } = data; // Destructure content for validation
 
-    if (!note) {
-      return res.status(400).json({ error: "Note text is required" });
+    if (!content) {
+      // The primary text (content) is required for analysis
+      return res.status(400).json({ error: "Note content is required for AI suggestion" });
     }
 
-    const result = await analyzeNote(note);
+    // Pass the entire structured data object to the service
+    const result = await analyzeNote(data);
 
     return res.json(result);
   } catch (err) {
