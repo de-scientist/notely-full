@@ -46,13 +46,13 @@ router.get('/google/callback', async (req, res) => {
       user = await prisma.user.create({
         data: {
           email,
-          firstName: name.split(' ')[0],
-          lastName: name.split(' ').slice(1).join(' '),
-          password: '', // OAuth users won't have a local password
-          avatar: picture,
-          emailVerified: true, // Mark verified by default
+          firstName: name?.split(' ')[0] || 'User',
+          lastName: name?.split(' ').slice(1).join(' ') || '',
+          username: email.split('@')[0] + '_' + nanoid(5),
           provider: 'google',
           providerId: sub,
+          emailVerified: true,
+          avatar: picture,
         },
       });
     }
@@ -115,15 +115,15 @@ router.get('/github/callback', async (req, res) => {
     let user = await prisma.user.findUnique({ where: { email: primaryEmail } });
     if (!user) {
       user = await prisma.user.create({
-        data: {
+       data: {
           email: primaryEmail,
           firstName: name?.split(' ')[0] || login,
           lastName: name?.split(' ').slice(1).join(' ') || '',
-          password: '', // OAuth users won't have a local password
-          avatar: avatar_url,
-          emailVerified: true,
+          username: login + '_' + nanoid(5),
           provider: 'github',
           providerId: id.toString(),
+          emailVerified: true,
+          avatar: avatar_url,
         },
       });
     }
@@ -140,6 +140,44 @@ router.get('/github/callback', async (req, res) => {
   } catch (err) {
     console.error('GitHub OAuth error:', err);
     res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
+  }
+});
+
+// ------------------- EMAIL VERIFICATION -------------------
+router.post('/send-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const token = nanoid(32);
+    await prisma.emailVerification.create({
+      data: { userId: user.id, token },
+    });
+
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    await sendEmail(email, `<p>Click <a href="${verifyUrl}">here</a> to verify your email.</p>`);
+
+    res.json({ message: 'Verification email sent' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to send verification email' });
+  }
+});
+
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query as { token: string };
+    const record = await prisma.emailVerification.findUnique({ where: { token } });
+    if (!record) return res.status(400).send('Invalid or expired token');
+
+    await prisma.user.update({ where: { id: record.userId }, data: { emailVerified: true } });
+    await prisma.emailVerification.delete({ where: { token } });
+
+    res.redirect(`${process.env.FRONTEND_URL}/login?verified=true`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Verification failed');
   }
 });
 
