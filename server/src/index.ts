@@ -14,6 +14,7 @@ import { chatRoutes1 } from "./routes/chatRoutes.ts";
 import { analyticsRoutes } from "./routes/analyticsRoutes.ts";
 import { ragRoutes } from "./routes/ragRoutes.ts";
 import oauthRoutes from './routes/OAuth.ts';
+import aiRoutes from "./routes/ai.routes.ts";
 
 // Import new routes
 import publicEntriesRouter from './routes/publicRoutes.ts';
