@@ -210,7 +210,7 @@ export function RegisterPage() {
   </Button>
 </div>
             </Card>
-            {/* // Add OAuth buttons below existing form in CardContent */}
+           
 
         </div>
     );

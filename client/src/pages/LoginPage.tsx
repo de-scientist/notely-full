@@ -161,9 +161,7 @@ export function LoginPage() {
             </Link>
           </p>
         </CardFooter>
-      </Card>
-      {/* // Add OAuth buttons below login form */}
-<div className="mt-4 flex flex-col gap-2">
+        <div className="mt-4 flex flex-col gap-2">
   <Button onClick={() => window.location.href = '/auth/oauth/google'} className="bg-red-600 hover:bg-red-700 text-white w-full flex justify-center items-center gap-2">
     <img src="/google-icon.svg" alt="Google" className="h-5 w-5"/> Sign in with Google
   </Button>
@@ -171,6 +169,9 @@ export function LoginPage() {
     <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5"/> Sign in with GitHub
   </Button>
 </div>
+      </Card>
+      
+
     </div>
   );
 }
