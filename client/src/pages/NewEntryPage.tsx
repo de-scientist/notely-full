@@ -2,7 +2,7 @@ import type { FormEvent } from 'react';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { api } from '../lib/api'; // Assuming 'api' is configured with axios or fetch wrapper
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -13,8 +13,8 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Separator } from '../components/ui/separator'; // Added Separator import for TOC
-import { Loader2, FilePlus2, BookOpen, PenTool, FolderOpen, ListOrdered } from 'lucide-react';
+import { Separator } from '../components/ui/separator';
+import { Loader2, FilePlus2, BookOpen, PenTool, FolderOpen, ListOrdered, Sparkles } from 'lucide-react'; // Added Sparkles icon
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
@@ -38,10 +38,19 @@ interface TOCItem {
     id: string;
 }
 
+// Interface for the expected AI response
+interface AiSuggestionResponse {
+    improvedContent: string;
+    suggestedCategoryId: string;
+    improvedTitle: string;
+    improvedSynopsis: string;
+}
+
 export function NewEntryPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
+    // --- State & Data Fetching ---
     const { data, isLoading: isLoadingCategories } = useQuery({
         queryKey: ['categories'],
         queryFn: async () => (await api.get('/categories')).data as { categories: Category[] },
@@ -57,7 +66,8 @@ export function NewEntryPage() {
 
     const clearForm = () => { clearTitle(); clearSynopsis(); clearContent(); clearCategoryId(); };
 
-    const mutation = useMutation({
+    // --- 1. Entry Creation Mutation ---
+    const creationMutation = useMutation({
         mutationFn: async () => {
             const res = await api.post('/entries', { title, synopsis, content, categoryId });
             return res.data.entry as { id: string };
@@ -74,9 +84,44 @@ export function NewEntryPage() {
         e.preventDefault();
         setError(null);
         if (!categoryId) return setError('Please select a category.');
-        mutation.mutate();
+        creationMutation.mutate();
     };
 
+    // --- 2. AI Suggestion Mutation ---
+    const aiMutation = useMutation({
+        mutationFn: async () => {
+            // Include all current draft data for comprehensive suggestions
+            const res = await api.post('/ai/suggest', { 
+                content: content,
+                title: title,
+                synopsis: synopsis,
+            });
+            return res.data as AiSuggestionResponse;
+        },
+        onSuccess: (data) => {
+            // Apply improvements and suggestions
+            setTitle(data.improvedTitle);
+            setSynopsis(data.improvedSynopsis);
+            setContent(data.improvedContent);
+            
+            // Only set category if the suggested ID exists in the list
+            if (categories.some(cat => cat.id === data.suggestedCategoryId)) {
+                 setCategoryId(data.suggestedCategoryId);
+            }
+
+            setError(null);
+        },
+        onError: (err: any) => setError(err?.response?.data?.message ?? 'AI suggestion failed. Please try again.'),
+    });
+
+    // Function to trigger the AI suggestion
+    const suggestWithAI = useCallback(() => {
+        // Clear previous errors and mutate
+        setError(null);
+        aiMutation.mutate();
+    }, [aiMutation.mutate]);
+
+    // --- Markdown & UI Logic ---
     const editorRef = useRef<HTMLTextAreaElement>(null);
     const previewRef = useRef<HTMLDivElement>(null);
 
@@ -93,7 +138,6 @@ export function NewEntryPage() {
     const scrollToHeader = (id: string) => {
         const el = document.getElementById(id);
         if (el && previewRef.current) {
-            // Scroll preview to target element
             const previewTop = previewRef.current.offsetTop;
             const targetTop = el.offsetTop;
             previewRef.current.scrollTop = targetTop - previewTop - 20; // -20 for padding
@@ -103,25 +147,26 @@ export function NewEntryPage() {
     // Word, character count & reading time
     const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
     const charCount = content.length;
-    const readingTime = Math.ceil(wordCount / 200); // 200 wpm average reading speed
+    const readingTime = Math.ceil(wordCount / 200);
 
     // Generate Table of Contents from Markdown headers
     const toc: TOCItem[] = useMemo(() => {
         const lines = content.split('\n');
         const headers: TOCItem[] = [];
         lines.forEach(line => {
-            // Match headers h1, h2, h3
             const match = line.match(/^(#{1,3})\s+(.*)/);
             if (match) {
                 const level = match[1].length;
                 const text = match[2].trim();
-                // Generate simple slug/ID for linking
                 const id = text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
                 headers.push({ text, level, id });
             }
         });
         return headers;
     }, [content]);
+
+    // Check if either mutation is running
+    const isAnyLoading = creationMutation.isPending || aiMutation.isPending;
 
     return (
         <div className="mx-auto max-w-7xl py-8 px-4">
@@ -147,11 +192,11 @@ export function NewEntryPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="title" className="flex items-center gap-2"><BookOpen className="h-4 w-4" />Title</Label>
-                                    <Input id="title" placeholder="Catchy title" value={title} onChange={e => setTitle(e.target.value)} required />
+                                    <Input id="title" placeholder="Catchy title" value={title} onChange={e => setTitle(e.target.value)} required disabled={isAnyLoading} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="category" className="flex items-center gap-2"><FolderOpen className="h-4 w-4" />Category</Label>
-                                    <Select value={categoryId} onValueChange={setCategoryId} disabled={isLoadingCategories}>
+                                    <Select value={categoryId} onValueChange={setCategoryId} disabled={isLoadingCategories || isAnyLoading}>
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder={isLoadingCategories ? "Loading..." : "Select category"} />
                                         </SelectTrigger>
@@ -164,14 +209,33 @@ export function NewEntryPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="synopsis">Synopsis</Label>
-                                <Input id="synopsis" placeholder="Short summary" value={synopsis} onChange={e => setSynopsis(e.target.value)} required />
+                                <Input id="synopsis" placeholder="Short summary" value={synopsis} onChange={e => setSynopsis(e.target.value)} required disabled={isAnyLoading} />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="content">Content (Markdown Editor)</Label>
+                                <div className='flex justify-between items-end mb-2'>
+                                    <Label htmlFor="content">Content (Markdown Editor)</Label>
+                                    
+                                    {/* AI FUNCTIONALITY BUTTON */}
+                                    <Button 
+                                        type="button" // Important: prevents form submission
+                                        onClick={suggestWithAI} 
+                                        disabled={aiMutation.isPending || content.length < 50} // Disable if AI is loading or content is too short
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1 text-xs h-8 border-fuchsia-500/50 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900"
+                                    >
+                                        {aiMutation.isPending ? 
+                                            <><Loader2 className="h-4 w-4 animate-spin" /> Suggesting...</> : 
+                                            <><Sparkles className="h-4 w-4 text-fuchsia-500" /> Improve with AI</>
+                                        }
+                                    </Button>
+                                    {/* END AI BUTTON */}
+                                </div>
+
                                 <Textarea 
                                     id="content" 
-                                    rows={20} // Increased rows for better writing experience
+                                    rows={20}
                                     placeholder="Start writing using Markdown, e.g., # Main Title, ## Section, *bold*." 
                                     value={content} 
                                     onChange={e => setContent(e.target.value)} 
@@ -179,6 +243,7 @@ export function NewEntryPage() {
                                     onScroll={handleScroll} 
                                     required 
                                     className="resize-y"
+                                    disabled={isAnyLoading} // Disable while saving or AI is running
                                 />
                                 <p className="text-sm text-muted-foreground dark:text-gray-500 flex justify-between">
                                     <span>**Stats:** {wordCount} words • {charCount} characters</span>
@@ -188,8 +253,8 @@ export function NewEntryPage() {
 
                             {error && <p className="text-sm font-medium text-red-500">{error}</p>}
 
-                            <Button type="submit" disabled={mutation.isPending} className={`w-full text-lg font-semibold ${GRADIENT_BUTTON_CLASS}`}>
-                                {mutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : 'Create Entry'}
+                            <Button type="submit" disabled={creationMutation.isPending || aiMutation.isPending || !categoryId} className={`w-full text-lg font-semibold ${GRADIENT_BUTTON_CLASS}`}>
+                                {creationMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : 'Create Entry'}
                             </Button>
                         </form>
                     </CardContent>
@@ -221,8 +286,8 @@ export function NewEntryPage() {
                             <div
                                 ref={previewRef}
                                 className="overflow-y-auto max-h-[500px] pr-2 prose prose-base dark:prose-invert
-                                           prose-headings:text-fuchsia-600 prose-a:text-fuchsia-500 hover:prose-a:text-fuchsia-400
-                                           prose-strong:text-fuchsia-600 prose-li:marker:text-fuchsia-500"
+                                        prose-headings:text-fuchsia-600 prose-a:text-fuchsia-500 hover:prose-a:text-fuchsia-400
+                                        prose-strong:text-fuchsia-600 prose-li:marker:text-fuchsia-500"
                             >
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
@@ -279,8 +344,8 @@ export function NewEntryPage() {
                                             key={index}
                                             onClick={() => scrollToHeader(item.id)}
                                             className={`cursor-pointer hover:text-fuchsia-600 dark:hover:text-fuchsia-400 transition-colors text-sm truncate 
-                                                      ${item.level === 2 ? 'pl-2 text-gray-700 dark:text-gray-300' : ''}
-                                                      ${item.level === 3 ? 'pl-4 text-gray-500 dark:text-gray-400' : ''}`}
+                                                ${item.level === 2 ? 'pl-2 text-gray-700 dark:text-gray-300' : ''}
+                                                ${item.level === 3 ? 'pl-4 text-gray-500 dark:text-gray-400' : ''}`}
                                             style={{ marginLeft: `${(item.level - 1) * 10}px` }}
                                         >
                                             {item.text}
