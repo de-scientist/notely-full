@@ -121,4 +121,91 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+
+
+/**
+ * OAuth backend-sync endpoint.
+ * The frontend (AuthCallback page) should POST user info to this route after Supabase OAuth returns.
+ * It will create or update a user, return your app JWT and the user object.
+ *
+ * Expected body:
+ * {
+ *   supabaseId, email, firstName, lastName, avatar, provider, providerId?
+ * }
+ */
+router.post("/oauth", async (req, res) => {
+  try {
+    const { supabaseId, email, firstName, lastName, avatar, provider, providerId } = req.body;
+
+    if (!email) return res.status(400).json({ message: "Email required" });
+
+    // Try find by supabaseId first (preferred)
+    let user = supabaseId
+      ? await prisma.user.findUnique({ where: { supabaseId } }).catch(() => null)
+      : null;
+
+    if (!user) {
+      // If not found by supabaseId, try by email
+      user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
+    }
+
+    if (!user) {
+      // Create new user
+      const usernameBase = (email.split("@")[0] || `user${Date.now()}`).slice(0, 30);
+      // Ensure username unique — naive attempt (you may want a more robust generator)
+      let username = usernameBase;
+      let counter = 0;
+      while (await prisma.user.findUnique({ where: { username } })) {
+        counter++;
+        username = `${usernameBase}${counter}`;
+        if (counter > 50) break;
+      }
+
+      user = await prisma.user.create({
+        data: {
+          firstName,
+          lastName,
+          email,
+          username,
+          avatar,
+          provider: provider || "oauth",
+          providerId: providerId?.toString() || undefined,
+          supabaseId: supabaseId || undefined,
+          emailVerified: true,
+        },
+      });
+    } else {
+      // update existing user with supabase id or provider info if missing
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          firstName: firstName ?? user.firstName,
+          lastName: lastName ?? user.lastName,
+          avatar: avatar ?? user.avatar,
+          provider: user.provider ?? provider ?? "oauth",
+          providerId: user.providerId ?? (providerId?.toString() || undefined),
+          supabaseId: user.supabaseId ?? (supabaseId || undefined),
+          emailVerified: true,
+        },
+      });
+    }
+
+    // create JWT and return
+    const token = signToken({ userId: user.id });
+
+    // optionally set cookie
+    res.cookie(TOKEN_COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json({ user, token });
+  } catch (err) {
+    console.error("OAuth sync error:", err);
+    return res.status(500).json({ message: "OAuth sync failed" });
+  }
+});
+
 export default router;
