@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { signToken } from '../utils/jwt.ts';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase.ts';
 import dotenv from 'dotenv';
 dotenv.config();
 
