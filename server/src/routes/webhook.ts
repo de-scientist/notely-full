@@ -28,15 +28,15 @@ function verifySignature(rawBody: string, signatureHeader?: string) {
 /**
  * POST /webhook/supabase
  *
- * IMPORTANT:
- * - For best security, add a raw-body middleware that stores the request body string as req.rawBody
- *   (see server.ts rawBodyMiddleware example). This route will prefer req.rawBody but will fall
- *   back to JSON.stringify(req.body) if rawBody is not available.
+ * IMPORTANT: You must ensure a raw-body middleware has been run before this handler,
+ * or that your Express setup correctly handles access to the raw request body string.
  */
 router.post("/supabase", async (req: Request, res: Response) => {
   try {
     // Prefer rawBody if your server captured it; otherwise stringify parsed body
+    // NOTE: Relying on JSON.stringify is risky for signature verification!
     const raw = (req as any).rawBody ?? JSON.stringify(req.body);
+    // Cast header to string or undefined
     const signature = (req.headers["x-supabase-signature"] as string) ?? undefined;
 
     // Verify signature
@@ -47,24 +47,11 @@ router.post("/supabase", async (req: Request, res: Response) => {
     const payload = req.body;
 
     // Example: handle Supabase auth events
-    // Supabase sends events like { type: "user.deleted", record: { id: 'supabase-id', email: '...'} }
     if (payload?.type === "user.deleted" && payload.record?.id) {
       const supabaseId = String(payload.record.id);
 
-      // Option A: mark user as disabled / clear supabase mapping (typed correctly)
-      await prisma.user.updateMany({
-        where: { supabaseId },
-        data: {
-          emailVerified: false,
-          provider: null,
-          providerId: null,
-          // Use `set: null` to assign null to optional fields in Prisma update
-          supabaseId: { set: null },
-        },
-      });
-
-      // Option B (if you prefer to delete): uncomment to delete instead
-      // await prisma.user.deleteMany({ where: { supabaseId } });
+      // FIX: Delete the user record. This is the only clean way when supabaseId is required/unique.
+      await prisma.user.deleteMany({ where: { supabaseId } });
 
       return res.json({ ok: true });
     }
