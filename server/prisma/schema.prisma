@@ -28,6 +28,9 @@ model User {
   bookmarks Bookmark[]
   emailVerifications EmailVerification[]
 
+  @@index([email])
+  @@index([username])
+
   @@map("Users")
 }
 
