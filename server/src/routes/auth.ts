@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { supabase } from '../lib/supabase.ts';
 import { signToken } from '../utils/jwt.ts';
 import { requireAuth } from '../middleware/auth.ts';
+import { PrismaClient } from '@prisma/client';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
