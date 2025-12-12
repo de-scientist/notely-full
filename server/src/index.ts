@@ -16,6 +16,7 @@ import { ragRoutes } from "./routes/ragRoutes.ts";
 import oauthRoutes from './routes/OAuth.ts';
 import aiRoutes from "./routes/ai.routes.ts";
 import notesRouter from "./routes/notes.ts";
+import protectedRouter from "./routes/protected.ts";
 
 // Import new routes
 import publicEntriesRouter from './routes/publicRoutes.ts';
