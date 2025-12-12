@@ -1,7 +1,7 @@
 // server/src/middleware/requireAuth.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt.ts";
-import prisma from "../lib/prisma";
+import { PrismaClient } from '@prisma/client';
 
 export interface AuthedRequest extends Request {
   user?: { id: string; email?: string; [key: string]: any };
