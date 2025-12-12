@@ -297,27 +297,38 @@ const handleOAuth = async (provider: 'google' | 'github') => {
                         </Button>
                     </form>
 
-                    <Separator className="my-6">
-                        <span className="px-3 text-sm text-gray-500 dark:text-gray-400">OR</span>
-                    </Separator>
-                    
-                    <div className="flex flex-col gap-4">
-                        <Button 
-                            onClick={() => window.location.href = `${BACKEND_URL}/auth/oauth/google`} 
-                            className={`w-full text-lg font-semibold ${GOOGLE_BUTTON_CLASS} flex items-center justify-center gap-2 h-12 active:scale-[0.97] rounded-lg`}
-                        >
-                            <img src="/google-icon.svg" alt="Google Icon" className="h-5 w-5"/> 
-                            Sign up with Google
-                        </Button>
-                        
-                        <Button 
-                            onClick={() => window.location.href = `${BACKEND_URL}/auth/oauth/github`} 
-                            className={`w-full text-lg font-semibold ${GITHUB_BUTTON_CLASS} flex items-center justify-center gap-2 h-12 active:scale-[0.97] rounded-lg`}
-                        >
-                            <img src="/github-icon.svg" alt="GitHub Icon" className="h-5 w-5"/> 
-                            Sign up with GitHub
-                        </Button>
-                    </div>
+                   <Separator className="my-6" />
+
+<div className="flex flex-col gap-3">
+    <Button
+        type="button"
+        onClick={() => handleOAuth("google")}
+        className={GOOGLE_BUTTON_CLASS}
+    >
+        <img
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+            className="h-5 w-5 mr-2"
+            title='google'
+        />
+        Continue with Google
+    </Button>
+
+    <Button
+        type="button"
+        onClick={() => handleOAuth("github")}
+        className={GITHUB_BUTTON_CLASS}
+    >
+        <img
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"
+            className="h-5 w-5 mr-2"
+            title='github'
+        />
+        Continue with GitHub
+    </Button>
+</div>
+
+<Separator className="my-6" />
+
                 </CardContent>
 
                 <CardFooter className="flex justify-center border-t pt-4 dark:border-gray-700">
