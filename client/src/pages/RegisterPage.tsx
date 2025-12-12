@@ -18,6 +18,8 @@ import {
     Loader2, UserPlus, AlertTriangle, CheckCircle, 
     User, Mail, Lock, Eye, EyeOff, X, Check,
 } from 'lucide-react';
+import { supabase } from "../lib/supabase";  
+
 
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
