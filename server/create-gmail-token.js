@@ -1,8 +1,8 @@
 import { google } from "googleapis";
 
-const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
-const CLIENT_SECRET = "YOUR_GOOGLE_CLIENT_SECRET";
-const REDIRECT_URI = "http://localhost:8000/auth/google/gmail/callback";
+const CLIENT_ID = "1024951505912-gg4elh7t61chm1d0kd2s6rupl4m81gao.apps.googleusercontent.com";
+const CLIENT_SECRET = "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";
+const REDIRECT_URI = "http://localhost:5000/auth/google/gmail/callback";
 
 const oAuth2Client = new google.auth.OAuth2(
   CLIENT_ID,
