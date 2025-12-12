@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const router = Router();
 
 function verifySignature(body: string, signatureHeader?: string) {
