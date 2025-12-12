@@ -17,12 +17,12 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from '../components/ui/label';
-import { Loader2, Lock, User } from 'lucide-react';
+import { Loader2, Lock, User, Eye, EyeOff } from 'lucide-react';
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
 
-// --- START: New Components for UI/UX improvement ---
+// --- UI Components ---
 const OrSeparator = () => (
     <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
@@ -40,7 +40,7 @@ const SocialLoginButtons = () => (
     <div className="flex flex-col gap-3">
         <Button
             onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/google'}
-            className="w-full flex justify-center items-center gap-3 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
+            className="w-full flex justify-center items-center gap-3 bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-400/50 transition-colors"
         >
             <div className="h-5 w-5">
                 <img src="/google-icon.svg" alt="Google" className="h-full w-full"/>
@@ -50,7 +50,7 @@ const SocialLoginButtons = () => (
 
         <Button
             onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/github'}
-            className="w-full flex justify-center items-center gap-3 bg-gray-800 hover:bg-gray-900 text-white dark:bg-gray-900 dark:hover:bg-black transition-colors"
+            className="w-full flex justify-center items-center gap-3 bg-gray-700 hover:bg-gray-600 text-white shadow-md shadow-gray-500/50 transition-colors"
         >
             <div className="h-5 w-5">
                 <img src="/github-icon.svg" alt="GitHub" className="h-full w-full"/>
@@ -59,7 +59,7 @@ const SocialLoginButtons = () => (
         </Button>
     </div>
 );
-// --- END ---
+// --- End UI Components ---
 
 export function LoginPage() {
     const navigate = useNavigate();
@@ -71,6 +71,7 @@ export function LoginPage() {
 
     const [identifier, setIdentifier] = useState(savedIdentifier);
     const [password, setPassword] = useState(savedPassword);
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => { localStorage.setItem('loginIdentifier', identifier); }, [identifier]);
@@ -151,14 +152,21 @@ export function LoginPage() {
                                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="password"
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     autoComplete="current-password"
-                                    className="pl-10"
+                                    className="pl-10 pr-10"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
                             </div>
                         </div>
 
