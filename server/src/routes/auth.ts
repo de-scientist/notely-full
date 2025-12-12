@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase.ts';
 import { signToken } from '../utils/jwt.ts';
 import { requireAuth } from '../middleware/auth.ts';
 
