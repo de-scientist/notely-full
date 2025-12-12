@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt.ts";
 import { PrismaClient } from '@prisma/client';
 
+
+const prisma = new PrismaClient()
 export interface AuthedRequest extends Request {
   user?: { id: string; email?: string; [key: string]: any };
 }
