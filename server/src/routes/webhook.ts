@@ -1,7 +1,7 @@
 // server/src/routes/webhook.ts
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
-import prisma from "../lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
 const router = Router();
 
