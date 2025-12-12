@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth.ts';
 import { PrismaClient } from '@prisma/client';
 import type { Request, Response, NextFunction } from 'express';
 
+const prisma = new PrismaClient();
 const router = Router();
 const TOKEN_COOKIE_NAME = 'token';
 
