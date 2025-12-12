@@ -1,5 +1,8 @@
 // server/src/lib/supabase.ts
+import dotenv from 'dotenv';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+dotenv.config();
 
 // Ensure you have these in your .env
 const SUPABASE_URL = process.env.SUPABASE_URL!;
