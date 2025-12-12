@@ -5,6 +5,7 @@ import { signToken } from "../utils/jwt.ts";
 import bcrypt from "bcrypt";
 import { requireAuth, AuthedRequest } from "../middleware/requireAuth.ts";
 
+const prisma = new PrismaClient();
 const router = Router();
 const TOKEN_COOKIE_NAME = "token";
 
