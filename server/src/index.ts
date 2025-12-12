@@ -60,7 +60,15 @@ app.use('/api/public/entries', publicEntriesRouter);
 //app.use('/api/categories/suggest', smartCategoryRouter);
 //app.use('/api/entries/permanent', permanentDeleteRouter);
 
+app.post("/webhook/supabase", (req, res, next) => webhookRouter.handle(req, res, next));
+
 app.use(errorHandler);
+
+// error handling
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: "Server error" });
+});
 
 const PORT = process.env.PORT || 5000;
 
