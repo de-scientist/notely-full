@@ -1,129 +1,75 @@
-import { Router } from 'express';
-import { supabase } from '../lib/supabase.ts';
-import { signToken } from '../utils/jwt.ts';
-import { requireAuth } from '../middleware/auth.ts';
-import { PrismaClient } from '@prisma/client';
-import type { Request, Response, NextFunction } from 'express';
+// server/src/routes/auth.ts
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import { signToken } from "../utils/jwt.ts";
+import bcrypt from "bcrypt";
+import { requireAuth, AuthedRequest } from "../middleware/requireAuth.ts";
 
-const prisma = new PrismaClient();
 const router = Router();
-const TOKEN_COOKIE_NAME = 'token';
+const TOKEN_COOKIE_NAME = "token";
 
-// ------------------- REGISTER -------------------
-router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+// ---- Helpers
+const SALT_ROUNDS = 10;
+
+router.post("/register", async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
+    const { firstName, lastName, username, email, password } = req.body;
+    if (!firstName || !lastName || !username || !email || !password) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return res.status(400).json({ message: error.message });
+    const existing = await prisma.user.findFirst({
+      where: { OR: [{ email }, { username }] },
+    });
+    if (existing) return res.status(400).json({ message: "Email or username already in use." });
 
-    return res.status(201).json({ user: data.user, message: 'Check your email to verify account.' });
+    const hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const user = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        username,
+        email,
+        password: hash,
+        provider: "email",
+        emailVerified: false,
+      },
+    });
+
+    // Optionally: create an email verification token entry etc.
+    return res.status(201).json({ user });
   } catch (err) {
     next(err);
   }
 });
 
-// ------------------- LOGIN -------------------
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
+    const { identifier, password } = req.body; // identifier can be email or username
+    if (!identifier || !password) return res.status(400).json({ message: "Required" });
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return res.status(400).json({ message: error.message });
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ email: identifier }, { username: identifier }] },
+    });
+    if (!user || !user.password) return res.status(400).json({ message: "Invalid credentials" });
 
-    if (!data.user) return res.status(400).json({ message: 'Login failed: no user returned.' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(400).json({ message: "Invalid credentials" });
 
-    const user = data.user as { id: string };
     const token = signToken({ userId: user.id });
-
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({ user });
+    res.json({ user });
   } catch (err) {
     next(err);
   }
 });
-
-// ------------------- SOCIAL LOGIN -------------------
-router.post('/oauth-login', async (req: Request, res: Response) => {
-  try {
-    const { provider } = req.body;
-    if (!provider) return res.status(400).json({ message: 'Provider required' });
-
-    const { data, error } = await supabase.auth.signInWithOAuth({ provider });
-
-    if (error) return res.status(400).json({ message: error.message });
-
-    // OAuth may return either a user or a redirect URL
-    if ('user' in data && data.user) {
-      const user = data.user as { id: string };
-      const token = signToken({ userId: user.id });
-      res.cookie(TOKEN_COOKIE_NAME, token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return res.json({ user });
-    }
-
-    return res.json({ url: data.url });
-  } catch (err) {
-    res.status(500).json({ message: 'OAuth login failed' });
-  }
-});
-
-// ------------------- PASSWORD RESET -------------------
-router.post('/password-reset', async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'Email required' });
-
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
-    });
-    if (error) return res.status(400).json({ message: error.message });
-
-    return res.json({ message: 'Password reset email sent' });
-  } catch (err) {
-    res.status(500).json({ message: 'Password reset failed' });
-  }
-});
-
-// ------------------- LOGOUT -------------------
-router.post('/logout', requireAuth, async (req: Request, res: Response) => {
-  try {
-    await supabase.auth.signOut();
-    res.clearCookie(TOKEN_COOKIE_NAME, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-    return res.json({ message: 'Logged out' });
-  } catch (err) {
-    res.status(500).json({ message: 'Logout failed' });
-  }
-});
-
-// ------------------- GET CURRENT USER -------------------
-router.get('/me', requireAuth, async (req: Request, res: Response) => {
-  try {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) return res.status(400).json({ message: error.message });
-    return res.json({ user: data.user });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to get user' });
-  }
-});
-
-
 
 /**
  * OAuth backend-sync endpoint.
@@ -207,6 +153,30 @@ router.post("/oauth", async (req, res) => {
   } catch (err) {
     console.error("OAuth sync error:", err);
     return res.status(500).json({ message: "OAuth sync failed" });
+  }
+});
+
+// Example protected route using requireAuth (note: requireAuth uses prisma to verify user from token)
+router.get("/me", requireAuth, async (req: AuthedRequest, res) => {
+  try {
+    // req.user was set in the middleware
+    const user = req.user;
+    return res.json({ user });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to fetch profile" });
+  }
+});
+
+router.post("/logout", requireAuth, async (req, res) => {
+  try {
+    res.clearCookie(TOKEN_COOKIE_NAME, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+    return res.json({ message: "Logged out" });
+  } catch (err) {
+    return res.status(500).json({ message: "Logout failed" });
   }
 });
 
