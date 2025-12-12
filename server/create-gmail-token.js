@@ -12,8 +12,10 @@ const oAuth2Client = new google.auth.OAuth2(
 
 const url = oAuth2Client.generateAuthUrl({
   access_type: "offline",
+  prompt: "consent",
+  response_type: "code",
   scope: [
-    "https://www.googleapis.com/auth/gmail.send",
+    "https://www.googleapis.com/auth/gmail.send"
   ],
 });
 
