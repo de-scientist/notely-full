@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 
+import { supabase } from "../lib/supabase"; // ← ADD THIS
+
 import { Button } from "../components/ui/button";
 import {
     Card,
@@ -22,6 +24,22 @@ import { Loader2, Lock, User, Eye, EyeOff } from 'lucide-react';
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
 
+// ---------------------
+// Google / GitHub Login
+// ---------------------
+async function loginWithProvider(provider: "google" | "github") {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+        },
+    });
+
+    if (error) {
+        toast.error("Social login failed", { description: error.message });
+    }
+}
+
 // --- UI Components ---
 const OrSeparator = () => (
     <div className="relative my-6">
@@ -36,10 +54,11 @@ const OrSeparator = () => (
     </div>
 );
 
+// Updated social buttons — styling untouched, logic replaced with Supabase OAuth
 const SocialLoginButtons = () => (
     <div className="flex flex-col gap-3">
         <Button
-            onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/google'}
+            onClick={() => loginWithProvider("google")}
             className="w-full flex justify-center items-center gap-3 bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-400/50 transition-colors"
         >
             <div className="h-5 w-5">
@@ -49,7 +68,7 @@ const SocialLoginButtons = () => (
         </Button>
 
         <Button
-            onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/github'}
+            onClick={() => loginWithProvider("github")}
             className="w-full flex justify-center items-center gap-3 bg-gray-700 hover:bg-gray-600 text-white shadow-md shadow-gray-500/50 transition-colors"
         >
             <div className="h-5 w-5">
@@ -86,9 +105,9 @@ export function LoginPage() {
         onSuccess: (user) => {
             setUser(user);
             setLoading(false);
-            localStorage.setItem('loginIdentifier', identifier);
-            localStorage.setItem('loginPassword', password);
-            toast.success(`Welcome back, ${user.firstName}!`, { description: 'You have been successfully logged in.' });
+            toast.success(`Welcome back, ${user.firstName}!`, {
+                description: 'You have been successfully logged in.'
+            });
             navigate('/app/notes');
         },
         onError: (err: any) => {
