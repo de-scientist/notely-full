@@ -34,6 +34,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(rawBodyMiddleware);
 app.use(attachUser);
 
 app.get('/api/health', (_req, res) => {
