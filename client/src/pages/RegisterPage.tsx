@@ -1,5 +1,5 @@
 import type { FormEvent, Dispatch, SetStateAction } from 'react';
-import React, { useState, useEffect } from 'react'; // Explicitly import React
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -17,24 +17,17 @@ import { Separator } from "../components/ui/separator";
 import { 
     Loader2, UserPlus, AlertTriangle, CheckCircle, 
     User, Mail, Lock, Eye, EyeOff, X, Check,
-    // Note: Lucide does not include Google/GitHub brand icons.
-    // We will continue to use the SVG images for brand icons as is best practice.
 } from 'lucide-react';
 
-// 💜 OneNote-inspired palette
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 const INPUT_RING_CLASS = "focus:ring-fuchsia-500 focus:border-fuchsia-600 dark:focus:ring-fuchsia-500/50";
 
-// --- NEW BRAND COLORS (TAILWIND CLASSES) ---
 const GOOGLE_BUTTON_CLASS = "bg-white text-gray-700 hover:bg-gray-100 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-gray-300 border border-gray-300 hover:border-gray-400 transition-all duration-300 transform hover:scale-[1.03] shadow-md shadow-gray-300/50";
 const GITHUB_BUTTON_CLASS = "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 transition-all duration-300 transform hover:scale-[1.03] shadow-lg shadow-gray-900/50";
-// -------------------------------------------
 
-// The ABSOLUTE URL for the Backend API Port (Changed from relative path)
 const BACKEND_URL = 'http://localhost:5000'; 
 
-// FIX: Changed type from JSX.Element to React.ReactElement to resolve TS2503 error (from previous fix).
 const icons: Record<string, React.ReactElement> = {
     firstName: <User className="h-5 w-5" />,
     lastName: <User className="h-5 w-5" />,
@@ -44,7 +37,6 @@ const icons: Record<string, React.ReactElement> = {
     confirmPassword: <Lock className="h-5 w-5" />,
 };
 
-// Define a type for field props
 type FieldProps = {
     label: string;
     value: string;
@@ -54,7 +46,6 @@ type FieldProps = {
     show?: boolean;
     toggle?: Dispatch<SetStateAction<boolean>>;
 };
-
 
 export function RegisterPage() {
     const navigate = useNavigate();
@@ -75,10 +66,9 @@ export function RegisterPage() {
     const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
     const [emailValid, setEmailValid] = useState<boolean | null>(null);
     const [passwordStrength, setPasswordStrength] = useState(0);
-    
+
     const passwordsMismatch = password && confirmPassword && password !== confirmPassword;
-    
-    // Detailed password criteria
+
     const passwordCriteria = {
         minLength: password.length >= 8,
         hasUppercase: /[A-Z]/.test(password),
@@ -86,7 +76,6 @@ export function RegisterPage() {
         hasSymbol: /[\W_]/.test(password), 
     };
 
-    // Persist state
     useEffect(() => { localStorage.setItem('firstName', firstName); }, [firstName]);
     useEffect(() => { localStorage.setItem('lastName', lastName); }, [lastName]);
     useEffect(() => { localStorage.setItem('username', username); }, [username]);
@@ -94,7 +83,6 @@ export function RegisterPage() {
     useEffect(() => { localStorage.setItem('password', password); }, [password]);
     useEffect(() => { localStorage.setItem('confirmPassword', confirmPassword); }, [confirmPassword]);
 
-    // Password strength logic (updated to use detailed criteria)
     useEffect(() => {
         let strength = 0;
         if (passwordCriteria.minLength) strength += 1;
@@ -102,18 +90,14 @@ export function RegisterPage() {
         if (passwordCriteria.hasNumber) strength += 1;
         if (passwordCriteria.hasSymbol) strength += 1;
         setPasswordStrength(strength);
-    }, [password]); 
+    }, [password]);
 
-    // Username live validation 
     useEffect(() => {
         if (!username) return setUsernameAvailable(null);
-
         const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
         setUsernameAvailable(usernameRegex.test(username));
     }, [username]);
 
-
-    // Email validation
     useEffect(() => {
         if (!email) return setEmailValid(null);
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -147,28 +131,18 @@ export function RegisterPage() {
         if (usernameAvailable === false) return setError('Username is invalid or taken.');
         if (emailValid === false) return setError('Email is invalid.');
         if (passwordStrength < 4) return setError('Password is too weak.'); 
-        
+
         mutation.mutate();
     };
 
     const strengthColor = ['bg-red-500','bg-orange-500','bg-yellow-400','bg-green-500'];
-    
-    // Mapping for input fields including the new layout
+
     const fields: FieldProps[][] = [
-        // Name Row
         [{label:'First name', value:firstName,setter:setFirstName,field:'firstName'},
         {label:'Last name', value:lastName,setter:setLastName,field:'lastName'}],
-        
-        // Username
         [{label:'Username', value:username,setter:setUsername,field:'username'}],
-        
-        // Email
         [{label:'Email', value:email,setter:setEmail,field:'email',type:'email'}],
-        
-        // Password
         [{label:'Password', value:password,setter:setPassword,field:'password',type:'password',show:showPassword,toggle:setShowPassword}],
-        
-        // Confirm Password
         [{label:'Confirm Password', value:confirmPassword,setter:setConfirmPassword,field:'confirmPassword',type:'password',show:showConfirmPassword,toggle:setShowConfirmPassword}]
     ];
 
@@ -185,29 +159,20 @@ export function RegisterPage() {
                     <form onSubmit={onSubmit} className="space-y-6">
                         {fields.map((row, rowIdx) => (
                             <div key={rowIdx} className={`flex gap-4 ${row.length > 1 ? '' : 'flex-col'}`}>
-                                {row.map((
-                                    {label,value,setter,field,type='text',show=false,toggle=()=>{}}
-                                ) => {
+                                {row.map(({label,value,setter,field,type='text',show=false,toggle=()=>{}}) => {
                                     const isPassword = type === 'password';
                                     const isUsername = field === 'username';
                                     const isEmail = field === 'email';
                                     
-                                    // FIX: Determine the autocomplete value based on the field
                                     const getAutocompleteValue = (fieldName: string) => {
                                         switch (fieldName) {
-                                            case 'firstName':
-                                                return 'given-name';
-                                            case 'lastName':
-                                                return 'family-name';
-                                            case 'username':
-                                                return 'username';
-                                            case 'email':
-                                                return 'email';
+                                            case 'firstName': return 'given-name';
+                                            case 'lastName': return 'family-name';
+                                            case 'username': return 'username';
+                                            case 'email': return 'email';
                                             case 'password':
-                                            case 'confirmPassword':
-                                                return 'new-password'; 
-                                            default:
-                                                return 'off';
+                                            case 'confirmPassword': return 'new-password';
+                                            default: return 'off';
                                         }
                                     };
                                     
@@ -215,31 +180,19 @@ export function RegisterPage() {
                                     let validationColor = '';
 
                                     if (isUsername && usernameAvailable !== null && value) {
-                                        validationIcon = usernameAvailable ? 
-                                            <CheckCircle className="h-5 w-5 text-green-500" /> : 
-                                            <X className="h-5 w-5 text-red-500" />;
+                                        validationIcon = usernameAvailable ? <CheckCircle className="h-5 w-5 text-green-500" /> : <X className="h-5 w-5 text-red-500" />;
                                         validationColor = usernameAvailable ? 'border-green-500' : 'border-red-500';
                                     } else if (isEmail && emailValid !== null && value) {
-                                        validationIcon = emailValid ? 
-                                            <CheckCircle className="h-5 w-5 text-green-500" /> : 
-                                            <X className="h-5 w-5 text-red-500" />;
+                                        validationIcon = emailValid ? <CheckCircle className="h-5 w-5 text-green-500" /> : <X className="h-5 w-5 text-red-500" />;
                                         validationColor = emailValid ? 'border-green-500' : 'border-red-500';
                                     } else if (field === 'confirmPassword' && value) {
-                                             validationIcon = passwordsMismatch ? 
-                                                <X className="h-5 w-5 text-red-500" /> : 
-                                                <CheckCircle className="h-5 w-5 text-green-500" />;
-                                             validationColor = passwordsMismatch ? 'border-red-500' : 'border-green-500';
+                                        validationIcon = passwordsMismatch ? <X className="h-5 w-5 text-red-500" /> : <CheckCircle className="h-5 w-5 text-green-500" />;
+                                        validationColor = passwordsMismatch ? 'border-red-500' : 'border-green-500';
                                     }
-
 
                                     return (
                                         <div key={field} className={`relative flex-1 ${row.length > 1 ? 'min-w-0' : 'w-full'}`}>
-                                            {/* Input Icon on Left */}
-                                            {icons[field] && (
-                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-fuchsia-500 z-10">
-                                                    {icons[field]}
-                                                </div>
-                                            )}
+                                            {icons[field] && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-fuchsia-500 z-10">{icons[field]}</div>}
 
                                             <Input
                                                 type={isPassword ? (show ? 'text' : 'password') : type || 'text'}
@@ -247,66 +200,47 @@ export function RegisterPage() {
                                                 onChange={e => setter(e.target.value)}
                                                 required
                                                 placeholder=" "
-                                                // FIX: Added the autocomplete attribute
                                                 autoComplete={getAutocompleteValue(field)} 
-                                                className={`
-                                                    peer pl-10 pr-10 rounded-lg shadow-sm transition h-11 text-base
-                                                    ${INPUT_RING_CLASS}
-                                                    ${validationColor}
-                                                `}
+                                                className={`peer pl-10 pr-10 rounded-lg shadow-sm transition h-11 text-base ${INPUT_RING_CLASS} ${validationColor}`}
                                             />
                                             
-                                            {/* Floating Label */}
                                             <Label 
-                                                className={`
-                                                    absolute left-10 text-gray-400 text-sm transition-all pointer-events-none 
+                                                className={`absolute left-10 text-gray-400 text-sm transition-all pointer-events-none 
                                                     peer-placeholder-shown:top-[12px] peer-placeholder-shown:text-gray-500 peer-placeholder-shown:text-base 
                                                     peer-focus:-top-2.5 peer-focus:text-sm ${PRIMARY_COLOR_CLASS}
                                                     ${value ? '-top-2.5 text-sm' : 'top-[12px] text-base'}
-                                                    bg-card px-1 ml-[-4px]
-                                                `}
+                                                    bg-card px-1 ml-[-4px]`}
                                                 htmlFor={field}
                                             >
                                                 {label}
                                             </Label>
-                                            
-                                            {/* Show/Hide Password Toggle */}
+
                                             {isPassword && (
                                                 <div onClick={() => toggle(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:text-fuchsia-700 dark:hover:text-fuchsia-400 transition-transform active:scale-95 z-10">
                                                     {show ? <EyeOff className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400"/> : <Eye className="h-5 w-5 text-fuchsia-700 dark:text-fuchsia-400"/>}
                                                 </div>
                                             )}
-                                            
-                                            {/* Live Validation Icon on Right (if no toggle) */}
-                                            {!isPassword && validationIcon && (
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
-                                                    {validationIcon}
-                                                </div>
-                                            )}
-                                            
-                                            {/* Validation/Feedback Area */}
+
+                                            {!isPassword && validationIcon && <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10">{validationIcon}</div>}
+
                                             {isUsername && value && usernameAvailable !== null && (
                                                 <p className={`text-xs mt-1 px-1 ${usernameAvailable ? 'text-green-500' : 'text-red-500'}`}>
                                                     {usernameAvailable ? 'Username is valid.' : 'Username must be 3-15 alphanumeric characters.'}
                                                 </p>
                                             )}
-
                                             {isEmail && value && emailValid !== null && (
                                                 <p className={`text-xs mt-1 px-1 ${emailValid ? 'text-green-500' : 'text-red-500'}`}>
                                                     {emailValid ? 'Valid email format.' : 'Please enter a valid email address.'}
                                                 </p>
                                             )}
-
                                             {field === 'password' && value && (
                                                 <div className="space-y-1 mt-1">
-                                                    {/* Password Strength Meter */}
                                                     <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                                         <div className={`h-2 rounded-full ${strengthColor[passwordStrength - 1] || 'bg-red-400'} transition-all duration-300`} style={{ width: `${(passwordStrength / 4) * 100}%` }} />
                                                     </div>
                                                     <p className={`text-xs font-medium ${PRIMARY_COLOR_CLASS}`}>
                                                         Strength: {passwordStrength === 4 ? 'Strong' : passwordStrength > 2 ? 'Medium' : password.length > 0 ? 'Weak' : ''}
                                                     </p>
-                                                    {/* Password Requirements Checklist */}
                                                     <ul className="text-xs text-gray-600 dark:text-gray-400 grid grid-cols-2 gap-x-4">
                                                         {Object.entries(passwordCriteria).map(([key, passed]) => (
                                                             <li key={key} className={`flex items-center gap-1 ${passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
@@ -320,7 +254,6 @@ export function RegisterPage() {
                                                     </ul>
                                                 </div>
                                             )}
-
                                             {field === 'confirmPassword' && passwordsMismatch && (
                                                 <p className="text-sm text-red-500 flex items-center gap-1 animate-pulse mt-1">
                                                     <AlertTriangle className="h-4 w-4"/> Passwords do not match.
@@ -347,15 +280,13 @@ export function RegisterPage() {
                             )}
                         </Button>
                     </form>
-                    
-                    {/* 🚀 START: FIXED SOCIAL BUTTONS */}
+
                     <Separator className="my-6">
                         <span className="px-3 text-sm text-gray-500 dark:text-gray-400">OR</span>
                     </Separator>
                     
                     <div className="flex flex-col gap-4">
                         <Button 
-                            // FIX: Absolute URL to target backend port 5000
                             onClick={() => window.location.href = `${BACKEND_URL}/auth/oauth/google`} 
                             className={`w-full text-lg font-semibold ${GOOGLE_BUTTON_CLASS} flex items-center justify-center gap-2 h-12 active:scale-[0.97] rounded-lg`}
                         >
@@ -364,7 +295,6 @@ export function RegisterPage() {
                         </Button>
                         
                         <Button 
-                            // FIX: Absolute URL to target backend port 5000
                             onClick={() => window.location.href = `${BACKEND_URL}/auth/oauth/github`} 
                             className={`w-full text-lg font-semibold ${GITHUB_BUTTON_CLASS} flex items-center justify-center gap-2 h-12 active:scale-[0.97] rounded-lg`}
                         >
@@ -372,13 +302,14 @@ export function RegisterPage() {
                             Sign up with GitHub
                         </Button>
                     </div>
-                    {/* 🚀 END: FIXED SOCIAL BUTTONS */}
                 </CardContent>
 
                 <CardFooter className="flex justify-center border-t pt-4 dark:border-gray-700">
                     <p className="text-sm text-muted-foreground dark:text-gray-400">
                         Already have an account?{' '}
-                        <Link to="/login" className={`font-semibold ${PRIMARY_COLOR_CLASS} hover:text-fuchsia-700/80 dark:hover:text-fuchsia-500/80 transition-colors`}>Log in</Link>
+                        <Link to="/login" className={`font-semibold ${PRIMARY_COLOR_CLASS} hover:text-fuchsia-700/80 dark:hover:text-fuchsia-500/80 transition-colors`}>
+                            Log in
+                        </Link>
                     </p>
                 </CardFooter>
             </Card>
