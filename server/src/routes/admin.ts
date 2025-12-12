@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import OpenAI from "openai";
 import { saveDoc, listDocs, embedText } from "../lib/rag.ts";
-import { db } from "../lib/db"; // Assuming `db` is your Prisma/database client
+import { db } from "../lib/db.ts"; // Assuming `db` is your Prisma/database client
 import { randomUUID } from "crypto";
 // IMPORTANT: Assuming you have a global EventEmitter for handling server-side events (SSE)
 import { analyticsEmitter } from "../lib/analyticsEmitter.ts";
