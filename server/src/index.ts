@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express'; // Added NextFunction for middleware typing
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -23,18 +23,60 @@ import webhookRouter from "./routes/webhook.ts";
 import publicEntriesRouter from './routes/publicRoutes.ts';
 //import smartCategoryRouter from './routes/smartCategory.ts';
 //import permanentDeleteRouter from './routes/permanentDelete.ts';
+
 const prisma = new PrismaClient();
 dotenv.config();
 
 const app = express();
 
+// --- FIX 1: Define rawBodyMiddleware ---
+// This middleware is necessary for the webhook signature verification.
+const rawBodyMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST' && req.headers['content-type'] === 'application/json') {
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      (req as any).rawBody = data; // Attach raw body to request object
+      // Re-parse the JSON body for req.body after raw body is captured
+      try {
+        req.body = JSON.parse(data);
+      } catch (e) {
+        // Handle non-JSON body if needed
+      }
+      next();
+    });
+  } else {
+    next();
+  }
+};
+// ----------------------------------------
+
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json());
+// IMPORTANT: The rawBodyMiddleware must be placed before express.json() for the webhook to work correctly.
+// Since you are using rawBodyMiddleware for a specific path, we will remove it from the global app.use
+// and use express.json() globally.
+// The webhook route (line 63) will be corrected to use the rawBodyMiddleware specifically.
+
+// app.use(express.json()); // NOTE: We will use a conditional body parser later for the webhook
 app.use(cookieParser());
-app.use(rawBodyMiddleware);
+
+// Global middleware for all routes *except* the webhook
+app.use((req, res, next) => {
+    if (req.originalUrl === '/webhook/supabase') {
+        return next(); // Skip body parser for webhook
+    }
+    // Parse JSON body for all other routes
+    express.json()(req, res, next);
+});
+
+// app.use(rawBodyMiddleware); // REMOVED: Applying globally caused issues. Will be applied locally.
+
 app.use(attachUser);
 
 app.get('/api/health', (_req, res) => {
@@ -60,7 +102,10 @@ app.use('/api/public/entries', publicEntriesRouter);
 //app.use('/api/categories/suggest', smartCategoryRouter);
 //app.use('/api/entries/permanent', permanentDeleteRouter);
 
-app.post("/webhook/supabase", (req, res, next) => webhookRouter.handle(req, res, next));
+// --- FIX 2 & 3: Correctly mounting the webhook router with rawBodyMiddleware ---
+// A Router instance doesn't have a .handle() method. We must mount it like any other router.
+// Crucially, we apply rawBodyMiddleware ONLY to this route, BEFORE it hits the webhookRouter logic.
+app.use("/webhook/supabase", rawBodyMiddleware, webhookRouter); 
 
 app.use(errorHandler);
 
