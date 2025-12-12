@@ -197,6 +197,8 @@ function AppLayout() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+<Route path="/auth/callback" element={<AuthCallbackPage />} />
+
           {/* <Route element={<ProtectedAdminRoute />}> */}
   <Route path="/admin/*" element={<AdminApp />} />
 {/* </Route> */}
