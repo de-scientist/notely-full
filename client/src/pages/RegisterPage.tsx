@@ -303,7 +303,7 @@ const handleOAuth = async (provider: 'google' | 'github') => {
     <Button
         type="button"
         onClick={() => handleOAuth("google")}
-        className={GOOGLE_BUTTON_CLASS}
+        className={`w-full text-lg font-semibold ${GRADIENT_CLASS} flex items-center justify-center gap-2 h-12 transition-transform active:scale-[0.97] rounded-lg`}
     >
         <img
             src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
