@@ -54,6 +54,20 @@ export function RegisterPage() {
 
     const loadFromStorage = (key: string) => localStorage.getItem(key) ?? '';
 
+const handleOAuth = async (provider: 'google' | 'github') => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            redirectTo: "http://localhost:5173/auth/callback"
+        }
+    });
+
+    if (error) {
+        toast.error("OAuth failed", { description: error.message });
+    }
+};
+
+
     const [firstName, setFirstName] = useState(loadFromStorage('firstName'));
     const [lastName, setLastName] = useState(loadFromStorage('lastName'));
     const [username, setUsername] = useState(loadFromStorage('username'));
