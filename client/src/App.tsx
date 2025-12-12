@@ -27,6 +27,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import { SharedNotePage } from './pages/SharedNotePage';
 //import AdminRoute from './admin/AdminRoute';
 import AdminApp from './admin3/AdminApp';
+import { AuthCallbackPage } from './pages/AuthCallback';
 //import ProtectedAdminRoute from './admin3/ProtectedAdminRoute';
 
 // Shadcn imports for User Dropdown (Assuming basic components)
