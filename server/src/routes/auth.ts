@@ -2,40 +2,40 @@ import { Router } from 'express';
 import { supabase } from '../lib/supabase.ts';
 import { signToken } from '../utils/jwt.ts';
 import { requireAuth } from '../middleware/auth.ts';
+import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 const TOKEN_COOKIE_NAME = 'token';
 
 // ------------------- REGISTER -------------------
-router.post('/register', async (req, res, next) => {
+router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email and password required' });
+    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
 
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return res.status(400).json({ message: error.message });
 
-    return res
-      .status(201)
-      .json({ user: data.user ?? null, message: 'Check your email to verify account.' });
+    return res.status(201).json({ user: data.user, message: 'Check your email to verify account.' });
   } catch (err) {
     next(err);
   }
 });
 
 // ------------------- LOGIN -------------------
-router.post('/login', async (req, res, next) => {
+router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ message: 'Email and password required' });
+    if (!email || !password) return res.status(400).json({ message: 'Email and password required' });
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return res.status(400).json({ message: error.message });
-    if (!data.user) return res.status(400).json({ message: 'Login failed' });
 
-    const token = signToken({ userId: data.user.id });
+    if (!data.user) return res.status(400).json({ message: 'Login failed: no user returned.' });
+
+    const user = data.user as { id: string };
+    const token = signToken({ userId: user.id });
+
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -43,34 +43,35 @@ router.post('/login', async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({ user: data.user });
+    return res.json({ user });
   } catch (err) {
     next(err);
   }
 });
 
 // ------------------- SOCIAL LOGIN -------------------
-router.post('/oauth-login', async (req, res) => {
+router.post('/oauth-login', async (req: Request, res: Response) => {
   try {
     const { provider } = req.body;
     if (!provider) return res.status(400).json({ message: 'Provider required' });
 
     const { data, error } = await supabase.auth.signInWithOAuth({ provider });
+
     if (error) return res.status(400).json({ message: error.message });
 
-    // Type guard: OAuth may only return redirect URL
+    // OAuth may return either a user or a redirect URL
     if ('user' in data && data.user) {
-      const token = signToken({ userId: data.user.id });
+      const user = data.user as { id: string };
+      const token = signToken({ userId: user.id });
       res.cookie(TOKEN_COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      return res.json({ user: data.user });
+      return res.json({ user });
     }
 
-    // Otherwise, just return the URL for frontend redirect
     return res.json({ url: data.url });
   } catch (err) {
     res.status(500).json({ message: 'OAuth login failed' });
@@ -78,7 +79,7 @@ router.post('/oauth-login', async (req, res) => {
 });
 
 // ------------------- PASSWORD RESET -------------------
-router.post('/password-reset', async (req, res) => {
+router.post('/password-reset', async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: 'Email required' });
@@ -95,7 +96,7 @@ router.post('/password-reset', async (req, res) => {
 });
 
 // ------------------- LOGOUT -------------------
-router.post('/logout', requireAuth, async (req, res) => {
+router.post('/logout', requireAuth, async (req: Request, res: Response) => {
   try {
     await supabase.auth.signOut();
     res.clearCookie(TOKEN_COOKIE_NAME, {
@@ -110,11 +111,11 @@ router.post('/logout', requireAuth, async (req, res) => {
 });
 
 // ------------------- GET CURRENT USER -------------------
-router.get('/me', requireAuth, async (req, res) => {
+router.get('/me', requireAuth, async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabase.auth.getUser();
-    if (error) return res.status(500).json({ message: 'Failed to get user' });
-    return res.json({ user: data.user ?? null });
+    if (error) return res.status(400).json({ message: error.message });
+    return res.json({ user: data.user });
   } catch (err) {
     res.status(500).json({ message: 'Failed to get user' });
   }
