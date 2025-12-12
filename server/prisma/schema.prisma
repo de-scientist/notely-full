@@ -21,6 +21,7 @@ model User {
   emailVerified     Boolean  @default(false) // New field
   provider          String?  // 'email', 'google', 'github'
   providerId        String?  // OAuth provider id
+  supabaseId   String? @unique
 
   categories Category[]
   entries    Entry[]
