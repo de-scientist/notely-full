@@ -22,9 +22,7 @@ import { Loader2, Lock, User } from 'lucide-react';
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
 const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
 
-// --- START: New/Updated Components for UI/UX improvement ---
-
-// Component for a clean "OR" separator
+// --- START: New Components for UI/UX improvement ---
 const OrSeparator = () => (
     <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
@@ -38,27 +36,22 @@ const OrSeparator = () => (
     </div>
 );
 
-// Component for Social Login Buttons (Updated for Absolute URLs)
 const SocialLoginButtons = () => (
     <div className="flex flex-col gap-3">
-        {/* Google Button - UPDATED URL */}
         <Button
             onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/google'}
             className="w-full flex justify-center items-center gap-3 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 transition-colors"
         >
-            {/* Image/Icon Placeholder for Google */}
             <div className="h-5 w-5">
                 <img src="/google-icon.svg" alt="Google" className="h-full w-full"/>
             </div>
             Sign in with Google
         </Button>
 
-        {/* GitHub Button - UPDATED URL */}
         <Button
             onClick={() => window.location.href = 'http://localhost:5000/auth/oauth/github'}
             className="w-full flex justify-center items-center gap-3 bg-gray-800 hover:bg-gray-900 text-white dark:bg-gray-900 dark:hover:bg-black transition-colors"
         >
-            {/* Image/Icon Placeholder for GitHub */}
             <div className="h-5 w-5">
                 <img src="/github-icon.svg" alt="GitHub" className="h-full w-full"/>
             </div>
@@ -66,16 +59,13 @@ const SocialLoginButtons = () => (
         </Button>
     </div>
 );
-
-// --- END: New/Updated Components for UI/UX improvement ---
-
+// --- END ---
 
 export function LoginPage() {
     const navigate = useNavigate();
     const setUser = useAuthStore((s) => s.setUser);
     const setLoading = useAuthStore((s) => s.setLoading);
 
-    // Load saved credentials if they exist
     const savedIdentifier = localStorage.getItem('loginIdentifier') ?? '';
     const savedPassword = localStorage.getItem('loginPassword') ?? '';
 
@@ -83,14 +73,8 @@ export function LoginPage() {
     const [password, setPassword] = useState(savedPassword);
     const [error, setError] = useState<string | null>(null);
 
-    // Persist credentials locally on input change
-    useEffect(() => {
-        localStorage.setItem('loginIdentifier', identifier);
-    }, [identifier]);
-
-    useEffect(() => {
-        localStorage.setItem('loginPassword', password);
-    }, [password]);
+    useEffect(() => { localStorage.setItem('loginIdentifier', identifier); }, [identifier]);
+    useEffect(() => { localStorage.setItem('loginPassword', password); }, [password]);
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -101,37 +85,23 @@ export function LoginPage() {
         onSuccess: (user) => {
             setUser(user);
             setLoading(false);
-
-            // Save credentials so next time the form is pre-filled
             localStorage.setItem('loginIdentifier', identifier);
             localStorage.setItem('loginPassword', password);
-
-            toast.success(`Welcome back, ${user.firstName}!`, {
-                description: 'You have been successfully logged in.',
-            });
-
+            toast.success(`Welcome back, ${user.firstName}!`, { description: 'You have been successfully logged in.' });
             navigate('/app/notes');
         },
         onError: (err: any) => {
             setLoading(false);
             const msg = err?.response?.data?.message ?? 'Login failed. Check your credentials.';
             setError(msg);
-
-            toast.error('Login Failed', {
-                description: msg,
-            });
+            toast.error('Login Failed', { description: msg });
         },
     });
 
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
         setError(null);
-
-        if (!identifier || !password) {
-            setError("Both identifier and password are required.");
-            return;
-        }
-
+        if (!identifier || !password) return setError("Both identifier and password are required.");
         mutation.mutate();
     };
 
@@ -148,7 +118,6 @@ export function LoginPage() {
 
                 <CardContent>
                     <SocialLoginButtons />
-
                     <OrSeparator />
 
                     <form onSubmit={onSubmit} className="space-y-6">
@@ -171,7 +140,6 @@ export function LoginPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <Label htmlFor="password">Password</Label>
-                                {/* Added 'Forgot Password' link */}
                                 <Link
                                     to="/forgot-password"
                                     className={`text-sm font-medium ${PRIMARY_TEXT_CLASS} hover:text-fuchsia-400 transition-colors`}
