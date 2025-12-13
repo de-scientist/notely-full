@@ -64,18 +64,33 @@ router.post("/register", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { identifier, password } = req.body; // identifier can be email or username
-    if (!identifier || !password) return res.status(400).json({ message: "Required" });
+    const { identifier, password } = req.body;
+    if (!identifier || !password) {
+      return res.status(400).json({ message: "Required" });
+    }
 
     const user = await prisma.user.findFirst({
       where: { OR: [{ email: identifier }, { username: identifier }] },
     });
-    if (!user || !user.password) return res.status(400).json({ message: "Invalid credentials" });
+
+    if (!user || !user.password) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(400).json({ message: "Invalid credentials" });
+    if (!valid) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // 🚫 HARD GATE
+    if (!user.emailVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in.",
+      });
+    }
 
     const token = signToken({ userId: user.id });
+
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -88,6 +103,7 @@ router.post("/login", async (req, res, next) => {
     next(err);
   }
 });
+
 
 /**
  * OAuth backend-sync endpoint.
