@@ -24,10 +24,24 @@ router.post("/register", async (req, res, next) => {
     const existing = await prisma.user.findFirst({
       where: { OR: [{ email }, { username }] },
     });
-    if (existing) return res.status(400).json({ message: "Email or username already in use." });
+    if (existing) {
+      return res.status(400).json({ message: "Email or username already in use." });
+    }
+
+    // 1️⃣ Create Supabase auth user (sends verification email)
+    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: false,
+    });
+
+    if (error || !data.user) {
+      return res.status(400).json({ message: error?.message || "Auth creation failed" });
+    }
 
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
+    // 2️⃣ Create Prisma user
     const user = await prisma.user.create({
       data: {
         firstName,
@@ -37,15 +51,16 @@ router.post("/register", async (req, res, next) => {
         password: hash,
         provider: "email",
         emailVerified: false,
+        supabaseId: data.user.id,
       },
     });
 
-    // Optionally: create an email verification token entry etc.
     return res.status(201).json({ user });
   } catch (err) {
     next(err);
   }
 });
+
 
 router.post("/login", async (req, res, next) => {
   try {
