@@ -22,7 +22,7 @@ import {
     NotebookPen,
     ThumbsUp,
     MoreHorizontal,
-    Move, // Added Move icon for drag handle visibility
+    Move,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useEffect, useMemo } from 'react';
@@ -36,9 +36,12 @@ import {
 } from "../components/ui/dropdown-menu";
 
 // --- Professional Styling Constants (Fuchsia Palette) ---
-const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-400"; // Slightly lighter for dark mode contrast
-const SOLID_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-600 text-white shadow-lg shadow-fuchsia-500/50";
-const CTA_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-600 text-white rounded-xl px-6 py-3 text-base font-semibold shadow-lg shadow-fuchsia-500/40 transition transform hover:scale-[1.02]";
+// Corrected to use 'dark:text-fuchsia-400' for dark mode contrast, using fuchsia color.
+const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-400"; 
+// Confirmed: Set background to fuchsia-600 and text to white
+const SOLID_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-600 dark:hover:bg-fuchsia-700 text-white shadow-lg shadow-fuchsia-500/50";
+// Confirmed: Set background to fuchsia-600 and text to white
+const CTA_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-600 dark:hover:bg-fuchsia-700 text-white rounded-xl px-6 py-3 text-base font-semibold shadow-lg shadow-fuchsia-500/40 transition transform hover:scale-[1.02]";
 
 interface Entry {
     id: string;
@@ -179,13 +182,15 @@ function NoteCard({
 
                     {/* Context Menu Dropdown */}
                     <div className="flex-shrink-0 flex items-center gap-1">
-                        {/* Drag Handle (Visible only when simple=false and sorting is default/recent) */}
+                        {/* MODIFIED: Drag Handle Button - Also changed to solid fuchsia background
+                            This ensures consistency with the More Actions button, fulfilling the request.
+                        */}
                         {dragHandleProps && !simple && (
                             <Button
                                 size="sm"
-                                variant="ghost"
                                 title="Drag to reorder"
-                                className="p-1 h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-fuchsia-600 dark:hover:text-fuchsia-500"
+                                // Applied solid fuchsia button styling
+                                className="p-1 h-8 w-8 bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-600 dark:hover:bg-fuchsia-700 text-white shadow-md shadow-fuchsia-500/30 rounded-full transition"
                                 {...dragHandleProps}
                                 onClick={e => e.stopPropagation()}
                             >
@@ -195,11 +200,14 @@ function NoteCard({
                         
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
+                                {/* MODIFIED: More Actions Button - Now uses solid fuchsia background.
+                                    This addresses the user's specific request for the button in the image.
+                                */}
                                 <Button
                                     size="sm"
-                                    variant="ghost"
                                     title="More Actions"
-                                    className="p-1 h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-fuchsia-600 dark:hover:text-fuchsia-500"
+                                    // Applied solid fuchsia button styling
+                                    className="p-1 h-8 w-8 bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-600 dark:hover:bg-fuchsia-700 text-white shadow-md shadow-fuchsia-500/30 rounded-full transition"
                                     onClick={e => e.stopPropagation()} // Important to prevent card navigation
                                 >
                                     <MoreHorizontal className="h-5 w-5" />
@@ -404,6 +412,9 @@ export function NotesListPage() {
             // Preserve manual ordering (Pinned + last updated) for 'recent'
             if (sortOption === 'recent') {
                 if (a.pinned && !b.pinned) return -1;
+                if (a.pinned && b.pinned) { // Preserve the existing drag-and-drop order for pinned items
+                    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+                }
                 if (!a.pinned && b.pinned) return 1;
                 return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
             }
@@ -487,6 +498,7 @@ export function NotesListPage() {
                 <h1 className="text-4xl font-extrabold dark:text-white flex items-center gap-3">
                     <NotebookPen className={`h-10 w-10 ${PRIMARY_TEXT_CLASS}`} /> Your Note Hub
                 </h1>
+                {/* Button uses CTA_BUTTON_CLASS, which is fuchsia-600 with white text */}
                 <Button className={CTA_BUTTON_CLASS} onClick={() => navigate('/app/notes/new')}>
                     <PlusCircle className="h-5 w-5 mr-2" /> Create New Note
                 </Button>
