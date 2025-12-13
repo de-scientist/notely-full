@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth';
 
-import { supabase } from "../lib/supabase"; // ← ADD THIS
+import { supabase } from "../lib/supabase";
 
 import { Button } from "../components/ui/button";
 import {
@@ -19,10 +19,11 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from '../components/ui/label';
-import { Loader2, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Lock, User, Eye, EyeOff, Mail } from 'lucide-react';
 
 const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
-const GRADIENT_BUTTON_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
+const GRADIENT_BUTTON_CLASS =
+    "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-md shadow-fuchsia-500/50 transition-all duration-300";
 
 // ---------------------
 // Google / GitHub Login
@@ -54,16 +55,13 @@ const OrSeparator = () => (
     </div>
 );
 
-// Updated social buttons — styling untouched, logic replaced with Supabase OAuth
 const SocialLoginButtons = () => (
     <div className="flex flex-col gap-3">
         <Button
             onClick={() => loginWithProvider("google")}
             className="w-full flex justify-center items-center gap-3 bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-400/50 transition-colors"
         >
-            <div className="h-5 w-5">
-                <img src="/google-icon.svg" alt="Google" className="h-full w-full"/>
-            </div>
+            <img src="/google-icon.svg" alt="Google" className="h-5 w-5" />
             Sign in with Google
         </Button>
 
@@ -71,14 +69,11 @@ const SocialLoginButtons = () => (
             onClick={() => loginWithProvider("github")}
             className="w-full flex justify-center items-center gap-3 bg-gray-700 hover:bg-gray-600 text-white shadow-md shadow-gray-500/50 transition-colors"
         >
-            <div className="h-5 w-5">
-                <img src="/github-icon.svg" alt="GitHub" className="h-full w-full"/>
-            </div>
+            <img src="/github-icon.svg" alt="GitHub" className="h-5 w-5" />
             Sign in with GitHub
         </Button>
     </div>
 );
-// --- End UI Components ---
 
 export function LoginPage() {
     const navigate = useNavigate();
@@ -92,9 +87,12 @@ export function LoginPage() {
     const [password, setPassword] = useState(savedPassword);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [resending, setResending] = useState(false);
 
     useEffect(() => { localStorage.setItem('loginIdentifier', identifier); }, [identifier]);
     useEffect(() => { localStorage.setItem('loginPassword', password); }, [password]);
+
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -105,9 +103,7 @@ export function LoginPage() {
         onSuccess: (user) => {
             setUser(user);
             setLoading(false);
-            toast.success(`Welcome back, ${user.firstName}!`, {
-                description: 'You have been successfully logged in.'
-            });
+            toast.success(`Welcome back, ${user.firstName}!`);
             navigate('/app/notes');
         },
         onError: (err: any) => {
@@ -118,10 +114,39 @@ export function LoginPage() {
         },
     });
 
+    const handleResendVerification = async () => {
+        if (!isEmail) {
+            toast.error("Enter your email address to resend verification.");
+            return;
+        }
+
+        try {
+            setResending(true);
+            const { error } = await supabase.auth.resend({
+                type: "signup",
+                email: identifier,
+            });
+
+            if (error) {
+                toast.error("Failed to resend verification", { description: error.message });
+                return;
+            }
+
+            toast.success("Verification email sent", {
+                description: "Check your inbox and confirm your email.",
+            });
+        } finally {
+            setResending(false);
+        }
+    };
+
     const onSubmit = (e: FormEvent) => {
         e.preventDefault();
         setError(null);
-        if (!identifier || !password) return setError("Both identifier and password are required.");
+        if (!identifier || !password) {
+            setError("Both identifier and password are required.");
+            return;
+        }
         mutation.mutate();
     };
 
@@ -142,12 +167,10 @@ export function LoginPage() {
 
                     <form onSubmit={onSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="identifier">Email or Username</Label>
+                            <Label>Email or Username</Label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    id="identifier"
-                                    placeholder="name@example.com or username"
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
                                     required
@@ -158,21 +181,11 @@ export function LoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="password">Password</Label>
-                                <Link
-                                    to="/forgot-password"
-                                    className={`text-sm font-medium ${PRIMARY_TEXT_CLASS} hover:text-fuchsia-400 transition-colors`}
-                                >
-                                    Forgot password?
-                                </Link>
-                            </div>
+                            <Label>Password</Label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    id="password"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -182,14 +195,35 @@ export function LoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
 
-                        {error && <p className="text-sm font-medium text-red-500 text-center">{error}</p>}
+                        {error && (
+                            <div className="space-y-2 text-center">
+                                <p className="text-sm font-medium text-red-500">{error}</p>
+
+                                {isEmail && (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleResendVerification}
+                                        disabled={resending}
+                                        className="w-full flex gap-2 justify-center"
+                                    >
+                                        {resending ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Mail className="h-4 w-4" />
+                                        )}
+                                        Resend verification email
+                                    </Button>
+                                )}
+                            </div>
+                        )}
 
                         <Button
                             type="submit"
@@ -209,10 +243,7 @@ export function LoginPage() {
                 <CardFooter className="flex justify-center border-t pt-4 dark:border-gray-700">
                     <p className="text-sm text-muted-foreground dark:text-gray-400">
                         Don&apos;t have an account?{' '}
-                        <Link
-                            to="/register"
-                            className={`font-semibold ${PRIMARY_TEXT_CLASS} hover:text-fuchsia-400 transition-colors`}
-                        >
+                        <Link to="/register" className={`font-semibold ${PRIMARY_TEXT_CLASS}`}>
                             Sign up
                         </Link>
                     </p>
