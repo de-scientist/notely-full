@@ -49,6 +49,15 @@ export function AuthCallbackPage() {
                 supabaseAccessToken: access_token,
             };
 
+
+            // 🔗 Sync email verification
+if (user.email_confirmed_at) {
+  await api.post("/auth/verify-email", {
+    supabaseId: user.id,
+  });
+}
+
+
             try {
                 // 3. Send to your backend to sync/create user & generate your JWT
                 const res = await api.post("/auth/oauth", payload);
