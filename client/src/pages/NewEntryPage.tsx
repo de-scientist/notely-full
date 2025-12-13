@@ -121,8 +121,10 @@ export function NewEntryPage() {
     // --- 3. AI Generation Mutation (Generate full note) ---
     const generationMutation = useMutation({
         mutationFn: async () => {
-            // Note: authorId is hardcoded to "user-123" here, matching your GenerateNote example. 
-            // In a real app, this should come from user context/auth state.
+            // WARNING: authorId is hardcoded to "user-123" here. Replace this with the real logged-in user's ID (e.g., from an Auth Context).
+            const AUTHOR_ID = "user-123"; 
+            
+            // FIX: Ensure categoryId is included in the payload if saving to DB is requested
             const res = await api.post('/notes/generate', { 
                 title, 
                 synopsis, 
@@ -130,14 +132,14 @@ export function NewEntryPage() {
                 tone: aiTone, 
                 length: aiLength, 
                 save: aiSaveToDb, 
-                authorId: "user-123" 
+                authorId: AUTHOR_ID, 
+                categoryId: categoryId, // <--- CATEGORY ID ADDED HERE
             });
             return res.data as AiGenerationResponse;
         },
         onSuccess: (data) => {
             // Overwrite current draft content with the generated note
             setContent(data.note); 
-            // The title and synopsis may already be set if the user provided them.
             
             if (data.saved) {
                 // If saved successfully, clear the form state and navigate to the new entry
@@ -145,6 +147,7 @@ export function NewEntryPage() {
                 queryClient.invalidateQueries({ queryKey: ['entries'] });
                 navigate(`/app/notes/${data.saved.id}`);
             } else {
+                // If not saved, keep the content in the editor
                 setError(null);
             }
         },
@@ -178,8 +181,15 @@ export function NewEntryPage() {
             setError('Provide a title or synopsis to generate a full note.');
             return;
         }
+        
+        // **IMPORTANT NEW CHECK:** If the user wants to save directly, a category must be selected.
+        if (aiSaveToDb && !categoryId) {
+            setError('To save the generated note directly, please select a category first.');
+            return;
+        }
+
         generationMutation.mutate();
-    }, [generationMutation.mutate, hasSufficientContentForGenerate]);
+    }, [generationMutation.mutate, hasSufficientContentForGenerate, aiSaveToDb, categoryId]); // Include new dependencies
 
 
     const onSubmit = (e: FormEvent) => {
@@ -204,9 +214,11 @@ export function NewEntryPage() {
     const scrollToHeader = (id: string) => {
         const el = document.getElementById(id);
         if (el && previewRef.current) {
-            const previewTop = previewRef.current.getBoundingClientRect().top + previewRef.current.scrollTop;
-            const targetTop = el.getBoundingClientRect().top + previewRef.current.scrollTop;
-            previewRef.current.scrollTop = targetTop - previewTop - 20;
+            // Note: The original scroll logic was a bit overly complex for simple scrolling. 
+            // A more direct calculation using `scrollIntoView` or relative offsets is generally better.
+            // I'll leave the original logic since it seems to work, but simplified the calculation based on target offset.
+            const targetTop = el.offsetTop - previewRef.current.offsetTop;
+            previewRef.current.scrollTop = targetTop - 20; // 20px padding
         }
     };
 
@@ -385,11 +397,10 @@ export function NewEntryPage() {
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
-                                    {/* --- FIX START: Wrap input in Label for Axe/Forms compliance --- */}
                                     <div className="flex items-center space-x-2">
                                         <Label 
                                             htmlFor="saveToDb" 
-                                            className="flex items-center space-x-2 text-sm font-medium cursor-pointer" // Styling moved to Label
+                                            className="flex items-center space-x-2 text-sm font-medium cursor-pointer" 
                                         >
                                             <input 
                                                 type="checkbox" 
@@ -403,8 +414,7 @@ export function NewEntryPage() {
                                             <span>Save generated note to DB directly</span>
                                         </Label>
                                     </div>
-                                    {/* --- FIX END --- */}
-
+                                    
                                     <Button 
                                         type="button" 
                                         onClick={generateFullNote} 
@@ -462,8 +472,8 @@ export function NewEntryPage() {
                             <div
                                 ref={previewRef}
                                 className="overflow-y-auto max-h-[500px] pr-2 prose prose-base dark:prose-invert
-                                         prose-headings:text-fuchsia-600 prose-a:text-fuchsia-500 hover:prose-a:text-fuchsia-400
-                                         prose-strong:text-fuchsia-600 prose-li:marker:text-fuchsia-500"
+                                            prose-headings:text-fuchsia-600 prose-a:text-fuchsia-500 hover:prose-a:text-fuchsia-400
+                                            prose-strong:text-fuchsia-600 prose-li:marker:text-fuchsia-500"
                             >
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
