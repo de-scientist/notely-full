@@ -1,6 +1,6 @@
 // /server/src/routes/notes.ts
 import { Router, Request, Response } from "express"; 
-import { generateFullNote } from "../services/aiServices.ts"; 
+import { generateFullNote, GenerateNoteOptions } from "../services/aiServices.ts"; // Import GenerateNoteOptions
 import { PrismaClient } from "@prisma/client";
 
 const router = Router();
@@ -11,7 +11,6 @@ const prisma = new PrismaClient();
 router.post('/generate', async (req: Request, res: Response) => { 
     
     // 1. Destructure and validate required fields
-    // FIX: Explicitly treating destructured body properties as (string | undefined) to resolve Error 2532 later
     const { 
         title, 
         synopsis, 
@@ -22,7 +21,8 @@ router.post('/generate', async (req: Request, res: Response) => {
         authorId,        
         categoryId        
     } = req.body as { 
-        title?: string, synopsis?: string, audience?: string, tone?: string, length?: string, 
+        title?: string, synopsis?: string, audience?: string, tone?: string, 
+        length?: 'short' | 'medium' | 'long', 
         save?: boolean, authorId?: string, categoryId?: string 
     };
     
@@ -40,14 +40,17 @@ router.post('/generate', async (req: Request, res: Response) => {
     }
 
     try {
-        // 2. Call the AI model
-        const generatedNote: string = await generateFullNote({
-            title, 
-            synopsis, 
-            audience, 
-            tone, 
-            length
-        });
+        // 2. Build the options object, filtering out undefined values to satisfy exactOptionalPropertyTypes: true
+        // FIX: Conditional object creation using spread and type narrowing (Resolves Error 2379)
+        const options: GenerateNoteOptions = {
+            ...(title && { title }),
+            ...(synopsis && { synopsis }),
+            ...(audience && { audience }),
+            ...(tone && { tone }),
+            ...(length && { length }),
+        };
+
+        const generatedNote: string = await generateFullNote(options);
         
         let savedEntry = null;
 
@@ -57,26 +60,24 @@ router.post('/generate', async (req: Request, res: Response) => {
             const finalCategoryId = defaultCategoryId as string; 
             const finalAuthorId = authorId as string; 
             
-            // Generate a fallback title from the note if none was provided
-            const fallbackTitle = generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100);
+            // Calculate fallback title and ensure it's treated as a string immediately
+            const fallbackTitle = generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100) as string;
             
+            // Ensure title/synopsis are safe to use by coalescing to an empty string for the fallback logic
+            const safeTitle = title ?? '';
+            const safeSynopsis = synopsis ?? '';
+
             savedEntry = await prisma.entry.create({
                 data: {
                     // Core Data
-                    // FIX: Using nullish coalescing (??) or logical OR to safely assign the string value.
-                    // This resolves Error 2532
-                    title: (title || fallbackTitle) as string,
-                    synopsis: (synopsis || title || fallbackTitle) as string, 
+                    // FIX: Using the safe, coalesced variables (Resolves Error 2532)
+                    title: safeTitle || fallbackTitle,
+                    synopsis: safeSynopsis || safeTitle || fallbackTitle, 
                     content: generatedNote,
                     
-                    // Relation Fields (Using Unchecked Create Input pattern)
-                    // We only provide the foreign keys, NOT the relation objects.
+                    // Relation Fields (Unchecked Create Input pattern)
                     categoryId: finalCategoryId, 
                     userId: finalAuthorId,
-                    
-                    // FIX: Removed 'category: { connect: ... }'. 
-                    // This resolves Error 2322 because setting 'categoryId' is enough for Unchecked Input.
-                    // category: { connect: { id: finalCategoryId } }, <--- REMOVED
                 },
                 select: { id: true },
             });
