@@ -1,6 +1,6 @@
 // /server/src/routes/notes.ts
 import { Router, Request, Response } from "express"; 
-import { generateFullNote } from "../services/aiServices.ts"; // <--- IMPORTANT: Removed .ts and assuming singular 'aiService' file name
+import { generateFullNote } from "../services/aiServices.ts"; // Keeping your imports as requested
 import { PrismaClient } from "@prisma/client";
 
 const router = Router();
@@ -38,15 +38,13 @@ router.post('/generate', async (req: Request, res: Response) => {
 
     try {
         // 2. Call the AI model
-        // FIX: Changed call signature to match aiService.ts (Resolves Error 2353)
-        // FIX: Removed the userPrompt variable which is now constructed inside aiService
         const generatedNote: string = await generateFullNote({
             title, 
             synopsis, 
             audience, 
             tone, 
             length
-        }); // <--- The function now returns the string directly. (Resolves Error 2339)
+        });
         
         let savedEntry = null;
 
@@ -55,22 +53,24 @@ router.post('/generate', async (req: Request, res: Response) => {
             
             // Cast the IDs to string for Prisma's strict type checking
             const finalCategoryId = defaultCategoryId as string; 
-            const finalAuthorId = authorId as string; // <--- FIX: Casting authorId to string (Resolves Error 2322)
+            const finalAuthorId = authorId as string; 
             
             savedEntry = await prisma.entry.create({
                 data: {
                     // Core Data
-                    title: title || generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100),
-                    synopsis: synopsis || title, 
+                    // FIX: Ensure title is definitely a string for split/replace, resolving Error 2532
+                    title: (title || generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100)) as string,
+                    synopsis: (synopsis || title) as string, 
                     content: generatedNote,
                     
                     // Relation Fields
                     categoryId: finalCategoryId, 
                     
-                    // FIX: Using the type-safe variable (finalAuthorId)
-                    user: { connect: { id: finalAuthorId } },
+                    // FIX: Using the direct foreign key field `userId` instead of the relation `user: { connect...}`.
+                    // This resolves Error 2322 by forcing the use of the unchecked input style.
+                    userId: finalAuthorId,
                     
-                    // Explicitly connect the category relation field
+                    // Explicitly connect the category relation field (still needed for CreateInput)
                     category: { connect: { id: finalCategoryId } }, 
                 },
                 select: { id: true },
