@@ -13,26 +13,28 @@ model User {
   lastName          String   @map("Last_Name")
   email             String   @unique @map("Email_Address")
   username          String   @unique @map("User_Name")
-  password          String?  @map("Password") // Nullable for OAuth users
+  password          String?  @map("Password")
   avatar            String?  @default("") @map("Avatar")
   dateJoined        DateTime @default(now()) @map("Date_Joined")
   lastProfileUpdate DateTime @updatedAt @map("Last_Profile_Update")
   isDeleted         Boolean  @default(false) @map("Is_Deleted")
-  emailVerified     Boolean  @default(false) // New field
-  provider          String?  // 'email', 'google', 'github'
-  providerId        String?  // OAuth provider id
-  supabaseId String @default(cuid()) @unique
+
+  emailVerified     Boolean  @default(false)
+  emailVerifiedAt   DateTime?
+
+  provider          String?
+  providerId        String?
+  supabaseId        String   @unique
 
   categories Category[]
   entries    Entry[]
-  bookmarks Bookmark[]
-  emailVerifications EmailVerification[]
+  bookmarks  Bookmark[]
 
   @@index([email])
   @@index([username])
-
   @@map("Users")
 }
+
 
 model EmailVerification {
   id        String   @id @default(uuid())
