@@ -50,12 +50,12 @@ export function AuthCallbackPage() {
             };
 
 
-            // 🔗 Sync email verification
-if (user.email_confirmed_at) {
-  await api.post("/auth/verify-email", {
-    supabaseId: user.id,
-  });
-}
+//             // 🔗 Sync email verification
+// if (user.email_confirmed_at) {
+//   await api.post("/auth/verify-email", {
+//     supabaseId: user.id,
+//   });
+// }
 
 
             try {
