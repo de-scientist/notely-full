@@ -12,12 +12,11 @@ async function main() {
   console.log('Seeding global categories...');
 
   for (const cat of globalCategories) {
-    // FIX: Revert to findFirst for checking existence of records 
-    // where a field in the compound unique key (userId) is null.
+    // This is the fixed loop for Global Categories (userId: null)
     const exists = await prisma.category.findFirst({
       where: { 
         name: cat.name, 
-        userId: null // Using null in a findFirst/findMany query is allowed.
+        userId: null
       },
     });
 
@@ -39,13 +38,14 @@ async function main() {
 
   for (const user of users) {
     for (const cat of globalCategories) {
-      // This part for user-linked categories is correct and uses the compound key 
-      // where userId is a string (user.id), so it's safe.
-      const exists = await prisma.category.findUnique({
-        where: { name_userId: { name: cat.name, userId: user.id } },
+      // FIX: Switch to findFirst for robust existence checking 
+      // based on the unique combination of name and userId.
+      const exists = await prisma.category.findFirst({
+        where: { name: cat.name, userId: user.id },
       });
 
       if (!exists) {
+        // This is the line that was failing (Line 49 in your output)
         await prisma.category.create({
           data: {
             name: cat.name,
