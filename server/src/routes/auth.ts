@@ -176,6 +176,7 @@ router.post("/oauth", async (req, res) => {
           providerId: providerId?.toString() || undefined,
           supabaseId: supabaseId || undefined,
           emailVerified: true,
+          emailVerifiedAt: new Date(),
         },
       });
     } else {
