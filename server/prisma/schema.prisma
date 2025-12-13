@@ -41,6 +41,8 @@ model EmailVerification {
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+  emailVerifiedAt DateTime?
+
   
   @@index([token])
   @@map("EmailVerifications")

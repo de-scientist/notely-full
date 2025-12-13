@@ -12,9 +12,15 @@ async function main() {
   console.log('Seeding global categories...');
 
   for (const cat of globalCategories) {
-    // ⭐ FIX: match ONLY by name for global categories
-    const exists = await prisma.category.findFirst({
-      where: { name: cat.name, userId: null },
+    // FIX: Use findUnique with the compound key to check for existence
+    // The compound key is [name, userId] where userId is null for global categories
+    const exists = await prisma.category.findUnique({
+      where: { 
+        name_userId: { 
+          name: cat.name, 
+          userId: null 
+        } 
+      },
     });
 
     if (!exists) {
@@ -35,6 +41,7 @@ async function main() {
 
   for (const user of users) {
     for (const cat of globalCategories) {
+      // This part was already correct for the user-linked categories
       const exists = await prisma.category.findUnique({
         where: { name_userId: { name: cat.name, userId: user.id } },
       });
