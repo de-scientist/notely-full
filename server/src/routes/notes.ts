@@ -1,6 +1,6 @@
 // /server/src/routes/notes.ts
-import { Router, Request, Response } from "express"; // <--- FIX: Added Request, Response imports
-import { generateFullNote } from "../services/aiServices.ts"; // Note: Changed .ts to a correct import path for Node/Express
+import { Router, Request, Response } from "express"; 
+import { generateFullNote } from "../services/aiServices.ts"; // <--- IMPORTANT: Removed .ts and assuming singular 'aiService' file name
 import { PrismaClient } from "@prisma/client";
 
 const router = Router();
@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 // POST /api/notes/generate
 // body: { title, synopsis, audience, tone, length, save: boolean, authorId?, categoryId? }
-router.post('/generate', async (req: Request, res: Response) => { // <--- FIX: Correct signature resolves Error 2769
+router.post('/generate', async (req: Request, res: Response) => { 
     
     // 1. Destructure and validate required fields
     const { 
@@ -20,7 +20,7 @@ router.post('/generate', async (req: Request, res: Response) => { // <--- FIX: C
         save, 
         authorId,        
         categoryId        
-    } = req.body; // <--- FIX: Destructuring inside function resolves Errors 2339
+    } = req.body; 
     
     // Server-side validation
     if (!authorId) {
@@ -31,42 +31,44 @@ router.post('/generate', async (req: Request, res: Response) => { // <--- FIX: C
     const defaultCategoryId: string | undefined = categoryId || process.env.DEFAULT_CATEGORY_ID; 
 
     if (save && !defaultCategoryId) {
-        // FIX: Removed Number() call to fix Error 2349
         return res.status(400).json({ 
             error: "Saving the entry requires a 'categoryId'." 
         });
     }
 
     try {
-        // 2. Build the prompt for the AI model
-        const userPrompt = `Generate a ${length} note in Markdown format on the topic: "${title || synopsis}". 
-            The target audience is ${audience} and the tone should be ${tone}. 
-            The synopsis is: "${synopsis}". The main content should be formatted using Markdown headings (##, ###) and lists.
-            DO NOT include the title or synopsis in the final note content, only the body.`;
-
-        // 3. Call the AI model
-        // Using generateFullNote from the import, assuming it returns { text: string }
-        const response = await generateFullNote({ prompt: userPrompt }); // <--- FIX: Used imported function
-        const generatedNote = response.text;
+        // 2. Call the AI model
+        // FIX: Changed call signature to match aiService.ts (Resolves Error 2353)
+        // FIX: Removed the userPrompt variable which is now constructed inside aiService
+        const generatedNote: string = await generateFullNote({
+            title, 
+            synopsis, 
+            audience, 
+            tone, 
+            length
+        }); // <--- The function now returns the string directly. (Resolves Error 2339)
+        
         let savedEntry = null;
 
         // 4. Save to database if requested
         if (save && defaultCategoryId) {
             
-            // Cast the category ID to a string to satisfy Prisma's strict type checking (EntryCreateInput)
-            const finalCategoryId = defaultCategoryId as string; // <--- FIX: Type casting to resolve Error 2322
+            // Cast the IDs to string for Prisma's strict type checking
+            const finalCategoryId = defaultCategoryId as string; 
+            const finalAuthorId = authorId as string; // <--- FIX: Casting authorId to string (Resolves Error 2322)
             
             savedEntry = await prisma.entry.create({
                 data: {
                     // Core Data
-                    // Adjusted title fallback slightly for robustness
                     title: title || generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100),
                     synopsis: synopsis || title, 
                     content: generatedNote,
                     
                     // Relation Fields
-                    categoryId: finalCategoryId, // Using the type-safe variable
-                    user: { connect: { id: authorId } },
+                    categoryId: finalCategoryId, 
+                    
+                    // FIX: Using the type-safe variable (finalAuthorId)
+                    user: { connect: { id: finalAuthorId } },
                     
                     // Explicitly connect the category relation field
                     category: { connect: { id: finalCategoryId } }, 
@@ -82,16 +84,12 @@ router.post('/generate', async (req: Request, res: Response) => { // <--- FIX: C
         });
 
     } catch (error) {
-        // FIX: Standard console.error call to resolve Error 2554
-        // FIX: Cast error to 'any' for property access to resolve Errors 18046
         console.error('AI Note generation or save error:', error); 
         
         // Check if the error is a Prisma record not found error (P2025) or a foreign key constraint failure (P2003)
         if ((error as any).code === 'P2025' || (error as any).code === 'P2003') { 
-            // FIX: Removed Number() call to fix Error 2349
             return res.status(400).json({ error: 'The specified User or Category ID does not exist.' });
         }
-        // FIX: Removed Number() call to fix Error 2349
         return res.status(500).json({ error: 'Failed to generate or save note due to a server error.' });
     }
 });
