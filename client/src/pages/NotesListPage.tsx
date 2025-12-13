@@ -18,14 +18,14 @@ import {
     Share2,
     Bookmark,
     Lock,
-    Unlock, // Added Unlock icon for public toggle
+    Unlock,
     NotebookPen,
     ThumbsUp,
-    MoreHorizontal, // New icon for the Context Menu trigger
+    MoreHorizontal,
+    Move, // Added Move icon for drag handle visibility
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useState, useEffect, useMemo } from 'react';
-// New imports for Context Menu functionality
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,9 +35,10 @@ import {
     DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 
-const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-500";
-const SOLID_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 text-white shadow-md shadow-fuchsia-500/50";
-const CTA_BUTTON_CLASS = "bg-fuchsia-500 hover:bg-fuchsia-600 text-white rounded-lg px-4 py-2 shadow-md shadow-fuchsia-400/40 transition transform hover:scale-[1.03]";
+// --- Professional Styling Constants (Fuchsia Palette) ---
+const PRIMARY_TEXT_CLASS = "text-fuchsia-600 dark:text-fuchsia-400"; // Slightly lighter for dark mode contrast
+const SOLID_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-600 text-white shadow-lg shadow-fuchsia-500/50";
+const CTA_BUTTON_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-500 dark:hover:bg-fuchsia-600 text-white rounded-xl px-6 py-3 text-base font-semibold shadow-lg shadow-fuchsia-500/40 transition transform hover:scale-[1.02]";
 
 interface Entry {
     id: string;
@@ -46,9 +47,8 @@ interface Entry {
     content: string;
     isDeleted: boolean;
     pinned: boolean;
-    bookmarked?: boolean; // Ensure this is consistently handled by the backend API response
+    bookmarked?: boolean;
     isPublic?: boolean;
-    // ⭐ FIX 1: Renamed fields to match Prisma's output keys
     createdAt: string;
     updatedAt: string;
     category: { name: string };
@@ -58,8 +58,6 @@ interface Entry {
  * Helper function to format a date string into a relative time string.
  */
 function formatRelativeTime(dateString: string): string {
-    // FIX: Using Date.parse() or new Date(string) is usually sufficient if the string is ISO 8601 compliant.
-    // The previous implementation was likely correct, but checking the validity is safer.
     const date = new Date(dateString);
     const now = new Date();
     
@@ -105,7 +103,7 @@ interface NoteCardProps {
     onToggleBookmark: (id: string, bookmarked: boolean) => void;
     onShare: (entry: Entry) => Promise<void>;
     onTogglePublic?: (id: string, isPublic: boolean) => void;
-    simple?: boolean;
+    simple?: boolean; // For use in the 'Recent Activity' horizontal scroll
 }
 
 function NoteCard({
@@ -125,24 +123,22 @@ function NoteCard({
     const isBookmarked = !!entry.bookmarked;
     const isPublic = !!entry.isPublic;
     
-    // ⭐ FIX 2: Use entry.updatedAt instead of entry.lastUpdated
     const relativeTime = formatRelativeTime(entry.updatedAt);
 
     return (
         <Card
             ref={innerRef}
             {...draggableProps}
-            {...dragHandleProps}
             className={`
-                relative group flex flex-col justify-between shadow-lg dark:bg-gray-800 transition-all duration-200
-                ${isDragging ? 'scale-[1.03] shadow-xl z-10 border-fuchsia-500' : 'hover:scale-[1.01]'}
-                ${isPinned && !simple ? 'border-2 border-fuchsia-500 ring-4 ring-fuchsia-200 dark:ring-fuchsia-900' : 'border border-gray-200 dark:border-gray-700'}
-                ${simple ? 'w-64 flex-shrink-0' : ''}
+                relative group flex flex-col justify-between shadow-xl dark:bg-gray-800 transition-all duration-200 cursor-default
+                ${isDragging ? 'scale-[1.03] ring-4 ring-fuchsia-500/50 z-10 border-fuchsia-500' : 'hover:scale-[1.01] hover:shadow-2xl'}
+                ${isPinned && !simple ? 'border-2 border-fuchsia-500 ring-2 ring-fuchsia-200 dark:ring-fuchsia-900/50' : 'border border-gray-200 dark:border-gray-700'}
+                ${simple ? 'w-64 flex-shrink-0' : 'h-full'}
             `}
         >
             {/* PINNED LABEL */}
             {isPinned && !simple && (
-                <div className="absolute top-0 right-0 transform translate-y-[-50%] translate-x-[20%] rotate-3 px-3 py-1 text-xs font-bold bg-yellow-500 text-white rounded-full shadow-lg">
+                <div className="absolute top-0 right-0 transform translate-y-[-50%] translate-x-[20%] rotate-3 px-3 py-1 text-xs font-extrabold bg-yellow-500 text-white rounded-full shadow-xl">
                     PINNED
                 </div>
             )}
@@ -150,50 +146,53 @@ function NoteCard({
             <CardHeader className={`pb-2 ${simple ? 'p-3' : 'p-4'}`}>
                 <div className="flex justify-between items-start gap-3">
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            {/* Bookmark Icon Button (FIX: Ensure onClick is correct) - Kept inline for quick access */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation(); // Prevent card read link if this was a wrapper
-                                    onToggleBookmark(entry.id, !isBookmarked);
-                                }}
-                                title={isBookmarked ? "Remove from Saved" : "Save for later"}
-                                className={`
-                                    p-1 rounded-full hover:scale-105 transform transition-all duration-150
-                                    ${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 dark:text-gray-500 hover:text-yellow-500'}
-                                `}
-                            >
-                                <Bookmark className="h-4 w-4" fill={isBookmarked ? 'currentColor' : 'none'} />
-                            </button>
-                            <CardTitle className={`line-clamp-2 ${simple ? 'text-lg' : 'text-xl'} dark:text-white`}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <CardTitle className={`line-clamp-2 ${simple ? 'text-lg' : 'text-xl'} dark:text-white font-extrabold`}>
                                 {entry.title}
                             </CardTitle>
                         </div>
                         
                         <div className="mt-2 flex items-center gap-2 flex-wrap">
+                            {/* Category Badge - Primary Color */}
                             <Badge
                                 variant="secondary"
-                                className={`w-fit text-xs ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900/30`}
+                                className={`w-fit text-xs font-semibold ${PRIMARY_TEXT_CLASS} border-fuchsia-600 dark:border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900/30`}
                             >
                                 <Tag className="h-3 w-3 mr-1" /> {entry.category.name}
                             </Badge>
+                            
                             {/* Public Status Badge */}
                             {isPublic && (
-                                <span className="text-xs rounded px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700 font-medium">
-                                    Public
-                                </span>
+                                <Badge variant="outline" className="text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700">
+                                    <Unlock className="h-3 w-3 mr-1" /> Public
+                                </Badge>
                             )}
+                            
                             {/* Saved Badge */}
                             {isBookmarked && (
-                                <span className="text-xs rounded px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 font-medium">
-                                    Saved
-                                </span>
+                                <Badge variant="outline" className="text-xs font-medium bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700">
+                                    <Bookmark className="h-3 w-3 mr-1" /> Saved
+                                </Badge>
                             )}
                         </div>
                     </div>
 
                     {/* Context Menu Dropdown */}
                     <div className="flex-shrink-0 flex items-center gap-1">
+                        {/* Drag Handle (Visible only when simple=false and sorting is default/recent) */}
+                        {dragHandleProps && !simple && (
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                title="Drag to reorder"
+                                className="p-1 h-8 w-8 text-gray-400 dark:text-gray-500 hover:text-fuchsia-600 dark:hover:text-fuchsia-500"
+                                {...dragHandleProps}
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <Move className="h-4 w-4" />
+                            </Button>
+                        )}
+                        
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -216,6 +215,14 @@ function NoteCard({
                                     {isPinned ? "Unpin Note" : "Pin Note"}
                                 </DropdownMenuItem>
 
+                                {/* Bookmark Toggle */}
+                                <DropdownMenuItem onClick={() => onToggleBookmark(entry.id, !isBookmarked)}>
+                                    <Bookmark className="mr-2 h-4 w-4" fill={isBookmarked ? 'currentColor' : 'none'} />
+                                    {isBookmarked ? "Remove from Saved" : "Save for Later"}
+                                </DropdownMenuItem>
+
+                                <DropdownMenuSeparator />
+
                                 {/* Edit Link */}
                                 <Link to={`/app/notes/${entry.id}/edit`}>
                                     <DropdownMenuItem>
@@ -232,8 +239,6 @@ function NoteCard({
                                     </DropdownMenuItem>
                                 )}
                                 
-                                <DropdownMenuSeparator />
-
                                 {/* Share Button */}
                                 <DropdownMenuItem 
                                     onClick={() => onShare(entry)} 
@@ -254,15 +259,14 @@ function NoteCard({
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
-
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 </div>
             </CardHeader>
 
-            <CardContent className={`pt-0 ${simple ? 'p-3' : 'p-4'}`}>
-                <p className="text-sm text-muted-foreground line-clamp-3">
+            <CardContent className={`pt-0 flex-1 ${simple ? 'p-3' : 'p-4'}`}>
+                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">
                     {entry.synopsis || entry.content.slice(0, 120) + (entry.content.length > 120 ? '...' : '')}
                 </p>
             </CardContent>
@@ -272,14 +276,12 @@ function NoteCard({
                     Updated {relativeTime}
                 </span>
 
-                <div className="flex gap-2 items-center flex-wrap justify-end">
-                    {/* Read - Kept as a single, primary action */}
-                    <Link to={`/app/notes/${entry.id}`} onClick={e => e.stopPropagation()}>
-                        <Button size="sm" className={`${SOLID_BUTTON_CLASS} p-2 h-8 w-8 rounded-full`} title="Read full note">
-                            <ArrowRight className="h-4 w-4" />
-                        </Button>
-                    </Link>
-                </div>
+                {/* Read Button - Primary CTA */}
+                <Link to={`/app/notes/${entry.id}`} onClick={e => e.stopPropagation()}>
+                    <Button size="sm" className={`${SOLID_BUTTON_CLASS} p-2 h-8 w-8 rounded-full transition-all hover:ring-2 ring-fuchsia-300`} title="Read full note">
+                        <ArrowRight className="h-4 w-4" />
+                    </Button>
+                </Link>
             </CardFooter>
         </Card>
     );
@@ -303,24 +305,20 @@ export function NotesListPage() {
     const [sortOption, setSortOption] = useState('recent'); // Default to recent
     const [showSavedOnly, setShowSavedOnly] = useState(false);
 
-    // 3. EFFECT HOOK
+    // 3. EFFECT HOOK (Initial data setup/sort)
     useEffect(() => {
-        // Initial sorting when data is fetched: Sort by Pinned then by updatedAt
         if (data?.entries) {
             setEntries(
                 [...data.entries].sort((a, b) => {
-                    // Pinned notes first
                     if (a.pinned && !b.pinned) return -1;
                     if (!a.pinned && b.pinned) return 1;
-                    // Then by recent update
-                    // ⭐ FIX 3: Use entry.updatedAt
                     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
                 })
             );
         }
     }, [data]);
 
-    // 4. MUTATION HOOKS
+    // 4. MUTATION HOOKS (Omitted for brevity, they remain unchanged and functional)
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => await api.delete(`/entries/${id}`),
         onSuccess: () => {
@@ -340,19 +338,15 @@ export function NotesListPage() {
         onError: () => toast.error("Failed to toggle pin status."),
     });
 
-    // FIX: This mutation logic looks correct. It hits a dedicated endpoint for bookmarking.
     const toggleBookmarkMutation = useMutation({
         mutationFn: async ({ id, bookmarked }: { id: string; bookmarked: boolean }) => {
             if (bookmarked) {
-                // To bookmark/save
                 return await api.post(`/entries/${id}/bookmark`);
             } else {
-                // To unbookmark/remove from saved
                 return await api.delete(`/entries/${id}/bookmark`);
             }
         },
         onSuccess: (_, variables) => {
-            // Invalidate to force refetch and update the bookmark icon/filter status
             queryClient.invalidateQueries({ queryKey: ['entries'] });
             toast.success(variables.bookmarked ? "Note saved successfully!" : "Note removed from saved.");
         },
@@ -369,16 +363,18 @@ export function NotesListPage() {
         onError: () => toast.error("Failed to change sharing status."),
     });
 
+
     // --- NON-HOOK FUNCTION ---
     const onDragEnd = (result: DropResult) => {
-        // Only allow drag-and-drop when sorting by 'recent' (or default)
         if (!result.destination || sortOption !== 'recent') return;
         
+        // Optimistic update for the UI
         const updated = Array.from(entries);
         const [moved] = updated.splice(result.source.index, 1);
         updated.splice(result.destination.index, 0, moved);
         setEntries(updated);
-        // NOTE: A real app would send a mutation here to save the new order.
+        
+        // NOTE: In a real app, an API call to save the new order would follow here.
     };
 
     // --- DERIVED STATE ---
@@ -403,17 +399,20 @@ export function NotesListPage() {
             );
         });
 
-        // Apply sorting
+        // Apply sorting (Pinned first is handled by the initial `entries` sort and preserved here if using the default 'recent' sort.
         filtered = filtered.sort((a, b) => {
+            // Preserve manual ordering (Pinned + last updated) for 'recent'
+            if (sortOption === 'recent') {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+            }
+            
             if (sortOption === 'alphabetical') {
                 return a.title.localeCompare(b.title);
             }
-            
-            // Default/Recent sort: Pinned first, then by Last Updated
-            if (a.pinned && !b.pinned) return -1;
-            if (!a.pinned && b.pinned) return 1;
-            
-            // ⭐ FIX 4: Use entry.updatedAt
+
+            // Fallback just in case
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
         });
 
@@ -422,9 +421,12 @@ export function NotesListPage() {
 
     const displayNotes = filteredEntries;
     
+    // Recent notes for the top horizontal scroll (always the top 3 most recently updated, not pinned first)
     const recentNotes = useMemo(() => 
-        // ⭐ FIX 5: Use entry.updatedAt
-        [...entries].filter(e => !e.isDeleted).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 3)
+        [...entries]
+            .filter(e => !e.isDeleted)
+            .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+            .slice(0, 3)
     , [entries]);
 
     const categories = ['All', ...Array.from(new Set(entries.map(e => e.category.name)))];
@@ -445,6 +447,7 @@ export function NotesListPage() {
         }
 
         try {
+            // Assume the public share link format is /share/:id
             const shareUrl = `${window.location.origin}/share/${entry.id}`;
             const shareData: ShareData = {
                 title: entry.title,
@@ -452,16 +455,13 @@ export function NotesListPage() {
                 url: shareUrl,
             };
             
-            // Attempt to use the Web Share API (gives WhatsApp, FB, IG options etc.)
             if (navigator.share) {
                 await navigator.share(shareData);
                 toast.success('Note shared successfully via native menu!');
             } else if (navigator.clipboard && navigator.clipboard.writeText) {
-                // Fallback to clipboard copy
                 await navigator.clipboard.writeText(shareUrl);
                 toast.success('Share link copied to clipboard!');
             } else {
-                // Last resort: prompt
                 window.prompt('Copy this share link', shareUrl);
             }
         } catch (err) {
@@ -480,85 +480,85 @@ export function NotesListPage() {
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 p-4 sm:p-6 lg:p-8">
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h1 className="text-3xl font-bold dark:text-white flex items-center gap-2">
-                    <NotebookPen className={`h-8 w-8 ${PRIMARY_TEXT_CLASS}`} /> My Notes
+                <h1 className="text-4xl font-extrabold dark:text-white flex items-center gap-3">
+                    <NotebookPen className={`h-10 w-10 ${PRIMARY_TEXT_CLASS}`} /> Your Note Hub
                 </h1>
-                <Button className={`${CTA_BUTTON_CLASS} flex items-center gap-2`} onClick={() => navigate('/app/notes/new')}>
-                    <PlusCircle className="h-5 w-5" /> Create New Note
+                <Button className={CTA_BUTTON_CLASS} onClick={() => navigate('/app/notes/new')}>
+                    <PlusCircle className="h-5 w-5 mr-2" /> Create New Note
                 </Button>
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-4 p-4 border border-fuchsia-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex-wrap shadow-inner">
-                <div className="px-4 py-2 rounded-lg shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20 flex-1 min-w-[120px]">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Notes</p>
-                    <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{entries.length}</p>
+            {/* Stats - Enhanced Visuals */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-fuchsia-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 shadow-xl">
+                <div className="px-5 py-3 rounded-lg bg-white dark:bg-gray-900 shadow-md transition-shadow hover:shadow-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Notes</p>
+                    <p className={`text-3xl font-extrabold ${PRIMARY_TEXT_CLASS}`}>{entries.length}</p>
                 </div>
-                <div className="px-4 py-2 rounded-lg shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20 flex-1 min-w-[120px]">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Pinned Notes</p>
-                    <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{entries.filter(e => e.pinned).length}</p>
+                <div className="px-5 py-3 rounded-lg bg-white dark:bg-gray-900 shadow-md transition-shadow hover:shadow-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Pinned Notes</p>
+                    <p className={`text-3xl font-extrabold text-yellow-500 dark:text-yellow-400`}>{entries.filter(e => e.pinned).length}</p>
                 </div>
-                <div className="px-4 py-2 rounded-lg shadow-sm border border-fuchsia-200 dark:border-fuchsia-900/50 bg-white dark:bg-gray-900/20 flex-1 min-w-[120px]">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Saved</p>
-                    <p className={`text-xl font-bold ${PRIMARY_TEXT_CLASS}`}>{allBookmarkedNotes.length}</p>
+                <div className="px-5 py-3 rounded-lg bg-white dark:bg-gray-900 shadow-md transition-shadow hover:shadow-lg">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Saved</p>
+                    <p className={`text-3xl font-extrabold text-blue-500 dark:text-blue-400`}>{allBookmarkedNotes.length}</p>
                 </div>
             </div>
 
-            {/* Search & Filters */}
-            <div className="flex flex-col md:flex-row gap-3 items-center w-full p-4 border border-fuchsia-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                <div className="relative flex-1 min-w-40 max-w-lg w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+            {/* Search & Filters - Clean, Functional Block */}
+            <div className="flex flex-col md:flex-row gap-4 items-center w-full p-4 border border-fuchsia-100 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                <div className="relative flex-1 min-w-40 w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-fuchsia-500" />
                     <input
                         type="text"
-                        placeholder="Search titles, content, or categories..."
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition shadow-sm"
+                        placeholder="Search notes..."
+                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border-2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-200 transition shadow-inner"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
+                
+                <div className="flex gap-4 w-full md:w-auto">
+                    <select
+                        aria-label="Filter by category"
+                        className="flex-1 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition shadow-sm"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                        {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
 
-                <select
-                    aria-label="Filter by category"
-                    className="w-full md:w-auto rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition shadow-sm"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                    {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
-                </select>
-
-                <select
-                    aria-label="Sort notes"
-                    className="w-full md:w-auto rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition shadow-sm"
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                >
-                    <option value="recent">Recently Updated</option>
-                    <option value="alphabetical">A-Z</option>
-                </select>
-
-                <label className="inline-flex items-center gap-2 text-sm md:ml-auto whitespace-nowrap">
+                    <select
+                        aria-label="Sort notes"
+                        className="flex-1 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition shadow-sm"
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                    >
+                        <option value="recent">Updated</option>
+                        <option value="alphabetical">A-Z</option>
+                    </select>
+                </div>
+                
+                <label className="inline-flex items-center gap-3 text-sm md:ml-auto whitespace-nowrap p-2 rounded-full hover:bg-fuchsia-50 dark:hover:bg-gray-700 transition cursor-pointer">
                     <input
                         type="checkbox"
                         checked={showSavedOnly}
                         onChange={() => setShowSavedOnly(s => !s)}
                         className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-fuchsia-600 dark:text-fuchsia-500 focus:ring-fuchsia-500"
                     />
-                    <span className="text-sm text-gray-600 dark:text-gray-300">Show Saved Only</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Show Saved Only</span>
                 </label>
             </div>
             
-            <hr className="border-fuchsia-300/50 dark:border-fuchsia-900/50" />
-
-            {/* Recently Updated (top 3) */}
-            <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900 shadow-inner">
-                <h2 className="text-xl font-semibold dark:text-white mb-3 border-b pb-2 border-fuchsia-500/50 flex items-center gap-2">
-                    <ThumbsUp className='h-5 w-5 text-fuchsia-500' /> Recent Activity
+            {/* Recently Updated (top 3) - Horizontal Scroll */}
+            <div className="p-4 rounded-xl bg-gray-100 dark:bg-gray-900 shadow-inner">
+                <h2 className="text-xl font-extrabold dark:text-white mb-3 border-b pb-2 border-fuchsia-500/50 flex items-center gap-2">
+                    <ThumbsUp className='h-6 w-6 text-fuchsia-600' /> Recent Activity
                 </h2>
-                <div className="flex gap-6 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin scrollbar-thumb-fuchsia-400/50 scrollbar-track-gray-200/50">
+                <div className="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin scrollbar-thumb-fuchsia-400/50 scrollbar-track-gray-200/50">
                     {recentNotes.map(note => (
                         <NoteCard
                             key={note.id}
@@ -568,41 +568,46 @@ export function NotesListPage() {
                             onToggleBookmark={(id, bookmarked) => toggleBookmarkMutation.mutate({ id, bookmarked })}
                             onShare={handleShare}
                             onTogglePublic={handleTogglePublic}
-                            simple
+                            simple // Use the simple variant for the horizontal list
                         />
                     ))}
                     {!recentNotes.length && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 py-2">No recent notes found.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 py-2">No recent notes found. Start creating!</p>
                     )}
                 </div>
             </div>
 
             <hr className="border-fuchsia-300/50 dark:border-fuchsia-900/50" />
 
-            {/* Main Note Grid */}
-            <h2 className="text-xl font-semibold dark:text-white mb-4">
-                {showSavedOnly ? `💾 Saved Notes (${displayNotes.length})` : `All Notes (${displayNotes.length})`}
+            {/* Main Note Grid Title */}
+            <h2 className="text-2xl font-extrabold dark:text-white mb-4">
+                {showSavedOnly ? `Saved Notes (${displayNotes.length})` : `All Notes (${displayNotes.length})`}
             </h2>
 
+            {/* Main Note Grid */}
             {!displayNotes.length ? (
-                <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-12 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                    {showSavedOnly ? 'No saved notes match your filters.' : 'No notes match your current filters.'}
+                <div className="col-span-full text-center text-gray-500 dark:text-gray-400 py-20 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800/50">
+                    <Search className='h-8 w-8 mx-auto mb-4 text-fuchsia-400' />
+                    <p className="text-lg font-medium">
+                        {showSavedOnly ? 'No saved notes match your filters.' : 'No notes match your current filters.'}
+                    </p>
+                    <p className="text-sm mt-1">Try adjusting your search query, category filter, or unchecking "Show Saved Only."</p>
                 </div>
             ) : (
                 <DragDropContext onDragEnd={onDragEnd}>
                     <Droppable droppableId="notes-grid">
                         {(provided) => (
                             <div 
-                                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 
+                                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
                                 {...provided.droppableProps} 
                                 ref={provided.innerRef}
                             >
                                 {displayNotes.map((entry, index) => (
-                                    // Disable Draggable if not sorting by 'recent'
                                     <Draggable 
                                         key={entry.id} 
                                         draggableId={entry.id} 
                                         index={index} 
+                                        // Disable drag if not sorting by 'recent' (to respect manual order)
                                         isDragDisabled={sortOption !== 'recent'}
                                     >
                                         {(provided, snapshot) => (
@@ -611,6 +616,7 @@ export function NotesListPage() {
                                                 isDragging={snapshot.isDragging}
                                                 draggableProps={provided.draggableProps}
                                                 // Only provide drag handle props if dragging is enabled (sort is 'recent')
+                                                // The visual drag handle is placed inside NoteCard for better integration.
                                                 dragHandleProps={sortOption === 'recent' ? provided.dragHandleProps : null} 
                                                 innerRef={provided.innerRef}
                                                 onDelete={(id) => deleteMutation.mutate(id)}
