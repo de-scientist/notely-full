@@ -1,6 +1,6 @@
 // /server/src/routes/notes.ts
 import { Router, Request, Response } from "express"; 
-import { generateFullNote } from "../services/aiServices.ts"; // Keeping your imports as requested
+import { generateFullNote } from "../services/aiServices.ts"; 
 import { PrismaClient } from "@prisma/client";
 
 const router = Router();
@@ -11,6 +11,7 @@ const prisma = new PrismaClient();
 router.post('/generate', async (req: Request, res: Response) => { 
     
     // 1. Destructure and validate required fields
+    // FIX: Explicitly treating destructured body properties as (string | undefined) to resolve Error 2532 later
     const { 
         title, 
         synopsis, 
@@ -20,14 +21,16 @@ router.post('/generate', async (req: Request, res: Response) => {
         save, 
         authorId,        
         categoryId        
-    } = req.body; 
+    } = req.body as { 
+        title?: string, synopsis?: string, audience?: string, tone?: string, length?: string, 
+        save?: boolean, authorId?: string, categoryId?: string 
+    };
     
     // Server-side validation
     if (!authorId) {
         return res.status(401).json({ error: "User authentication required." });
     }
     
-    // Ensure defaultCategoryId is treated as a string or undefined for type safety
     const defaultCategoryId: string | undefined = categoryId || process.env.DEFAULT_CATEGORY_ID; 
 
     if (save && !defaultCategoryId) {
@@ -51,27 +54,29 @@ router.post('/generate', async (req: Request, res: Response) => {
         // 4. Save to database if requested
         if (save && defaultCategoryId) {
             
-            // Cast the IDs to string for Prisma's strict type checking
             const finalCategoryId = defaultCategoryId as string; 
             const finalAuthorId = authorId as string; 
+            
+            // Generate a fallback title from the note if none was provided
+            const fallbackTitle = generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100);
             
             savedEntry = await prisma.entry.create({
                 data: {
                     // Core Data
-                    // FIX: Ensure title is definitely a string for split/replace, resolving Error 2532
-                    title: (title || generatedNote.split('\n')[0].replace(/^[#>\-\*]+\s*/, '').trim().substring(0, 100)) as string,
-                    synopsis: (synopsis || title) as string, 
+                    // FIX: Using nullish coalescing (??) or logical OR to safely assign the string value.
+                    // This resolves Error 2532
+                    title: (title || fallbackTitle) as string,
+                    synopsis: (synopsis || title || fallbackTitle) as string, 
                     content: generatedNote,
                     
-                    // Relation Fields
+                    // Relation Fields (Using Unchecked Create Input pattern)
+                    // We only provide the foreign keys, NOT the relation objects.
                     categoryId: finalCategoryId, 
-                    
-                    // FIX: Using the direct foreign key field `userId` instead of the relation `user: { connect...}`.
-                    // This resolves Error 2322 by forcing the use of the unchecked input style.
                     userId: finalAuthorId,
                     
-                    // Explicitly connect the category relation field (still needed for CreateInput)
-                    category: { connect: { id: finalCategoryId } }, 
+                    // FIX: Removed 'category: { connect: ... }'. 
+                    // This resolves Error 2322 because setting 'categoryId' is enough for Unchecked Input.
+                    // category: { connect: { id: finalCategoryId } }, <--- REMOVED
                 },
                 select: { id: true },
             });
@@ -86,7 +91,6 @@ router.post('/generate', async (req: Request, res: Response) => {
     } catch (error) {
         console.error('AI Note generation or save error:', error); 
         
-        // Check if the error is a Prisma record not found error (P2025) or a foreign key constraint failure (P2003)
         if ((error as any).code === 'P2025' || (error as any).code === 'P2003') { 
             return res.status(400).json({ error: 'The specified User or Category ID does not exist.' });
         }
