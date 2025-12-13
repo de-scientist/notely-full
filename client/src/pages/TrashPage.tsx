@@ -11,7 +11,7 @@ const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700
 const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 
 // ------------------------------------
-// Updated Entry Type
+// UPDATED Entry Type - Aligned with Prisma/Server
 // ------------------------------------
 interface Entry {
     id: string;
@@ -19,8 +19,8 @@ interface Entry {
     synopsis: string;
     content: string;
     isDeleted: boolean;
-    dateCreated: string;
-    lastUpdated: string; // This is the date the item was marked as deleted
+    createdAt: string; // Original creation date
+    updatedAt: string; // The date the item was last updated (or marked as deleted)
     category: { // Category included via API include
         name: string;
     }
@@ -29,9 +29,10 @@ interface Entry {
 
 /**
  * Helper function to calculate days remaining until permanent deletion (30 days).
+ * It uses the item's updatedAt timestamp, which represents when it was soft-deleted.
  */
-function getDaysUntilPermanentDelete(lastUpdated: string): { deletedOn: string, daysRemaining: number } {
-    const deletedDate = new Date(lastUpdated);
+function getDaysUntilPermanentDelete(updatedAt: string): { deletedOn: string, daysRemaining: number } {
+    const deletedDate = new Date(updatedAt);
     const expirationDate = new Date(deletedDate);
     // Items are permanently removed after 30 days
     expirationDate.setDate(deletedDate.getDate() + 30);
@@ -62,9 +63,9 @@ export function TrashPage() {
         },
     });
 
-    // Sort entries by lastUpdated date descending (most recently deleted first)
+    // Sort entries by updatedAt date descending (most recently deleted first)
     const entries = (data?.entries ?? [])
-        .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
     // --- 2. Mutations ---
     const restoreMutation = useMutation({
@@ -100,7 +101,7 @@ export function TrashPage() {
     // --- 3. Loading State ---
     if (isLoading) return (
         <div className="mt-16 flex justify-center">
-            <Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_COLOR_CLASS.replace('text', 'text')}`} />
+            <Loader2 className={`animate-spin h-8 w-8 ${PRIMARY_COLOR_CLASS}`} />
         </div>
     );
     
@@ -150,7 +151,8 @@ export function TrashPage() {
             
             <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {entries.map((entry) => {
-                    const { deletedOn, daysRemaining } = getDaysUntilPermanentDelete(entry.lastUpdated);
+                    // FIX: Using entry.updatedAt for deletion time tracking
+                    const { deletedOn, daysRemaining } = getDaysUntilPermanentDelete(entry.updatedAt);
                     
                     // Determine warning color for days remaining
                     let daysClass = "text-green-600 dark:text-green-400";
