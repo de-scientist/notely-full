@@ -54,7 +54,7 @@ interface Entry {
     isPublic?: boolean;
     createdAt: string;
     updatedAt: string;
-    category: { name: string };
+    category: { name: string, id: string }; // Added 'id' which might be needed for the PATCH payload
 }
 
 /**
@@ -201,7 +201,7 @@ function NoteCard({
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 {/* MODIFIED: More Actions Button - Now uses solid fuchsia background.
-                                    This addresses the user's specific request for the button in the image.
+                                     This addresses the user's specific request for the button in the image.
                                 */}
                                 <Button
                                     size="sm"
@@ -326,7 +326,7 @@ export function NotesListPage() {
         }
     }, [data]);
 
-    // 4. MUTATION HOOKS (Omitted for brevity, they remain unchanged and functional)
+    // 4. MUTATION HOOKS
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => await api.delete(`/entries/${id}`),
         onSuccess: () => {
@@ -361,14 +361,46 @@ export function NotesListPage() {
         onError: () => toast.error("Failed to toggle bookmark status."),
     });
 
+    // --- FIX APPLIED HERE ---
     const togglePublicMutation = useMutation({
-        mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) =>
-            await api.patch(`/entries/${id}`, { isPublic }),
+        mutationFn: async ({ id, isPublic }: { id: string; isPublic: boolean }) => {
+            // 1. Get current list from cache
+            const allEntriesData = queryClient.getQueryData(['entries']) as { entries: Entry[] } | undefined;
+            
+            // 2. Find the entry we are about to update
+            const currentEntry = allEntriesData?.entries.find(e => e.id === id);
+
+            if (!currentEntry) {
+                throw new Error("Cannot find note to toggle public status.");
+            }
+            
+            // 3. Construct the full payload for the PATCH request
+            const payload = {
+                // Spread all existing data to satisfy backend requirements for a complete object
+                ...currentEntry, 
+                isPublic: isPublic,
+                // If the backend expects categoryId instead of the full category object, 
+                // you would need to adjust the structure here. 
+                // We must remove the 'category' object since the backend PATCH endpoint 
+                // often expects a flat entry object or a categoryId. 
+                categoryId: currentEntry.category.id,
+            };
+            
+            // Remove the nested category object to match a typical flat API structure
+            delete (payload as any).category; 
+
+            // 4. Send the updated payload
+            await api.patch(`/entries/${id}`, payload);
+        },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['entries'] });
             toast.success(`Note set to ${variables.isPublic ? 'Public' : 'Private'}.`);
         },
-        onError: () => toast.error("Failed to change sharing status."),
+        onError: (error) => {
+            console.error("Public toggle error:", error);
+            // The 500 error will now be caught here, but the cause should be fixed.
+            toast.error("Failed to change sharing status. Check server logs if this persists.");
+        },
     });
 
 
