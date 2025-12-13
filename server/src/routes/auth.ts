@@ -4,6 +4,8 @@ import { PrismaClient } from "@prisma/client";
 import { signToken } from "../utils/jwt.ts";
 import bcrypt from "bcrypt";
 import { requireAuth, AuthedRequest } from "../middleware/requireAuth.ts";
+import { supabaseAdmin } from "../lib/supabaseAdmin.ts";
+
 
 const prisma = new PrismaClient();
 const router = Router();
