@@ -18,7 +18,7 @@ async function main() {
       where: { 
         name_userId: { 
           name: cat.name, 
-          userId: null 
+          userId: null // THIS IS NOW VALID because of String? in schema.prisma
         } 
       },
     });
