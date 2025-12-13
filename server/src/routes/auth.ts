@@ -105,6 +105,28 @@ router.post("/login", async (req, res, next) => {
 });
 
 
+router.post("/verify-email", async (req, res) => {
+  try {
+    const { supabaseId } = req.body;
+    if (!supabaseId) {
+      return res.status(400).json({ message: "supabaseId required" });
+    }
+
+    const user = await prisma.user.update({
+      where: { supabaseId },
+      data: {
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+      },
+    });
+
+    return res.json({ user });
+  } catch (err) {
+    return res.status(400).json({ message: "Email verification sync failed" });
+  }
+});
+
+
 /**
  * OAuth backend-sync endpoint.
  * The frontend (AuthCallback page) should POST user info to this route after Supabase OAuth returns.
