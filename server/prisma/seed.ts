@@ -12,14 +12,12 @@ async function main() {
   console.log('Seeding global categories...');
 
   for (const cat of globalCategories) {
-    // FIX: Use findUnique with the compound key to check for existence
-    // The compound key is [name, userId] where userId is null for global categories
-    const exists = await prisma.category.findUnique({
+    // FIX: Revert to findFirst for checking existence of records 
+    // where a field in the compound unique key (userId) is null.
+    const exists = await prisma.category.findFirst({
       where: { 
-        name_userId: { 
-          name: cat.name, 
-          userId: null // THIS IS NOW VALID because of String? in schema.prisma
-        } 
+        name: cat.name, 
+        userId: null // Using null in a findFirst/findMany query is allowed.
       },
     });
 
@@ -41,7 +39,8 @@ async function main() {
 
   for (const user of users) {
     for (const cat of globalCategories) {
-      // This part was already correct for the user-linked categories
+      // This part for user-linked categories is correct and uses the compound key 
+      // where userId is a string (user.id), so it's safe.
       const exists = await prisma.category.findUnique({
         where: { name_userId: { name: cat.name, userId: user.id } },
       });
