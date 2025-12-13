@@ -150,7 +150,16 @@ router.get('/', async (req, res, next) => {
             include: entryInclude,
         });
 
-        return res.json({ entries });
+       // ⭐ THE FIX: Map over the entries to format the dates
+        const formattedEntries = entries.map(entry => ({
+            ...entry,
+            // Convert Date object to standard ISO string (e.g., "2025-12-13T17:22:08.000Z")
+            // This is usually redundant but ensures the Date object is converted *before* JSON.stringify
+            createdAt: entry.createdAt.toISOString(),
+            updatedAt: entry.updatedAt.toISOString(),
+        }));
+
+        return res.json({ entries: formattedEntries }); // Use the formatted entries
     } catch (err) {
         next(err);
     }
