@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import React, { useState } from 'react'; // Added useState
+import React, { useState } from 'react';
 
 // Markdown
 import ReactMarkdown from 'react-markdown';
@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm';
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Separator } from '../components/ui/separator';
-import { Textarea } from '../components/ui/textarea'; // Added Textarea
+import { Textarea } from '../components/ui/textarea';
 
 // Icons
 import { 
@@ -24,9 +24,9 @@ import {
     ArrowLeftCircle,
     Info,
     ClipboardList,
-    MessageSquare, // Added MessageSquare for comments section
-    Heart, // Added Heart for likes
-    UserCircle, // Added UserCircle for user avatars
+    MessageSquare,
+    Heart,
+    UserCircle,
 } from 'lucide-react';
 
 // Brand color classes
@@ -34,21 +34,25 @@ const PRIMARY = "text-fuchsia-600 dark:text-fuchsia-500";
 const OUTLINE =
     "border-fuchsia-500 text-fuchsia-600 dark:border-fuchsia-500 dark:text-fuchsia-500 hover:bg-fuchsia-50 dark:hover:bg-fuchsia-900/40";
 const DELETE_BTN =
-    "bg-red-600 hover:bg-700 text-white shadow-md shadow-red-500/50";
-const ACCENT_BG = "bg-fuchsia-50 dark:bg-fuchsia-900/40"; // New accent background class
+    "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-500/50";
+const ACCENT_BG = "bg-fuchsia-50 dark:bg-fuchsia-900/40";
 
+// ------------------------------------
+// UPDATED Entry Interface
+// ------------------------------------
 interface Entry {
     id: string;
     title: string;
     synopsis: string;
     content: string;
     isDeleted: boolean;
-    dateCreated: string;
-    lastUpdated: string;
+    createdAt: string; // Renamed from dateCreated
+    updatedAt: string; // Renamed from lastUpdated
     category: {
         name: string;
     };
 }
+// ------------------------------------
 
 // NEW INTERFACE FOR COMMENTS
 interface Comment {
@@ -60,6 +64,21 @@ interface Comment {
     isLiked: boolean;
 }
 
+/**
+ * Helper function to format date strings consistently.
+ * @param isoString The ISO date string (e.g., createdAt or updatedAt).
+ * @returns Formatted date string.
+ */
+const formatDateTime = (isoString: string) => {
+    return new Date(isoString).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+};
+
 export function NoteDetailPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -68,7 +87,7 @@ export function NoteDetailPage() {
     // MOCK CURRENT USER (for comment posting/liking)
     const CURRENT_USER = "FrontendDev";
 
-    // FRONTEND STATE FOR COMMENTS
+    // FRONTEND STATE FOR MOCK COMMENTS
     const [comments, setComments] = useState<Comment[]>([
         {
             id: 'c1',
@@ -134,7 +153,8 @@ export function NoteDetailPage() {
     const deleteMutation = useMutation({
         mutationFn: async () => {
             if (!id) return;
-            await api.delete(`/entries/${id}`);
+            // NOTE: Assuming the DELETE route performs a soft delete
+            await api.delete(`/entries/${id}`); 
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entries'] });
@@ -159,27 +179,11 @@ export function NoteDetailPage() {
     }
 
     const { entry } = data;
-    const formattedDate = new Date(entry.lastUpdated).toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    });
     
     // Simple calculation for reading time (200 WPM)
     const wordCount = entry.content.trim().split(/\s+/).filter(Boolean).length;
     const readingTime = Math.ceil(wordCount / 200);
 
-    // Helper to format comment date
-    const formatCommentDate = (isoString: string) => {
-        return new Date(isoString).toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-        });
-    };
 
     // COMMENT SECTION COMPONENT
     const CommentSection = () => (
@@ -199,7 +203,7 @@ export function NoteDetailPage() {
                         placeholder="Add a comment..."
                         value={newCommentText}
                         onChange={(e) => setNewCommentText(e.target.value)}
-                        className="dark:bg-gray-800 dark:text-white" // <-- Removed 'resize-none' here
+                        className="dark:bg-gray-800 dark:text-white"
                         rows={3}
                     />
                     <div className="flex justify-end">
@@ -232,7 +236,7 @@ export function NoteDetailPage() {
                                         </span>
                                         <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                                             <CalendarClock className="h-3 w-3 mr-1" />
-                                            {formatCommentDate(comment.timestamp)}
+                                            {formatDateTime(comment.timestamp)}
                                         </span>
                                     </div>
                                     
@@ -317,9 +321,9 @@ export function NoteDetailPage() {
                         <CardContent className="p-8 md:p-10">
                             {/* Markdown Rendering */}
                             <div className={`prose lg:prose-xl dark:prose-invert max-w-none 
-                                        prose-headings:text-fuchsia-700 dark:prose-headings:text-fuchsia-500 
-                                        prose-strong:text-fuchsia-600 dark:prose-strong:text-fuchsia-400
-                                        prose-blockquote:border-l-fuchsia-500 dark:prose-blockquote:border-l-fuchsia-400`}
+                                    prose-headings:text-fuchsia-700 dark:prose-headings:text-fuchsia-500 
+                                    prose-strong:text-fuchsia-600 dark:prose-strong:text-fuchsia-400
+                                    prose-blockquote:border-l-fuchsia-500 dark:prose-blockquote:border-l-fuchsia-400`}
                             >
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
@@ -368,6 +372,7 @@ export function NoteDetailPage() {
                 </div>
 
                 {/* --- RIGHT COLUMN: DETAILS & ACTIONS (Sticky Sidebar) --- */}
+                {/* Added 'self-start' and 'lg:top-8' for sticky behavior */}
                 <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 self-start">
 
                     {/* ACTIONS CARD */}
@@ -394,7 +399,7 @@ export function NoteDetailPage() {
                                 ) : (
                                     <Trash2 className="h-4 w-4 mr-2" />
                                 )}
-                                Delete
+                                Delete (Move to Trash)
                             </Button>
                         </CardContent>
                     </Card>
@@ -414,10 +419,16 @@ export function NoteDetailPage() {
                                 <span className={`font-semibold ${PRIMARY}`}>{entry.category.name}</span>
                             </div>
 
-                            {/* Last Updated */}
+                            {/* Date Created (FIX: Using createdAt) */}
+                            <div className="flex justify-between items-center border-b pb-2 border-fuchsia-100 dark:border-fuchsia-900">
+                                <span className="font-medium flex items-center gap-2"><CalendarClock className="h-4 w-4 text-fuchsia-500" /> Date Created</span>
+                                <span className="text-right">{formatDateTime(entry.createdAt)}</span>
+                            </div>
+
+                            {/* Last Updated (FIX: Using updatedAt) */}
                             <div className="flex justify-between items-center border-b pb-2 border-fuchsia-100 dark:border-fuchsia-900">
                                 <span className="font-medium flex items-center gap-2"><CalendarClock className="h-4 w-4 text-fuchsia-500" /> Last Updated</span>
-                                <span className="text-right">{formattedDate}</span>
+                                <span className="text-right">{formatDateTime(entry.updatedAt)}</span>
                             </div>
 
                             {/* Word Count & Reading Time */}
