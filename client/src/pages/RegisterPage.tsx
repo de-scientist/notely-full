@@ -316,7 +316,7 @@ const handleOAuth = async (provider: 'google' | 'github') => {
     <Button
         type="button"
         onClick={() => handleOAuth("github")}
-        className={GITHUB_BUTTON_CLASS}
+        className={`${GRADIENT_CLASS}`}
     >
         <img
             src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg"
