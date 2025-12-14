@@ -1,20 +1,20 @@
 import ChatWindow from "./ChatWindow";
 // Import the factory function instead of the uninitialized hook
-import { createChatStore } from "./useChatStore"; 
+import { createChatStore } from "./useChatStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react"; // Needed for store initialization/user fetching
 
 // --- Mock function to simulate fetching the logged-in user's name ---
 // In a real application, this would come from an Auth Context, Redux, etc.
 const useLoggedInUserName = () => {
-    // Replace this logic with your actual user fetching/context hook
-    // We'll return a placeholder name for initialization.
-    return "Notely User"; 
+  // Replace this logic with your actual user fetching/context hook
+  // We'll return a placeholder name for initialization.
+  return "Notely User";
 };
 // --- End Mock ---
 
 // 4. Initialize the store hook outside the component for persistence across renders.
-// NOTE: This approach works only if the username is available statically or fetched 
+// NOTE: This approach works only if the username is available statically or fetched
 // outside the component's render loop. For simplicity, we initialize it here.
 const userName = useLoggedInUserName();
 const useChatStore = createChatStore(userName);

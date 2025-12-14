@@ -9,7 +9,7 @@ export default function ChatWindow() {
   // Assuming loading and setLoading have been added to the ChatState interface and useChatStore
   const { messages, addMessage, input, setInput, loading, setLoading } =
     useChatStore();
-    
+
   // Ref to hold the scrollable element DOM node
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -17,7 +17,9 @@ export default function ChatWindow() {
   useEffect(() => {
     if (scrollAreaRef.current) {
       // Find the viewport element managed by ScrollArea (often the direct child)
-      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement;
+      const viewport = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      ) as HTMLElement;
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
       } else {
@@ -52,22 +54,28 @@ export default function ChatWindow() {
 
   // Function to allow sending on Enter key press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !loading) {
+    if (e.key === "Enter" && !loading) {
       send();
     }
   };
 
   return (
     <div className="w-80 h-96 bg-white rounded-2xl shadow-2xl border flex flex-col">
-      
       {/* Design Improvement: Add a Header */}
       <div className="p-3 border-b bg-gray-50 rounded-t-2xl">
-        <h3 className="font-semibold text-lg text-black">Notely AI Assistant 🤖</h3>
-        <p className="text-xs text-gray-500">Ask about app features and navigation.</p>
+        <h3 className="font-semibold text-lg text-black">
+          Notely AI Assistant 🤖
+        </h3>
+        <p className="text-xs text-gray-500">
+          Ask about app features and navigation.
+        </p>
       </div>
 
       {/* Attach the ref to the ScrollArea for auto-scrolling */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-3 space-y-2 overflow-y-auto">
+      <ScrollArea
+        ref={scrollAreaRef}
+        className="flex-1 p-3 space-y-2 overflow-y-auto"
+      >
         {messages.map((m, i) => (
           <ChatBubble key={i} msg={m} />
         ))}
@@ -86,12 +94,12 @@ export default function ChatWindow() {
           placeholder="Ask something..."
           disabled={loading}
         />
-        <Button 
-          onClick={send} 
+        <Button
+          onClick={send}
           disabled={loading || !input.trim()} // Disable send button if input is empty
           className="rounded-full px-4"
         >
-          {loading ? '...' : 'Send'}
+          {loading ? "..." : "Send"}
         </Button>
       </div>
     </div>

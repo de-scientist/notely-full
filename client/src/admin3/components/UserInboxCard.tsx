@@ -22,7 +22,7 @@ interface Props {
     content: string;
     createdAt: string;
     // Assume we add a status field for better tracking
-    status?: 'new' | 'in_progress' | 'resolved'; 
+    status?: "new" | "in_progress" | "resolved";
   };
 }
 
@@ -39,40 +39,42 @@ const formatDate = (dateString: string): string => {
 
 const UserInboxCard: React.FC<Props> = ({ message }) => {
   // Determine badge style based on status (default to 'new')
-  const status = message.status || 'new'; 
+  const status = message.status || "new";
   let badgeVariant: "default" | "secondary" | "destructive" = "secondary";
   let badgeText = "New";
 
-  if (status === 'in_progress') {
+  if (status === "in_progress") {
     badgeVariant = "default";
     badgeText = "In Progress";
-  } else if (status === 'resolved') {
+  } else if (status === "resolved") {
     badgeVariant = "secondary";
     badgeText = "Resolved";
   }
 
   // Sanitize content snippet to prevent long text overflow
-  const contentSnippet = message.content.length > 150 
-    ? message.content.substring(0, 150) + '...'
-    : message.content;
+  const contentSnippet =
+    message.content.length > 150
+      ? message.content.substring(0, 150) + "..."
+      : message.content;
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
-      
       <CardHeader className="pb-3">
         {/* Title and Status Badge */}
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-bold truncate pr-4">{message.subject}</CardTitle>
+          <CardTitle className="text-lg font-bold truncate pr-4">
+            {message.subject}
+          </CardTitle>
           <Badge variant={badgeVariant} className="flex-shrink-0 capitalize">
             {badgeText}
           </Badge>
         </div>
-        
+
         {/* Sender and Date */}
         <div className="space-y-1 mt-1">
           <CardDescription className="flex items-center text-xs text-gray-700 dark:text-gray-400">
             <User className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
-            {message.userName} 
+            {message.userName}
           </CardDescription>
           <CardDescription className="flex items-center text-xs text-muted-foreground">
             <Mail className="mr-1.5 h-3.5 w-3.5" />
@@ -82,7 +84,7 @@ const UserInboxCard: React.FC<Props> = ({ message }) => {
 
         <Separator className="mt-2" />
       </CardHeader>
-      
+
       {/* Message Snippet */}
       <CardContent className="flex-1 overflow-hidden pt-3">
         <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
@@ -93,22 +95,22 @@ const UserInboxCard: React.FC<Props> = ({ message }) => {
       <CardFooter className="flex justify-between items-center pt-4 border-t">
         {/* Date at the bottom */}
         <div className="flex items-center text-xs text-muted-foreground">
-            <Calendar className="mr-1 h-3.5 w-3.5" />
-            {formatDate(message.createdAt)}
+          <Calendar className="mr-1 h-3.5 w-3.5" />
+          {formatDate(message.createdAt)}
         </div>
-        
+
         {/* Action Buttons */}
         <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             className="text-fuchsia-600 hover:text-fuchsia-700 border-fuchsia-600 dark:text-fuchsia-400 dark:border-fuchsia-400"
             // onClick={() => handleReply(message)} // Placeholder for reply logic
           >
             <Reply className="mr-1 h-4 w-4" /> Reply
           </Button>
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             size="sm"
             // onClick={() => handleDelete(message.id)} // Placeholder for delete logic
           >
@@ -116,7 +118,6 @@ const UserInboxCard: React.FC<Props> = ({ message }) => {
           </Button>
         </div>
       </CardFooter>
-      
     </Card>
   );
 };

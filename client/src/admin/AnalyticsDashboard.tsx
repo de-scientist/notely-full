@@ -1,10 +1,20 @@
 // src/admin/AnalyticsDashboard.tsx
 import { useEffect, useState, useRef } from "react";
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 import Papa from "papaparse";
 
 // FIX 1: Add a module declaration for 'papaparse' to satisfy TypeScript.
-declare module 'papaparse';
+declare module "papaparse";
 
 type Chat = {
   id: string;
@@ -20,7 +30,13 @@ export default function AnalyticsDashboard() {
   const [intents, setIntents] = useState<any[]>([]);
   const [hourly, setHourly] = useState<any[]>([]);
   const [results, setResults] = useState<Chat[]>([]);
-  const [filters, setFilters] = useState({ start: "", end: "", intent: "", channel: "", search: "" });
+  const [filters, setFilters] = useState({
+    start: "",
+    end: "",
+    intent: "",
+    channel: "",
+    search: "",
+  });
   const [page, setPage] = useState(0);
   const [limit] = useState(50);
   const evtSourceRef = useRef<EventSource | null>(null);
@@ -42,7 +58,10 @@ export default function AnalyticsDashboard() {
   async function fetchHourly() {
     const r = await fetch("/api/analytics/hourly");
     const d = await r.json();
-    const mapped = (d.hourly || d).map((h: any) => ({ hour: new Date(h.hour).toLocaleString(), count: Number(h.count) }));
+    const mapped = (d.hourly || d).map((h: any) => ({
+      hour: new Date(h.hour).toLocaleString(),
+      count: Number(h.count),
+    }));
     setHourly(mapped);
   }
 
@@ -59,7 +78,7 @@ export default function AnalyticsDashboard() {
     const r = await fetch(`/api/analytics/query?${qs.toString()}`);
     const d = await r.json();
     // Assuming the structure is either d.results or just d
-    setResults(d.results || d); 
+    setResults(d.results || d);
   }
 
   function startSSE() {
@@ -87,7 +106,7 @@ export default function AnalyticsDashboard() {
       createdAt: r.createdAt,
     }));
     // Papa is correctly typed here due to the `declare module`
-    const csv = Papa.unparse(data); 
+    const csv = Papa.unparse(data);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -102,7 +121,12 @@ export default function AnalyticsDashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Notely Admin — Analytics</h1>
         <div className="flex gap-2">
-          <button onClick={onExportCSV} className="bg-black text-white px-3 py-1 rounded">Export CSV</button>
+          <button
+            onClick={onExportCSV}
+            className="bg-black text-white px-3 py-1 rounded"
+          >
+            Export CSV
+          </button>
         </div>
       </div>
 
@@ -110,9 +134,26 @@ export default function AnalyticsDashboard() {
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-semibold">Intents</h3>
           <PieChart width={300} height={220}>
-            <Pie data={intents} dataKey="count" nameKey="intent" cx="50%" cy="50%" outerRadius={70} label>
+            <Pie
+              data={intents}
+              dataKey="count"
+              nameKey="intent"
+              cx="50%"
+              cy="50%"
+              outerRadius={70}
+              label
+            >
               {/* FIX 3: Replaced 'entry' with '_' to mark as intentionally unused */}
-              {intents.map((_, idx) => <Cell key={idx} fill={["#0088FE","#00C49F","#FFBB28","#FF8042","#A28FD0"][idx % 5]} />)}
+              {intents.map((_, idx) => (
+                <Cell
+                  key={idx}
+                  fill={
+                    ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28FD0"][
+                      idx % 5
+                    ]
+                  }
+                />
+              ))}
             </Pie>
             <Tooltip />
           </PieChart>
@@ -134,33 +175,39 @@ export default function AnalyticsDashboard() {
         <h3 className="font-semibold mb-2">Filters</h3>
         <div className="flex gap-3 items-center">
           {/* FIX 2: Added aria-label for accessibility */}
-          <input 
-            type="date" 
-            value={filters.start} 
-            onChange={(e) => setFilters((s) => ({ ...s, start: e.target.value }))} 
-            className="border p-2 rounded" 
+          <input
+            type="date"
+            value={filters.start}
+            onChange={(e) =>
+              setFilters((s) => ({ ...s, start: e.target.value }))
+            }
+            className="border p-2 rounded"
             aria-label="Start Date Filter"
           />
           {/* FIX 2: Added aria-label for accessibility */}
-          <input 
-            type="date" 
-            value={filters.end} 
-            onChange={(e) => setFilters((s) => ({ ...s, end: e.target.value }))} 
-            className="border p-2 rounded" 
+          <input
+            type="date"
+            value={filters.end}
+            onChange={(e) => setFilters((s) => ({ ...s, end: e.target.value }))}
+            className="border p-2 rounded"
             aria-label="End Date Filter"
           />
           {/* FIX 2: Added aria-label for accessibility */}
-          <input 
-            placeholder="intent" 
-            value={filters.intent} 
-            onChange={(e) => setFilters((s) => ({ ...s, intent: e.target.value }))} 
-            className="border p-2 rounded" 
+          <input
+            placeholder="intent"
+            value={filters.intent}
+            onChange={(e) =>
+              setFilters((s) => ({ ...s, intent: e.target.value }))
+            }
+            className="border p-2 rounded"
             aria-label="Filter by Intent"
           />
           {/* FIX 2: Added aria-label for accessibility */}
-          <select 
-            value={filters.channel} 
-            onChange={(e) => setFilters((s) => ({ ...s, channel: e.target.value }))} 
+          <select
+            value={filters.channel}
+            onChange={(e) =>
+              setFilters((s) => ({ ...s, channel: e.target.value }))
+            }
             className="border p-2 rounded"
             aria-label="Filter by Channel"
           >
@@ -170,14 +217,24 @@ export default function AnalyticsDashboard() {
             <option value="api">API</option>
           </select>
           {/* FIX 2: Added aria-label for accessibility */}
-          <input 
-            placeholder="search" 
-            value={filters.search} 
-            onChange={(e) => setFilters((s) => ({ ...s, search: e.target.value }))} 
-            className="border p-2 rounded" 
+          <input
+            placeholder="search"
+            value={filters.search}
+            onChange={(e) =>
+              setFilters((s) => ({ ...s, search: e.target.value }))
+            }
+            className="border p-2 rounded"
             aria-label="Search Queries"
           />
-          <button onClick={() => { setPage(0); fetchResults(0); }} className="bg-black text-white px-3 py-1 rounded">Apply</button>
+          <button
+            onClick={() => {
+              setPage(0);
+              fetchResults(0);
+            }}
+            className="bg-black text-white px-3 py-1 rounded"
+          >
+            Apply
+          </button>
         </div>
       </div>
 
@@ -195,7 +252,9 @@ export default function AnalyticsDashboard() {
           <tbody>
             {results.map((r) => (
               <tr key={r.id}>
-                <td className="py-2 pr-4">{new Date(r.createdAt).toLocaleString()}</td>
+                <td className="py-2 pr-4">
+                  {new Date(r.createdAt).toLocaleString()}
+                </td>
                 <td className="py-2 pr-4 max-w-xl truncate">{r.query}</td>
                 <td>{r.intent}</td>
                 <td>{r.channel}</td>
@@ -207,8 +266,26 @@ export default function AnalyticsDashboard() {
         <div className="flex justify-between items-center mt-3">
           <div>Page {page + 1}</div>
           <div className="flex gap-2">
-            <button className="px-3 py-1 border rounded" onClick={() => { if (page > 0) { setPage(p => p - 1); fetchResults(page - 1); }}}>Prev</button>
-            <button className="px-3 py-1 border rounded" onClick={() => { setPage(p => p + 1); fetchResults(page + 1); }}>Next</button>
+            <button
+              className="px-3 py-1 border rounded"
+              onClick={() => {
+                if (page > 0) {
+                  setPage((p) => p - 1);
+                  fetchResults(page - 1);
+                }
+              }}
+            >
+              Prev
+            </button>
+            <button
+              className="px-3 py-1 border rounded"
+              onClick={() => {
+                setPage((p) => p + 1);
+                fetchResults(page + 1);
+              }}
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

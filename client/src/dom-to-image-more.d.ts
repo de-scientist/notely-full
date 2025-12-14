@@ -1,5 +1,5 @@
 // src/dom-to-image-more.d.ts
-declare module 'dom-to-image-more' {
+declare module "dom-to-image-more" {
   export function toSvg(node: Node, options?: any): Promise<string>;
   export function toPng(node: Node, options?: any): Promise<string>;
   export function toJpeg(node: Node, options?: any): Promise<string>;

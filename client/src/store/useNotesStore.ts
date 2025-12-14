@@ -11,17 +11,15 @@ export const useNotesStore = create(
       toggleBookmark: (id) =>
         set((state) => ({
           notes: state.notes.map((n) =>
-            n.id === id ? { ...n, isBookmarked: !n.isBookmarked } : n
+            n.id === id ? { ...n, isBookmarked: !n.isBookmarked } : n,
           ),
         })),
 
       getBookmarked: () =>
-        useNotesStore
-          .getState()
-          .notes.filter((n) => n.isBookmarked === true),
+        useNotesStore.getState().notes.filter((n) => n.isBookmarked === true),
     }),
     {
       name: "notes-storage", // localStorage key
-    }
-  )
+    },
+  ),
 );

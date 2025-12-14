@@ -7,7 +7,7 @@ type StreamMessage = {
   question: string;
   createdAt: string;
   // Assuming the server also sends a unique ID if logged to the database
-  id: string; 
+  id: string;
 };
 
 // Define the type for the existing cached data (the array of queries)
@@ -38,8 +38,7 @@ export function useQueryStream() {
 
         // 3. Invalidate other queries if necessary (e.g., top-queries)
         // FIX 1: The invalidateQueries signature must use an object { queryKey: [...] }
-        qc.invalidateQueries({ queryKey: ["admin-queries"] }); 
-        
+        qc.invalidateQueries({ queryKey: ["admin-queries"] });
       } catch (error) {
         console.error("Error processing SSE message:", error);
       }

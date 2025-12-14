@@ -1,147 +1,181 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import {
-    Card,
-    CardHeader,
-    CardContent,
-    CardTitle,
-    CardDescription,
-    CardFooter
-} from '../components/ui/card';
-import { Button } from '../components/ui/button';
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
 // NEW: ArrowUpCircle for the Floating Action Button (FAB)
-import { Check, Trash2, User, Users, Feather, Clock, Search, Folder, Zap, PencilLine, LogIn, ArrowUpCircle } from 'lucide-react'; 
-import { Separator } from '../components/ui/separator';
+import {
+  Check,
+  Trash2,
+  User,
+  Users,
+  Feather,
+  Clock,
+  Search,
+  Folder,
+  Zap,
+  PencilLine,
+  LogIn,
+  ArrowUpCircle,
+} from "lucide-react";
+import { Separator } from "../components/ui/separator";
 
 // 💜 Define Primary Color (Fuchsia/OneNote)
 const PRIMARY_COLOR_CLASS = "text-fuchsia-700 dark:text-fuchsia-500";
-const ACCENT_BG_CLASS = "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
-const GRADIENT_CLASS = "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
-
+const ACCENT_BG_CLASS =
+  "bg-fuchsia-600 hover:bg-fuchsia-700 dark:bg-fuchsia-700 dark:hover:bg-fuchsia-600";
+const GRADIENT_CLASS =
+  "bg-gradient-to-r from-fuchsia-600 to-fuchsia-800 hover:from-fuchsia-700 hover:to-fuchsia-900 text-white shadow-lg shadow-fuchsia-500/50 transition-all duration-300 transform hover:scale-[1.03]";
 
 // 🟢 Define Complementary Color (Lime/Emerald) - Retained for contrast in specific text
 const COMPLEMENTARY_COLOR_CLASS = "text-emerald-500 dark:text-emerald-400";
 // COMPLEMENTARY_OUTLINE_CLASS is now updated to a more neutral/primary-related style for Login button
-const PRIMARY_OUTLINE_CLASS = "border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-50 dark:border-fuchsia-400 dark:text-fuchsia-400 dark:hover:bg-gray-700";
-
+const PRIMARY_OUTLINE_CLASS =
+  "border-fuchsia-500 text-fuchsia-600 hover:bg-fuchsia-50 dark:border-fuchsia-400 dark:text-fuchsia-400 dark:hover:bg-gray-700";
 
 // =========================================================================
 // 💡 CONCEPTUAL COMPONENT: StatCard
 // =========================================================================
 interface StatCardProps {
-    value: string;
-    label: string;
-    icon: React.ElementType;
+  value: string;
+  label: string;
+  icon: React.ElementType;
 }
 
 const StatCard: React.FC<StatCardProps> = ({ value, label, icon: Icon }) => (
-    <div className="text-center p-4 transition duration-300 ease-in-out transform hover:scale-[1.02] bg-white dark:bg-gray-800/50 shadow-md hover:shadow-lg rounded-xl border dark:border-gray-700">
-        <Icon className={`h-8 w-8 ${PRIMARY_COLOR_CLASS} mx-auto mb-1`} />
-        <p className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 animate-in fade-in duration-1000">
-            {value}
-        </p>
-        <p className="text-sm text-muted-foreground">{label}</p>
-    </div>
+  <div className="text-center p-4 transition duration-300 ease-in-out transform hover:scale-[1.02] bg-white dark:bg-gray-800/50 shadow-md hover:shadow-lg rounded-xl border dark:border-gray-700">
+    <Icon className={`h-8 w-8 ${PRIMARY_COLOR_CLASS} mx-auto mb-1`} />
+    <p className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 animate-in fade-in duration-1000">
+      {value}
+    </p>
+    <p className="text-sm text-muted-foreground">{label}</p>
+  </div>
 );
 // =========================================================================
 
 // Smooth Reveal Observer
 function useRevealAnimations() {
-    useEffect(() => {
-        const elements = document.querySelectorAll(".reveal");
+  useEffect(() => {
+    const elements = document.querySelectorAll(".reveal");
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add("reveal-visible");
-                    }
-                });
-            },
-            { threshold: 0.1 }
-        );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("reveal-visible");
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
 
-        elements.forEach((el) => observer.observe(el));
-        return () => observer.disconnect();
-    }, []);
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 }
 
 // Parallax Hero Effect
 function useParallax() {
-    useEffect(() => {
-        const hero = document.querySelector(".hero-parallax");
-        if (!hero) return;
+  useEffect(() => {
+    const hero = document.querySelector(".hero-parallax");
+    if (!hero) return;
 
-        const handler = (e: MouseEvent) => {
-            const x = (e.clientX - window.innerWidth / 2) * 0.0025;
-            const y = (e.clientY - window.innerHeight / 2) * 0.0025;
-            hero.setAttribute(
-                "style",
-                `transform: translate(${x}px, ${y}px); transition: transform 0.05s linear;`
-            );
-        };
+    const handler = (e: MouseEvent) => {
+      const x = (e.clientX - window.innerWidth / 2) * 0.0025;
+      const y = (e.clientY - window.innerHeight / 2) * 0.0025;
+      hero.setAttribute(
+        "style",
+        `transform: translate(${x}px, ${y}px); transition: transform 0.05s linear;`,
+      );
+    };
 
-        window.addEventListener("mousemove", handler);
-        return () => window.removeEventListener("mousemove", handler);
-    }, []);
+    window.addEventListener("mousemove", handler);
+    return () => window.removeEventListener("mousemove", handler);
+  }, []);
 }
 
 export function LandingPage() {
-    useRevealAnimations();
-    useParallax();
+  useRevealAnimations();
+  useParallax();
 
-    // Scroll to the top of the main container (Hero section)
-    const scrollToTop = () => {
-        document.getElementById('main-content-container')?.scrollIntoView({ behavior: 'smooth' });
-    };
+  // Scroll to the top of the main container (Hero section)
+  const scrollToTop = () => {
+    document
+      .getElementById("main-content-container")
+      ?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    return (
-        <div id="main-content-container" className="flex min-h-[calc(100vh-4rem)] flex-col items-center py-20 px-4 sm:px-6 lg:px-8 reveal pulse-on-load">
+  return (
+    <div
+      id="main-content-container"
+      className="flex min-h-[calc(100vh-4rem)] flex-col items-center py-20 px-4 sm:px-6 lg:px-8 reveal pulse-on-load"
+    >
+      <div className="max-w-5xl space-y-16 text-center">
+        {/* HERO */}
+        <div className="space-y-6 hero-parallax reveal">
+          <h1 className="text-6xl font-extrabold tracking-tighter text-gray-900 dark:text-gray-50 md:text-7xl lg:text-8xl hover-lift">
+            <Feather
+              className={`inline-block h-12 w-12 ${PRIMARY_COLOR_CLASS} mr-4`}
+            />
+            Your Memory,{" "}
+            <span className={PRIMARY_COLOR_CLASS}>Perfectly Organized.</span>
+          </h1>
 
-            <div className="max-w-5xl space-y-16 text-center">
+          <p className="max-w-3xl mx-auto text-xl text-gray-600 dark:text-gray-400 font-medium reveal">
+            <span className="">{`Notely is the professional workspace designed for effortless capture and immediate retrieval.`}</span>
+            Stop{" "}
+            <span
+              className={COMPLEMENTARY_COLOR_CLASS.replace(
+                "text",
+                "font-bold text",
+              )}
+            >
+              searching
+            </span>
+            , start{" "}
+            <span
+              className={COMPLEMENTARY_COLOR_CLASS.replace(
+                "text",
+                "font-bold text",
+              )}
+            >
+              finding
+            </span>
+            .
+          </p>
+        </div>
 
-                {/* HERO */}
-                <div className="space-y-6 hero-parallax reveal">
-                    <h1 className="text-6xl font-extrabold tracking-tighter text-gray-900 dark:text-gray-50 md:text-7xl lg:text-8xl hover-lift">
-                        <Feather className={`inline-block h-12 w-12 ${PRIMARY_COLOR_CLASS} mr-4`} />
-                        Your Memory, <span className={PRIMARY_COLOR_CLASS}>Perfectly Organized.</span>
-                    </h1>
-
-                    <p className="max-w-3xl mx-auto text-xl text-gray-600 dark:text-gray-400 font-medium reveal">
-                        <span className="">{`Notely is the professional workspace designed for effortless capture and immediate retrieval.`}</span>
-                        Stop <span className={COMPLEMENTARY_COLOR_CLASS.replace('text', 'font-bold text')}>searching</span>, 
-                        start <span className={COMPLEMENTARY_COLOR_CLASS.replace('text', 'font-bold text')}>finding</span>.
-                    </p>
-                </div>
-
-                {/* CTA - IMPROVED */}
-                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 reveal hover-lift">
-
-                    {/* Register Button (Primary CTA) */}
-                    <Link to="/register">
-                        <Button
-                            size="lg"
-                            className={`
+        {/* CTA - IMPROVED */}
+        <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 reveal hover-lift">
+          {/* Register Button (Primary CTA) */}
+          <Link to="/register">
+            <Button
+              size="lg"
+              className={`
                                 h-12 px-8 text-lg font-semibold flex items-center gap-3 group w-full sm:w-auto
                                 transition-all duration-200 active:scale-[0.97]
                                 ${GRADIENT_CLASS}
                             `}
-                        >
-                            <PencilLine 
-                                className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1" 
-                            />
-                            <span className="transition-opacity duration-300 group-hover:opacity-90">
-                                Start Taking Notes (It's Free)
-                            </span>
-                        </Button>
-                    </Link>
+            >
+              <PencilLine className="w-5 h-5 transform transition-all duration-300 group-hover:translate-x-1" />
+              <span className="transition-opacity duration-300 group-hover:opacity-90">
+                Start Taking Notes (It's Free)
+              </span>
+            </Button>
+          </Link>
 
-                    {/* Login Button (Secondary CTA - Visual Update) */}
-                    <Link to="/login">
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            className={`
+          {/* Login Button (Secondary CTA - Visual Update) */}
+          <Link to="/login">
+            <Button
+              variant="outline"
+              size="lg"
+              className={`
                                 flex items-center gap-3 group w-full sm:w-auto
                                 border-2 ${PRIMARY_OUTLINE_CLASS} 
                                 text-fuchsia-600 dark:text-fuchsia-400
@@ -150,95 +184,121 @@ export function LandingPage() {
                                 active:scale-[0.97]
                                 shadow-sm hover:shadow-md
                             `}
-                        >
-                            <LogIn 
-                                className="w-5 h-5 transform transition-all duration-300 group-hover:-translate-x-1" 
-                            />
-                            <span className="transition-opacity duration-300 group-hover:opacity-90">
-                                Log in
-                            </span>
-                        </Button>
-                    </Link>
+            >
+              <LogIn className="w-5 h-5 transform transition-all duration-300 group-hover:-translate-x-1" />
+              <span className="transition-opacity duration-300 group-hover:opacity-90">
+                Log in
+              </span>
+            </Button>
+          </Link>
+        </div>
 
-                </div>
+        <Separator className="mt-16 bg-gray-300 dark:bg-gray-700 reveal" />
 
-                <Separator className="mt-16 bg-gray-300 dark:bg-gray-700 reveal" />
+        {/* STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-6 reveal">
+          <div className="hover-lift">
+            <StatCard value="15,487" label="Active Users" icon={Users} />
+          </div>
+          <div className="hover-lift">
+            <StatCard value="99.9%" label="Reliable Uptime" icon={Check} />
+          </div>
+          <div className="hover-lift">
+            <StatCard value="< 2.0s" label="Avg. Load Time" icon={Clock} />
+          </div>
+        </div>
 
-                {/* STATS */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-6 reveal">
-                    <div className="hover-lift"><StatCard value="15,487" label="Active Users" icon={Users} /></div>
-                    <div className="hover-lift"><StatCard value="99.9%" label="Reliable Uptime" icon={Check} /></div>
-                    <div className="hover-lift"><StatCard value="< 2.0s" label="Avg. Load Time" icon={Clock} /></div>
-                </div>
+        {/* FEATURES CARD - IMPROVED GRID AND HOVER */}
+        <Card
+          className={`mt-16 w-full text-left shadow-2xl shadow-gray-400/20 dark:shadow-gray-900/50 border-t-4 border-t-fuchsia-600 dark:border-t-fuchsia-500 reveal hover-lift`}
+        >
+          <CardHeader className="pt-8 pb-4">
+            <CardTitle className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+              Core Features
+            </CardTitle>
+            <CardDescription className="text-md text-gray-600 dark:text-gray-400">
+              The tools you need to streamline your productivity, inspired by
+              the best.
+            </CardDescription>
+          </CardHeader>
 
-                {/* FEATURES CARD - IMPROVED GRID AND HOVER */}
-                <Card className={`mt-16 w-full text-left shadow-2xl shadow-gray-400/20 dark:shadow-gray-900/50 border-t-4 border-t-fuchsia-600 dark:border-t-fuchsia-500 reveal hover-lift`}>
-
-                    <CardHeader className="pt-8 pb-4">
-                        <CardTitle className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-                            Core Features
-                        </CardTitle>
-                        <CardDescription className="text-md text-gray-600 dark:text-gray-400">
-                            The tools you need to streamline your productivity, inspired by the best.
-                        </CardDescription>
-                    </CardHeader>
-
-                    {/* Feature Grid: 1 column on small, 2 on medium, 3 on large */}
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-0">
-
-                        {[
-                            { icon: Feather, title: "Frictionless Writing", desc: "Utilize powerful Markdown for formatting, tables, and code blocks..." },
-                            { icon: Search, title: "Instant Search", desc: "Find any note in seconds with fast, full-text indexing..." },
-                            { icon: Folder, title: "Notebooks & Tags", desc: "Organize complex projects using dedicated Notebooks and Tags." },
-                            { icon: Trash2, title: "Safe Deletion", desc: "Soft-delete notes and instantly restore them." },
-                            { icon: User, title: "Security & Profile", desc: "Secure your account with profile management." },
-                            { icon: Zap, title: "Blazing Fast Sync", desc: "Low latency ensures your notes sync instantly." },
-                        ].map((f, i) => (
-                            <div
-                                key={i}
-                                className={`
+          {/* Feature Grid: 1 column on small, 2 on medium, 3 on large */}
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-0">
+            {[
+              {
+                icon: Feather,
+                title: "Frictionless Writing",
+                desc: "Utilize powerful Markdown for formatting, tables, and code blocks...",
+              },
+              {
+                icon: Search,
+                title: "Instant Search",
+                desc: "Find any note in seconds with fast, full-text indexing...",
+              },
+              {
+                icon: Folder,
+                title: "Notebooks & Tags",
+                desc: "Organize complex projects using dedicated Notebooks and Tags.",
+              },
+              {
+                icon: Trash2,
+                title: "Safe Deletion",
+                desc: "Soft-delete notes and instantly restore them.",
+              },
+              {
+                icon: User,
+                title: "Security & Profile",
+                desc: "Secure your account with profile management.",
+              },
+              {
+                icon: Zap,
+                title: "Blazing Fast Sync",
+                desc: "Low latency ensures your notes sync instantly.",
+              },
+            ].map((f, i) => (
+              <div
+                key={i}
+                className={`
                                     flex flex-col p-6 rounded-xl border shadow-sm dark:border-gray-700 
                                     bg-white dark:bg-gray-800 space-y-2 reveal hover-lift
                                     // New: Enhanced hover effect
                                     hover:shadow-fuchsia-400/30 dark:hover:shadow-fuchsia-900/50 hover:shadow-xl
                                     transition-all duration-300
                                 `}
-                            >
-                                <f.icon className={`h-8 w-8 ${PRIMARY_COLOR_CLASS}`} />
-                                <p className="font-bold text-lg text-gray-900 dark:text-gray-50">{f.title}</p>
-                                <p className="text-sm text-muted-foreground">{f.desc}</p>
-                            </div>
-                        ))}
+              >
+                <f.icon className={`h-8 w-8 ${PRIMARY_COLOR_CLASS}`} />
+                <p className="font-bold text-lg text-gray-900 dark:text-gray-50">
+                  {f.title}
+                </p>
+                <p className="text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            ))}
+          </CardContent>
 
-                    </CardContent>
+          <CardFooter className="justify-center text-md text-gray-700 dark:text-gray-300 pt-6 border-t dark:border-gray-700">
+            The simple power you need, built with modern standards.
+          </CardFooter>
+        </Card>
+      </div>
 
-                    <CardFooter className="justify-center text-md text-gray-700 dark:text-gray-300 pt-6 border-t dark:border-gray-700">
-                        The simple power you need, built with modern standards.
-                    </CardFooter>
-
-                </Card>
-
-            </div>
-
-            {/* NEW: Floating Action Button (FAB) for Scroll-to-Top */}
-            <Button
-                onClick={scrollToTop}
-                size="icon"
-                className={`
+      {/* NEW: Floating Action Button (FAB) for Scroll-to-Top */}
+      <Button
+        onClick={scrollToTop}
+        size="icon"
+        className={`
                     fixed bottom-8 right-8 h-12 w-12 rounded-full 
                     ${ACCENT_BG_CLASS} shadow-xl shadow-fuchsia-500/50 
                     transition-opacity duration-300 opacity-0 
                     md:opacity-100 lg:hidden 
                     active:scale-[0.9]
                 `}
-                // Hiding the FAB on large screens and initially on small screens
-                // (opacity is handled by a separate scroll-detection hook in a real app,
-                // but for this snippet, we ensure it's hidden on desktop)
-                aria-label="Scroll to top"
-            >
-                <ArrowUpCircle className="h-6 w-6" />
-            </Button>
-
-        </div>
-    );
+        // Hiding the FAB on large screens and initially on small screens
+        // (opacity is handled by a separate scroll-detection hook in a real app,
+        // but for this snippet, we ensure it's hidden on desktop)
+        aria-label="Scroll to top"
+      >
+        <ArrowUpCircle className="h-6 w-6" />
+      </Button>
+    </div>
+  );
 }

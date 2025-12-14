@@ -35,19 +35,26 @@ export default function NoteCard({ note }: { note: Note }) {
   };
 
   // Truncate content for a clean snippet
-  const contentSnippet = note.content.slice(0, 120).trim() + (note.content.length > 120 ? "..." : "");
+  const contentSnippet =
+    note.content.slice(0, 120).trim() +
+    (note.content.length > 120 ? "..." : "");
 
   return (
     // Wrap the card in a Link component for the whole area to be clickable
     // Adjust the 'to' path as needed for your routing structure
     <Link to={`/admin/notes/${note.id}`} className="block h-full">
       <Card className="h-full flex flex-col justify-between transition-all duration-300 hover:shadow-lg hover:border-fuchsia-400 dark:hover:border-fuchsia-600">
-        
         <CardHeader className="pb-2">
           {/* Metadata: Public/Private Status and Date */}
           <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
-            <span className={`flex items-center font-medium ${isPublic ? 'text-green-600' : 'text-fuchsia-600'}`}>
-              {isPublic ? <Unlock className="h-3 w-3 mr-1" /> : <Lock className="h-3 w-3 mr-1" />}
+            <span
+              className={`flex items-center font-medium ${isPublic ? "text-green-600" : "text-fuchsia-600"}`}
+            >
+              {isPublic ? (
+                <Unlock className="h-3 w-3 mr-1" />
+              ) : (
+                <Lock className="h-3 w-3 mr-1" />
+              )}
               {isPublic ? "Public Note" : "Private Note"}
             </span>
             <span className="flex items-center">
@@ -60,7 +67,7 @@ export default function NoteCard({ note }: { note: Note }) {
           <CardTitle className="text-xl font-extrabold line-clamp-2">
             {note.title}
           </CardTitle>
-          
+
           {/* Synopsis/Description */}
           <CardDescription className="pt-1 text-sm italic text-gray-500 dark:text-gray-400 line-clamp-2">
             {note.synopsis}
@@ -73,7 +80,7 @@ export default function NoteCard({ note }: { note: Note }) {
             {contentSnippet}
           </p>
         </CardContent>
-        
+
         {/* Action/Read More Indicator */}
         <CardFooter className="pt-4 flex justify-end">
           <span className="flex items-center text-sm font-semibold text-fuchsia-600 dark:text-fuchsia-400 group-hover:underline">

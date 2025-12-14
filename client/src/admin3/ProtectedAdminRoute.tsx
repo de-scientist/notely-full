@@ -19,24 +19,21 @@ interface User {
 */
 
 const ProtectedAdminRoute: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user } = useAuthStore(); // If not logged in, redirect to login
 
-  // If not logged in, redirect to login
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />; // FIX 1: Accessing 'isAdmin' safely and explicitly typing the check.
+  // This ensures the check is safe even if 'user' is the wrong type
+  // or if 'isAdmin' is optional/null.
 
-  // FIX 1: Accessing 'isAdmin' safely and explicitly typing the check.
-  // This ensures the check is safe even if 'user' is the wrong type
-  // or if 'isAdmin' is optional/null.
-  const adminCheck: boolean = !!(user as any).isAdmin; // Temporarily use 'as any' if you cannot update the store's type
+  const adminCheck: boolean = !!(user as any).isAdmin; // Temporarily use 'as any' if you cannot update the store's type
+  // If logged in but not admin, redirect to home
 
   // **BETTER FIX (Requires editing the store file):** // If your store's user type *already* includes isAdmin, no change is needed here.
   // If your store's user type *does not* include isAdmin, you must update the type in `../store/auth.ts`.
-  
-  // If logged in but not admin, redirect to home
-  if (!adminCheck) return <Navigate to="/" replace />;
 
-  // If admin, render nested admin routes
-  return <Outlet />;
+  if (!adminCheck) return <Navigate to="/" replace />; // If admin, render nested admin routes
+
+  return <Outlet />;
 };
 
 export default ProtectedAdminRoute;

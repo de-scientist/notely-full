@@ -23,7 +23,7 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, userMessage]);
 
     const key = Object.keys(botResponses).find((k) =>
-      input.toLowerCase().includes(k)
+      input.toLowerCase().includes(k),
     );
 
     const botReply = key

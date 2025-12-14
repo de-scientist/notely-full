@@ -1,9 +1,22 @@
 import { useState, useCallback, useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { FileText, UploadCloud, CheckCircle, XCircle, Loader2, Info } from "lucide-react";
+import {
+  FileText,
+  UploadCloud,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Info,
+} from "lucide-react";
 import { api } from "@/lib/api";
 
 // Define acceptable file types (e.g., PDF, TXT, DOCX)
@@ -12,7 +25,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 export default function RagUploader() {
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<"idle" | "uploading" | "success" | "failed">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "uploading" | "success" | "failed"
+  >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fileInputId = "rag-file-upload";
@@ -27,7 +42,9 @@ export default function RagUploader() {
         return;
       }
       // Simple check for file type extension
-      const isValidType = ACCEPTED_FILE_TYPES.split(', ').some(type => selectedFile.name.endsWith(type.slice(1)));
+      const isValidType = ACCEPTED_FILE_TYPES.split(", ").some((type) =>
+        selectedFile.name.endsWith(type.slice(1)),
+      );
       if (!isValidType) {
         setErrorMessage("Invalid file type. Please use PDF, TXT, DOCX, or MD.");
         setFile(null);
@@ -64,7 +81,7 @@ export default function RagUploader() {
       // Assuming api wrapper handles headers and baseURL
       const res = await api.post("/rag/upload", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -77,7 +94,10 @@ export default function RagUploader() {
       }
     } catch (error: any) {
       setStatus("failed");
-      setErrorMessage(error.response?.data?.message || "Network error or internal server error.");
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Network error or internal server error.",
+      );
     }
   };
 
@@ -88,7 +108,9 @@ export default function RagUploader() {
           <Alert className="bg-fuchsia-50 border-fuchsia-500 text-fuchsia-700 dark:bg-fuchsia-950 dark:border-fuchsia-700 dark:text-fuchsia-300">
             <Loader2 className="h-4 w-4 animate-spin" />
             <AlertTitle>Processing...</AlertTitle>
-            <AlertDescription>The document is being uploaded and processed for the AI model.</AlertDescription>
+            <AlertDescription>
+              The document is being uploaded and processed for the AI model.
+            </AlertDescription>
           </Alert>
         );
       case "success":
@@ -96,7 +118,9 @@ export default function RagUploader() {
           <Alert className="bg-green-50 border-green-500 text-green-700 dark:bg-green-950 dark:border-green-700 dark:text-green-300">
             <CheckCircle className="h-4 w-4" />
             <AlertTitle>Upload Complete</AlertTitle>
-            <AlertDescription>Document successfully indexed and available for the RAG system.</AlertDescription>
+            <AlertDescription>
+              Document successfully indexed and available for the RAG system.
+            </AlertDescription>
           </Alert>
         );
       case "failed":
@@ -104,14 +128,15 @@ export default function RagUploader() {
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />
             <AlertTitle>Upload Failed</AlertTitle>
-            <AlertDescription>{errorMessage || "An unknown error occurred during upload."}</AlertDescription>
+            <AlertDescription>
+              {errorMessage || "An unknown error occurred during upload."}
+            </AlertDescription>
           </Alert>
         );
       default:
         return null;
     }
   }, [status, errorMessage]);
-
 
   return (
     <div className="p-6">
@@ -122,55 +147,62 @@ export default function RagUploader() {
             RAG Document Uploader
           </CardTitle>
           <CardDescription>
-            Upload documents (PDF, TXT, DOCX, MD) to train the AI's Retrieval-Augmented Generation (RAG) system.
+            Upload documents (PDF, TXT, DOCX, MD) to train the AI's
+            Retrieval-Augmented Generation (RAG) system.
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          
           {/* 1. Status Alert */}
           {statusAlert}
 
           {/* 2. Drag & Drop Area */}
-          <div 
+          <div
             className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors cursor-pointer 
-            ${file ? 'border-fuchsia-500 bg-fuchsia-50/50 dark:bg-fuchsia-900/20' : 'border-gray-300 dark:border-gray-700 hover:border-fuchsia-400'}`}
+            ${file ? "border-fuchsia-500 bg-fuchsia-50/50 dark:bg-fuchsia-900/20" : "border-gray-300 dark:border-gray-700 hover:border-fuchsia-400"}`}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onClick={() => document.getElementById(fileInputId)?.click()}
           >
             <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground mb-3" />
             <p className="font-semibold text-gray-700 dark:text-gray-300">
-                {file ? file.name : "Drag and drop your file here, or click to select"}
+              {file
+                ? file.name
+                : "Drag and drop your file here, or click to select"}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-                Accepted: {ACCEPTED_FILE_TYPES} (Max 10MB)
+              Accepted: {ACCEPTED_FILE_TYPES} (Max 10MB)
             </p>
             {/* Hidden native input */}
             <Input
               id={fileInputId}
               type="file"
               accept={ACCEPTED_FILE_TYPES}
-              onChange={e => handleFileChange(e.target.files?.[0] || null)}
+              onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
               className="hidden"
             />
           </div>
 
           {/* 3. Action Button and File Info */}
           <div className="flex justify-between items-center pt-2">
-            
             {/* File Info */}
             {file && (
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <Info className="h-4 w-4 mr-1.5" />
-                    <span className="truncate max-w-[200px] font-medium">{file.name}</span>
-                    <span className="ml-2">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
-                </div>
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                <Info className="h-4 w-4 mr-1.5" />
+                <span className="truncate max-w-[200px] font-medium">
+                  {file.name}
+                </span>
+                <span className="ml-2">
+                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
+              </div>
             )}
             {!file && (
-                <span className="text-sm text-muted-foreground">Select a document to begin.</span>
+              <span className="text-sm text-muted-foreground">
+                Select a document to begin.
+              </span>
             )}
-            
+
             {/* Upload Button */}
             <Button
               onClick={handleUpload}
@@ -191,7 +223,6 @@ export default function RagUploader() {
               )}
             </Button>
           </div>
-          
         </CardContent>
       </Card>
     </div>

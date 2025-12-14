@@ -11,7 +11,7 @@ type UseChatStoreHook = ReturnType<typeof createChatStore>;
 
 // The ChatWindow component now accepts the initialized store hook as a prop.
 interface ChatWindowProps {
-    useStore: UseChatStoreHook;
+  useStore: UseChatStoreHook;
 }
 
 export default function ChatWindow({ useStore }: ChatWindowProps) {

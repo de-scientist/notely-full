@@ -1,9 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import { Loader2, TrendingUp, Zap, MessageSquare } from "lucide-react";
 
 // Define the server base URL to align with askNotelyAI
-const API_BASE_URL = "http://localhost:5000"; 
+const API_BASE_URL = "http://localhost:5000";
 
 // FIX 1: Update data types to include an index signature for Recharts compatibility
 interface ChartDataInput {
@@ -30,7 +42,15 @@ export default function AnalyticsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#3B82F6", "#F97316"]; 
+  const COLORS = [
+    "#4F46E5",
+    "#10B981",
+    "#F59E0B",
+    "#EF4444",
+    "#8B5CF6",
+    "#3B82F6",
+    "#F97316",
+  ];
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -56,19 +76,26 @@ export default function AnalyticsDashboard() {
       setIntents(intentsData.intents || intentsData);
 
       // Hourly Data Mapping and Sorting
-      const mappedHourly = hourlyData.hourly?.map((h: any) => ({
-        hour: new Date(h.hour).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', day: '2-digit', month: '2-digit' }),
-        count: Number(h.count)
-      })) || [];
+      const mappedHourly =
+        hourlyData.hourly?.map((h: any) => ({
+          hour: new Date(h.hour).toLocaleString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+          }),
+          count: Number(h.count),
+        })) || [];
       setHourly(mappedHourly);
 
       // Top Queries Data
       setTopQueries(topData.top || topData);
-
     } catch (e) {
       console.error(e);
       // Enhanced error detail for the user
-      setError("Error loading dashboard data. Check network status and server connection on port 5000.");
+      setError(
+        "Error loading dashboard data. Check network status and server connection on port 5000.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -93,9 +120,11 @@ export default function AnalyticsDashboard() {
           <Zap className="w-7 h-7 mr-3 text-indigo-600" />
           Notely AI — Analytics Dashboard
         </h2>
-        <p className="text-gray-500">Insights into user engagement with the AI assistant.</p>
+        <p className="text-gray-500">
+          Insights into user engagement with the AI assistant.
+        </p>
       </header>
-      
+
       {isLoading && (
         <div className="flex justify-center items-center h-64 text-indigo-600">
           <Loader2 className="w-8 h-8 animate-spin mr-3" />
@@ -107,34 +136,49 @@ export default function AnalyticsDashboard() {
         <section className="space-y-8">
           {/* --- TOP ROW: INTENTS AND HOURLY TRAFFIC --- */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
             {/* 1. Intents Distribution (Pie Chart) */}
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
               <h3 className="font-bold text-xl mb-4 text-gray-800 flex items-center">
-                <MessageSquare className="w-5 h-5 mr-2 text-indigo-500" /> Intent Distribution
+                <MessageSquare className="w-5 h-5 mr-2 text-indigo-500" />{" "}
+                Intent Distribution
               </h3>
               <div className="flex flex-col md:flex-row items-center justify-center">
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
-                    <Pie 
-                      data={intents} 
-                      dataKey="count" 
-                      nameKey="intent" 
-                      cx="50%" 
-                      cy="50%" 
+                    <Pie
+                      data={intents}
+                      dataKey="count"
+                      nameKey="intent"
+                      cx="50%"
+                      cy="50%"
                       innerRadius={50}
-                      outerRadius={100} 
+                      outerRadius={100}
                       paddingAngle={5}
                       fill="#8884d8"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${percent !== undefined ? (percent * 100).toFixed(0) : 0}%`}
+                      label={({ name, percent }) =>
+                        `${name}: ${percent !== undefined ? (percent * 100).toFixed(0) : 0}%`
+                      }
                     >
-                      {intents.map((_, idx) => ( 
-                        <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                      {intents.map((_, idx) => (
+                        <Cell
+                          key={`cell-${idx}`}
+                          fill={COLORS[idx % COLORS.length]}
+                        />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number, name: string) => [`Count: ${value}`, name]} />
-                    <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ paddingLeft: '20px' }} />
+                    <Tooltip
+                      formatter={(value: number, name: string) => [
+                        `Count: ${value}`,
+                        name,
+                      ]}
+                    />
+                    <Legend
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="middle"
+                      wrapperStyle={{ paddingLeft: "20px" }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -143,41 +187,77 @@ export default function AnalyticsDashboard() {
             {/* 2. Hourly Traffic (Line Chart) */}
             <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
               <h3 className="font-bold text-xl mb-4 text-gray-800 flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2 text-green-500" /> Hourly Traffic (Last 7 Days)
+                <TrendingUp className="w-5 h-5 mr-2 text-green-500" /> Hourly
+                Traffic (Last 7 Days)
               </h3>
               <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={hourly} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <LineChart
+                  data={hourly}
+                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis dataKey="hour" angle={-30} textAnchor="end" height={60} interval="preserveStartEnd" stroke="#666" />
+                  <XAxis
+                    dataKey="hour"
+                    angle={-30}
+                    textAnchor="end"
+                    height={60}
+                    interval="preserveStartEnd"
+                    stroke="#666"
+                  />
                   <YAxis allowDecimals={false} stroke="#666" />
                   <Tooltip labelFormatter={(value) => `Time: ${value}`} />
-                  <Line type="monotone" dataKey="count" stroke="#4F46E5" strokeWidth={2} dot={false} name="Requests" />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#4F46E5"
+                    strokeWidth={2}
+                    dot={false}
+                    name="Requests"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
-          
+
           {/* --- BOTTOM ROW: TOP QUERIES TABLE --- */}
           <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-            <h3 className="font-bold text-xl mb-4 text-gray-800">🔥 Top 30 User Queries</h3>
+            <h3 className="font-bold text-xl mb-4 text-gray-800">
+              🔥 Top 30 User Queries
+            </h3>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/4">Query</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Count</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/4">
+                      Query
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                      Count
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {topQueries.map((r, i) => (
-                    <tr key={i} className="hover:bg-indigo-50/50 transition duration-150 ease-in-out">
-                      <td className="px-6 py-3 text-sm text-gray-900 font-medium">{r.query}</td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 font-bold">{r.count}</td>
+                    <tr
+                      key={i}
+                      className="hover:bg-indigo-50/50 transition duration-150 ease-in-out"
+                    >
+                      <td className="px-6 py-3 text-sm text-gray-900 font-medium">
+                        {r.query}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 font-bold">
+                        {r.count}
+                      </td>
                     </tr>
                   ))}
                   {topQueries.length === 0 && (
                     <tr>
-                       <td colSpan={2} className="px-6 py-4 text-center text-gray-500 italic">No queries logged yet.</td>
+                      <td
+                        colSpan={2}
+                        className="px-6 py-4 text-center text-gray-500 italic"
+                      >
+                        No queries logged yet.
+                      </td>
                     </tr>
                   )}
                 </tbody>

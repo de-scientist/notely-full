@@ -15,7 +15,7 @@ export default function Dashboard() {
   }, []);
 
   const filtered = queries.filter((q) =>
-    q.text.toLowerCase().includes(filter.toLowerCase())
+    q.text.toLowerCase().includes(filter.toLowerCase()),
   );
 
   return (
@@ -50,9 +50,7 @@ export default function Dashboard() {
             <tr key={i} className="border-b">
               <td className="p-3">{q.userId}</td>
               <td className="p-3">{q.text}</td>
-              <td className="p-3">
-                {new Date(q.timestamp).toLocaleString()}
-              </td>
+              <td className="p-3">{new Date(q.timestamp).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
