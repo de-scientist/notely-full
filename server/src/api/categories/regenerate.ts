@@ -1,12 +1,12 @@
-import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { requireAuth } from '../../middleware/auth.ts';
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import { requireAuth } from "../../middleware/auth.ts";
 
 const prisma = new PrismaClient();
 const router = Router();
 
 // POST /api/categories/regenerate
-router.post('/regenerate', requireAuth, async (req, res, next) => {
+router.post("/regenerate", requireAuth, async (req, res, next) => {
   try {
     const userId = req.user!.id;
 
@@ -31,7 +31,7 @@ router.post('/regenerate', requireAuth, async (req, res, next) => {
       });
     }
 
-    return res.json({ message: 'Categories regenerated.' });
+    return res.json({ message: "Categories regenerated." });
   } catch (err) {
     next(err);
   }

@@ -6,7 +6,6 @@ import bcrypt from "bcrypt";
 import { requireAuth, AuthedRequest } from "../middleware/requireAuth.ts";
 import { supabaseAdmin } from "../lib/supabaseAdmin.ts";
 
-
 const prisma = new PrismaClient();
 const router = Router();
 const TOKEN_COOKIE_NAME = "token";
@@ -25,7 +24,9 @@ router.post("/register", async (req, res, next) => {
       where: { OR: [{ email }, { username }] },
     });
     if (existing) {
-      return res.status(400).json({ message: "Email or username already in use." });
+      return res
+        .status(400)
+        .json({ message: "Email or username already in use." });
     }
 
     // 1️⃣ Create Supabase auth user (sends verification email)
@@ -36,7 +37,9 @@ router.post("/register", async (req, res, next) => {
     });
 
     if (error || !data.user) {
-      return res.status(400).json({ message: error?.message || "Auth creation failed" });
+      return res
+        .status(400)
+        .json({ message: error?.message || "Auth creation failed" });
     }
 
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
@@ -60,7 +63,6 @@ router.post("/register", async (req, res, next) => {
     next(err);
   }
 });
-
 
 router.post("/login", async (req, res, next) => {
   try {
@@ -104,7 +106,6 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-
 router.post("/verify-email", async (req, res) => {
   try {
     const { supabaseId } = req.body;
@@ -126,7 +127,6 @@ router.post("/verify-email", async (req, res) => {
   }
 });
 
-
 /**
  * OAuth backend-sync endpoint.
  * The frontend (AuthCallback page) should POST user info to this route after Supabase OAuth returns.
@@ -139,23 +139,38 @@ router.post("/verify-email", async (req, res) => {
  */
 router.post("/oauth", async (req, res) => {
   try {
-    const { supabaseId, email, firstName, lastName, avatar, provider, providerId } = req.body;
+    const {
+      supabaseId,
+      email,
+      firstName,
+      lastName,
+      avatar,
+      provider,
+      providerId,
+    } = req.body;
 
     if (!email) return res.status(400).json({ message: "Email required" });
 
     // Try find by supabaseId first (preferred)
     let user = supabaseId
-      ? await prisma.user.findUnique({ where: { supabaseId } }).catch(() => null)
+      ? await prisma.user
+          .findUnique({ where: { supabaseId } })
+          .catch(() => null)
       : null;
 
     if (!user) {
       // If not found by supabaseId, try by email
-      user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
+      user = await prisma.user
+        .findUnique({ where: { email } })
+        .catch(() => null);
     }
 
     if (!user) {
       // Create new user
-      const usernameBase = (email.split("@")[0] || `user${Date.now()}`).slice(0, 30);
+      const usernameBase = (email.split("@")[0] || `user${Date.now()}`).slice(
+        0,
+        30,
+      );
       // Ensure username unique — naive attempt (you may want a more robust generator)
       let username = usernameBase;
       let counter = 0;

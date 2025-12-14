@@ -12,13 +12,19 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  * Creates and returns an Express Router instance with the RAG chat route.
  * @returns An Express Router instance.
  */
-export function chatRoutes1() { // Changed signature to return Router
+export function chatRoutes1() {
+  // Changed signature to return Router
   const router = Router();
 
   // --- POST /api/chat (Main RAG Chat Logic) ---
-  router.post("/api/chat", async (req: Request, res: Response) => { // Using Express Request/Response
-    const { message, userId, channel, metadata } =
-      req.body as { message: string; userId?: string; channel?: string; metadata?: any };
+  router.post("/api/chat", async (req: Request, res: Response) => {
+    // Using Express Request/Response
+    const { message, userId, channel, metadata } = req.body as {
+      message: string;
+      userId?: string;
+      channel?: string;
+      metadata?: any;
+    };
 
     if (!message) return res.status(400).send({ error: "Message required" }); // Using res.status.send
 
@@ -29,30 +35,36 @@ export function chatRoutes1() { // Changed signature to return Router
         input: message,
       });
       // Ensure safe access to embedding data
-      const qVec = embResp.data[0]?.embedding as number[] | undefined; 
-      
+      const qVec = embResp.data[0]?.embedding as number[] | undefined;
+
       if (!qVec) {
-          return res.status(500).send({ error: "Failed to generate query vector." });
+        return res
+          .status(500)
+          .send({ error: "Failed to generate query vector." });
       }
 
       // 2) fetch candidate docs (small-scale)
-      const docs = await prisma.doc.findMany({ where: {}, take: 200 }); 
-      
+      const docs = await prisma.doc.findMany({ where: {}, take: 200 });
+
       const scored = docs
         .map((d) => {
           const e = d.embedding as number[] | null;
           // Safely handle null/undefined embeddings
-          if (!e) return null; 
+          if (!e) return null;
           const score = cosine(qVec, e);
           return { doc: d, score };
         })
-        .filter((item): item is { doc: typeof docs[0]; score: number } => Boolean(item)) // TypeScript refinement
+        .filter((item): item is { doc: (typeof docs)[0]; score: number } =>
+          Boolean(item),
+        ) // TypeScript refinement
         .sort((a, b) => b.score - a.score)
         .slice(0, 4); // top 4
 
       // 3) build retrieval text
       const retrievedText = scored
-        .map((s, idx) => `DOC ${idx + 1} - ${s.doc.title}\n${s.doc.content}\n---`)
+        .map(
+          (s, idx) => `DOC ${idx + 1} - ${s.doc.title}\n${s.doc.content}\n---`,
+        )
         .join("\n");
 
       // 4) craft system prompt with retrieved docs
@@ -72,7 +84,9 @@ ${retrievedText || "NO_DOCS_FOUND"}
         max_tokens: 350,
       });
 
-      const answer = completion.choices?.[0]?.message?.content ?? "Sorry, I couldn't answer that.";
+      const answer =
+        completion.choices?.[0]?.message?.content ??
+        "Sorry, I couldn't answer that.";
 
       // lightweight intent
       const lower = message.toLowerCase();
@@ -88,7 +102,7 @@ ${retrievedText || "NO_DOCS_FOUND"}
       const chat = await prisma.chatLog.create({
         data: {
           // Use nullish coalescing to ensure Prisma compatibility for optional fields
-          userId: userId ?? null, 
+          userId: userId ?? null,
           query: message,
           reply: answer,
           intent,
@@ -114,6 +128,6 @@ ${retrievedText || "NO_DOCS_FOUND"}
       return res.status(500).send({ error: "AI request failed" }); // Using res.status.send
     }
   });
-  
+
   return router;
 }

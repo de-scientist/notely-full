@@ -69,11 +69,11 @@ Content:
 
     return {
       generatedTitle: json.generatedTitle ?? data.title ?? "Untitled Note",
-      generatedSynopsis: json.generatedSynopsis ?? data.synopsis ?? "No synopsis provided",
+      generatedSynopsis:
+        json.generatedSynopsis ?? data.synopsis ?? "No synopsis provided",
       generatedContent: json.generatedContent ?? data.content,
       suggestedCategoryName: json.suggestedCategoryName ?? "Uncategorized",
     };
-    
   } catch (err) {
     console.error("AI processing error:", err);
 

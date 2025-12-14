@@ -19,7 +19,10 @@ function verifySignature(rawBody: string, signatureHeader?: string) {
   const expected = hmac.digest("hex");
 
   try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
+    return crypto.timingSafeEqual(
+      Buffer.from(expected),
+      Buffer.from(signatureHeader),
+    );
   } catch {
     return false;
   }
@@ -37,7 +40,8 @@ router.post("/supabase", async (req: Request, res: Response) => {
     // NOTE: Relying on JSON.stringify is risky for signature verification!
     const raw = (req as any).rawBody ?? JSON.stringify(req.body);
     // Cast header to string or undefined
-    const signature = (req.headers["x-supabase-signature"] as string) ?? undefined;
+    const signature =
+      (req.headers["x-supabase-signature"] as string) ?? undefined;
 
     // Verify signature
     if (!verifySignature(raw, signature)) {

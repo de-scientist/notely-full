@@ -1,7 +1,7 @@
 // src/routes/categories.ts
-import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { requireAuth } from '../middleware/auth.ts';
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import { requireAuth } from "../middleware/auth.ts";
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -11,7 +11,7 @@ router.use(requireAuth);
 
 // ----------------------------------------------------------------------
 // GET /api/categories - get all categories for the authenticated user
-router.get('/', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const userId = req.user!.id;
 
@@ -19,11 +19,11 @@ router.get('/', async (req, res, next) => {
     const categories = await prisma.category.findMany({
       where: {
         OR: [
-          { userId },          // user's own categories
+          { userId }, // user's own categories
           { isDefault: true }, // default/global categories
         ],
       },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
       select: {
         id: true,
         name: true,
@@ -41,16 +41,16 @@ router.get('/', async (req, res, next) => {
 
 // ----------------------------------------------------------------------
 // POST /api/categories/reset - regenerate default categories for user
-router.post('/reset', async (req, res, next) => {
+router.post("/reset", async (req, res, next) => {
   try {
     const userId = req.user!.id;
 
     // Define default categories
     const defaultCategories = [
-      { name: 'Ideas', isDefault: true },
-      { name: 'Work', isDefault: true },
-      { name: 'Personal', isDefault: true },
-      { name: 'Projects', isDefault: true },
+      { name: "Ideas", isDefault: true },
+      { name: "Work", isDefault: true },
+      { name: "Personal", isDefault: true },
+      { name: "Projects", isDefault: true },
     ];
 
     // Remove user's non-default categories
@@ -69,11 +69,20 @@ router.post('/reset', async (req, res, next) => {
 
     const updatedCategories = await prisma.category.findMany({
       where: { userId },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, userId: true, isDefault: true, aiScore: true },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        userId: true,
+        isDefault: true,
+        aiScore: true,
+      },
     });
 
-    return res.json({ message: 'Categories reset successfully', categories: updatedCategories });
+    return res.json({
+      message: "Categories reset successfully",
+      categories: updatedCategories,
+    });
   } catch (err) {
     next(err);
   }

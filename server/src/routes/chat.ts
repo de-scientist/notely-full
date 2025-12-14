@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import OpenAI from "openai";
 
 /**
@@ -9,7 +9,7 @@ import OpenAI from "openai";
 export function chatRoutes() {
   // Use Express Router to group routes
   const router = Router();
-  
+
   dotenv.config();
   // Initialize the OpenAI client outside the route handler for performance
   const client = new OpenAI({
@@ -53,9 +53,11 @@ If user asks unrelated questions, politely redirect them back to app support.`,
 
       // --- FIX APPLIED HERE ---
       // Safely access the message content using optional chaining (`?`) and the nullish coalescing operator (`??`)
-      const answer = completion.choices[0]?.message?.content ?? "AI Assistant failed to generate a reply.";
+      const answer =
+        completion.choices[0]?.message?.content ??
+        "AI Assistant failed to generate a reply.";
       // --- END FIX ---
-      
+
       // Use Express res.send() to return the successful response
       return res.send({ reply: answer });
     } catch (err) {
@@ -64,6 +66,6 @@ If user asks unrelated questions, politely redirect them back to app support.`,
       return res.status(500).send({ error: "AI request failed" });
     }
   });
-  
+
   return router;
 }

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import dotenv from 'dotenv'; // Import dotenv
+import dotenv from "dotenv"; // Import dotenv
 import OpenAI from "openai";
 import { PrismaClient } from "@prisma/client";
 
@@ -11,19 +11,18 @@ const prisma = new PrismaClient();
  */
 export function chatRoutes() {
   const router = Router();
-  
+
   dotenv.config(); // Load environment variables (API Key)
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   // --- POST /api/chat (Main Chat Logic) ---
   router.post("/api/chat", async (req: Request, res: Response) => {
-    const { message, userId, channel, metadata } =
-      req.body as {
-        message: string;
-        userId?: string;
-        channel?: string;
-        metadata?: any;
-      };
+    const { message, userId, channel, metadata } = req.body as {
+      message: string;
+      userId?: string;
+      channel?: string;
+      metadata?: any;
+    };
 
     if (!message) return res.status(400).send({ error: "Message required" });
 
@@ -55,7 +54,9 @@ If user asks unrelated questions, politely redirect them back to app support.`,
       });
 
       // Safely access the message content
-      const answer = completion.choices?.[0]?.message?.content ?? "AI Assistant failed to generate a reply.";
+      const answer =
+        completion.choices?.[0]?.message?.content ??
+        "AI Assistant failed to generate a reply.";
 
       // Optional: lightweight intent guessing using keywords (fast)
       const lower = message.toLowerCase();
@@ -93,20 +94,25 @@ If user asks unrelated questions, politely redirect them back to app support.`,
   });
 
   // --- GET /api/analytics/top-queries (SQL Server FIX) ---
-  router.get("/api/analytics/top-queries", async (req: Request, res: Response) => {
-    try {
-      const top = await prisma.$queryRawUnsafe(`
+  router.get(
+    "/api/analytics/top-queries",
+    async (req: Request, res: Response) => {
+      try {
+        const top = await prisma.$queryRawUnsafe(`
         SELECT TOP 30 [query], COUNT(*) AS [count]
         FROM [ChatLogs]
         GROUP BY [query]
         ORDER BY [count] DESC;
       `);
-      return res.send({ top });
-    } catch (e) {
-      console.error("Error fetching top queries:", e);
-      return res.status(500).send({ error: "Database error fetching top queries." });
-    }
-  });
+        return res.send({ top });
+      } catch (e) {
+        console.error("Error fetching top queries:", e);
+        return res
+          .status(500)
+          .send({ error: "Database error fetching top queries." });
+      }
+    },
+  );
 
   // --- GET /api/analytics/intents (SQL Server FIX) ---
   router.get("/api/analytics/intents", async (req: Request, res: Response) => {
@@ -120,7 +126,9 @@ If user asks unrelated questions, politely redirect them back to app support.`,
       return res.send({ intents });
     } catch (e) {
       console.error("Error fetching intents:", e);
-      return res.status(500).send({ error: "Database error fetching intents." });
+      return res
+        .status(500)
+        .send({ error: "Database error fetching intents." });
     }
   });
 
@@ -139,7 +147,9 @@ If user asks unrelated questions, politely redirect them back to app support.`,
       return res.send({ hourly });
     } catch (e) {
       console.error("Error fetching hourly data:", e);
-      return res.status(500).send({ error: "Database error fetching hourly data." });
+      return res
+        .status(500)
+        .send({ error: "Database error fetching hourly data." });
     }
   });
 

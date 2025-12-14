@@ -1,19 +1,24 @@
 // server/src/middleware/requireAuth.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt.ts";
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
-
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 export interface AuthedRequest extends Request {
   user?: { id: string; email?: string; [key: string]: any };
 }
 
-export async function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
+export async function requireAuth(
+  req: AuthedRequest,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const authHeader = req.headers.authorization;
     const cookieToken = (req.cookies && req.cookies.token) || undefined;
-    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cookieToken;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : cookieToken;
 
     if (!token) {
       return res.status(401).json({ message: "Unauthorized: token missing" });
@@ -32,7 +37,12 @@ export async function requireAuth(req: AuthedRequest, res: Response, next: NextF
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(401).json({ message: "User not found" });
 
-    req.user = { id: user.id, email: user.email, firstName: user.firstName, username: user.username };
+    req.user = {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      username: user.username,
+    };
     next();
   } catch (err) {
     console.error("Auth middleware error:", err);

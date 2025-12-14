@@ -16,7 +16,6 @@ router.post("/suggest", async (req, res) => {
 
     const result = await analyzeNote(data);
     return res.json(result);
-
   } catch (err) {
     console.error("AI Suggestion Error:", err);
     return res.status(500).json({ error: "AI processing failed" });

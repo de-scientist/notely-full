@@ -1,5 +1,5 @@
 // src/utils/mailer.ts
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 export const sendVerificationEmail = async (to: string, html: string) => {
   const transporter = nodemailer.createTransport({

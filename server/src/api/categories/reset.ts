@@ -1,12 +1,12 @@
-import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { requireAuth } from '../../middleware/auth.ts';
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import { requireAuth } from "../../middleware/auth.ts";
 
 const prisma = new PrismaClient();
 const router = Router();
 
 // POST /api/categories/reset
-router.post('/reset', requireAuth, async (req, res) => {
+router.post("/reset", requireAuth, async (req, res) => {
   const userId = req.user!.id;
 
   // Delete user's categories
@@ -28,5 +28,5 @@ router.post('/reset', requireAuth, async (req, res) => {
     });
   }
 
-  return res.json({ message: 'Categories reset for user.' });
+  return res.json({ message: "Categories reset for user." });
 });
