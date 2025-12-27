@@ -13,9 +13,7 @@
 ![Cloud Storage](https://img.shields.io/badge/Cloudinary-Enabled-blueviolet)
 
 Notely is a modern, user-centered note management app built to keep your thoughts sharp, safe, and always within reach.  
-With clean interactions and a commitment to reliability, it delivers a smooth digital notebook for ideas, journaling, planning, and documentation.
-
-> **Note:** The words *"Note"* and *"Entry"* refer to the same concept in this application.
+With clean interactions and a commitment to reliability, it delivers a smooth digital notebook for ideas, journaling, planning, and all things writing.
 
 ---
 
